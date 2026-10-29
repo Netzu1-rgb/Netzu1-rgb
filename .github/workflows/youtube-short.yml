@@ -1,0 +1,51 @@
+name: Crear Short diario
+
+on:
+  schedule:
+    - cron: '23 17 * * *' # todos los días a las 17:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: youtube-short
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: youtube-shorts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-core
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Generar vídeo
+        id: video
+        run: node publicar.js
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PRIVACY: ${{ vars.YT_PRIVACY || 'private' }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ vars.ELEVENLABS_VOICE_ID }}
+      - name: Publicar en Releases para descargarlo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "reto-${{ steps.video.outputs.numero }}" "${{ steps.video.outputs.archivo }}" \
+            --title "Reto #${{ steps.video.outputs.numero }}" \
+            --notes-file out/texto.md
+      - name: Guardar progreso
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add estado.json
+          git diff --cached --quiet || (git commit -m "Reto #${{ steps.video.outputs.numero }} creado: avanzar a las siguientes preguntas" && git push)

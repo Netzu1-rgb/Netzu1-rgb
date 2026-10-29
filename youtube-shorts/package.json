@@ -1,0 +1,13 @@
+{
+  "name": "youtube-shorts",
+  "private": true,
+  "description": "Genera y sube Shorts de preguntas a YouTube",
+  "scripts": {
+    "auth": "node auth.js",
+    "render": "node render.js",
+    "publicar": "node publicar.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
