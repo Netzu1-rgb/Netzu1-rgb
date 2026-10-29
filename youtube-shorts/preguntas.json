@@ -1,22 +1,332 @@
 [
-  {"pregunta": "¿Cuál es el planeta más caliente del sistema solar?", "opciones": ["Mercurio", "Venus", "Marte", "Júpiter"], "correcta": 1, "dato": "Su atmósfera atrapa el calor: unos 465 °C en la superficie."},
-  {"pregunta": "¿Cuántos corazones tiene un pulpo?", "opciones": ["1", "2", "3", "4"], "correcta": 2, "dato": "Dos bombean sangre a las branquias y uno al resto del cuerpo."},
-  {"pregunta": "¿Qué país tiene más husos horarios?", "opciones": ["Rusia", "Estados Unidos", "Francia", "China"], "correcta": 2, "dato": "Gracias a sus territorios de ultramar, Francia tiene 12."},
-  {"pregunta": "¿Cuál es el único mamífero que puede volar de verdad?", "opciones": ["Ardilla voladora", "Murciélago", "Colugo", "Petauro"], "correcta": 1, "dato": "Los demás solo planean; el murciélago bate sus alas."},
-  {"pregunta": "¿Cuántos huesos tiene un adulto?", "opciones": ["186", "206", "226", "256"], "correcta": 1, "dato": "Al nacer tenemos unos 300: muchos se fusionan al crecer."},
-  {"pregunta": "¿Cuál es el océano más grande del mundo?", "opciones": ["Atlántico", "Índico", "Pacífico", "Ártico"], "correcta": 2, "dato": "Es más grande que toda la tierra firme del planeta junta."},
-  {"pregunta": "¿En qué país está Machu Picchu?", "opciones": ["Bolivia", "Perú", "Chile", "Ecuador"], "correcta": 1, "dato": "La ciudadela inca fue construida en el siglo XV."},
-  {"pregunta": "¿Qué gas absorben las plantas para hacer la fotosíntesis?", "opciones": ["Oxígeno", "Dióxido de carbono", "Nitrógeno", "Helio"], "correcta": 1, "dato": "Lo convierten en azúcar y liberan oxígeno."},
-  {"pregunta": "¿Cuál es el río más caudaloso del mundo?", "opciones": ["Nilo", "Amazonas", "Yangtsé", "Misisipi"], "correcta": 1, "dato": "Lleva más agua que los siguientes siete ríos juntos."},
-  {"pregunta": "¿Cuántas patas tiene una araña?", "opciones": ["6", "8", "10", "12"], "correcta": 1, "dato": "Por eso no es un insecto: los insectos tienen 6."},
-  {"pregunta": "¿Qué idioma tiene más hablantes nativos?", "opciones": ["Inglés", "Español", "Chino mandarín", "Hindi"], "correcta": 2, "dato": "El español ocupa el segundo puesto."},
-  {"pregunta": "¿Cuál es el país más grande del mundo?", "opciones": ["Canadá", "China", "Rusia", "Estados Unidos"], "correcta": 2, "dato": "Ocupa más de 17 millones de km²."},
-  {"pregunta": "¿De qué color es la sangre de un pulpo?", "opciones": ["Roja", "Azul", "Verde", "Transparente"], "correcta": 1, "dato": "Usa cobre en lugar de hierro para transportar oxígeno."},
-  {"pregunta": "¿Qué planeta tiene más lunas conocidas?", "opciones": ["Júpiter", "Saturno", "Urano", "Neptuno"], "correcta": 1, "dato": "Se le conocen más de 270 lunas."},
-  {"pregunta": "¿Cuál es el animal terrestre más rápido?", "opciones": ["León", "Guepardo", "Antílope", "Caballo"], "correcta": 1, "dato": "Supera los 100 km/h en carreras cortas."},
-  {"pregunta": "¿En qué año pisó el ser humano la Luna por primera vez?", "opciones": ["1965", "1969", "1972", "1975"], "correcta": 1, "dato": "Neil Armstrong lo hizo el 20 de julio con el Apolo 11."},
-  {"pregunta": "¿Cuál es la capital de Australia?", "opciones": ["Sídney", "Melbourne", "Canberra", "Perth"], "correcta": 2, "dato": "Se construyó como punto medio entre Sídney y Melbourne."},
-  {"pregunta": "¿Qué órgano produce la insulina?", "opciones": ["Hígado", "Páncreas", "Riñón", "Estómago"], "correcta": 1, "dato": "La insulina regula el azúcar en la sangre."},
-  {"pregunta": "¿Qué elemento químico tiene el símbolo Au?", "opciones": ["Plata", "Oro", "Aluminio", "Argón"], "correcta": 1, "dato": "Viene del latín aurum."},
-  {"pregunta": "¿Cuánto tarda la luz del Sol en llegar a la Tierra?", "opciones": ["1 segundo", "8 minutos", "1 hora", "1 día"], "correcta": 1, "dato": "Si el Sol se apagara, tardaríamos 8 minutos en notarlo."}
+  {
+    "pregunta": "¿Cuál es el planeta más caliente del sistema solar?",
+    "opciones": [
+      "Mercurio",
+      "Venus",
+      "Marte",
+      "Júpiter"
+    ],
+    "correcta": 1,
+    "dato": "Su atmósfera atrapa el calor: unos 465 °C en la superficie."
+  },
+  {
+    "pregunta": "¿Cuántos corazones tiene un pulpo?",
+    "opciones": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correcta": 2,
+    "dato": "Dos bombean sangre a las branquias y uno al resto del cuerpo."
+  },
+  {
+    "pregunta": "¿Qué país tiene más husos horarios?",
+    "opciones": [
+      "Rusia",
+      "Estados Unidos",
+      "Francia",
+      "China"
+    ],
+    "correcta": 2,
+    "dato": "Gracias a sus territorios de ultramar, Francia tiene 12."
+  },
+  {
+    "pregunta": "¿Cuál es el único mamífero que puede volar de verdad?",
+    "opciones": [
+      "Ardilla voladora",
+      "Murciélago",
+      "Colugo",
+      "Petauro"
+    ],
+    "correcta": 1,
+    "dato": "Los demás solo planean; el murciélago bate sus alas."
+  },
+  {
+    "pregunta": "¿Cuántos huesos tiene un adulto?",
+    "opciones": [
+      "186",
+      "206",
+      "226",
+      "256"
+    ],
+    "correcta": 1,
+    "dato": "Al nacer tenemos unos 300: muchos se fusionan al crecer."
+  },
+  {
+    "pregunta": "¿Cuál es el océano más grande del mundo?",
+    "opciones": [
+      "Atlántico",
+      "Índico",
+      "Pacífico",
+      "Ártico"
+    ],
+    "correcta": 2,
+    "dato": "Es más grande que toda la tierra firme del planeta junta."
+  },
+  {
+    "pregunta": "¿En qué país está Machu Picchu?",
+    "opciones": [
+      "Bolivia",
+      "Perú",
+      "Chile",
+      "Ecuador"
+    ],
+    "correcta": 1,
+    "dato": "La ciudadela inca fue construida en el siglo XV."
+  },
+  {
+    "pregunta": "¿Qué gas absorben las plantas para hacer la fotosíntesis?",
+    "opciones": [
+      "Oxígeno",
+      "Dióxido de carbono",
+      "Nitrógeno",
+      "Helio"
+    ],
+    "correcta": 1,
+    "dato": "Lo convierten en azúcar y liberan oxígeno."
+  },
+  {
+    "pregunta": "¿Cuál es el río más caudaloso del mundo?",
+    "opciones": [
+      "Nilo",
+      "Amazonas",
+      "Yangtsé",
+      "Misisipi"
+    ],
+    "correcta": 1,
+    "dato": "Lleva más agua que los siguientes siete ríos juntos."
+  },
+  {
+    "pregunta": "¿Cuántas patas tiene una araña?",
+    "opciones": [
+      "6",
+      "8",
+      "10",
+      "12"
+    ],
+    "correcta": 1,
+    "dato": "Por eso no es un insecto: los insectos tienen 6."
+  },
+  {
+    "pregunta": "¿Qué idioma tiene más hablantes nativos?",
+    "opciones": [
+      "Inglés",
+      "Español",
+      "Chino mandarín",
+      "Hindi"
+    ],
+    "correcta": 2,
+    "dato": "El español ocupa el segundo puesto."
+  },
+  {
+    "pregunta": "¿Cuál es el país más grande del mundo?",
+    "opciones": [
+      "Canadá",
+      "China",
+      "Rusia",
+      "Estados Unidos"
+    ],
+    "correcta": 2,
+    "dato": "Ocupa más de 17 millones de km²."
+  },
+  {
+    "pregunta": "¿De qué color es la sangre de un pulpo?",
+    "opciones": [
+      "Roja",
+      "Azul",
+      "Verde",
+      "Transparente"
+    ],
+    "correcta": 1,
+    "dato": "Usa cobre en lugar de hierro para transportar oxígeno."
+  },
+  {
+    "pregunta": "¿Qué planeta tiene más lunas conocidas?",
+    "opciones": [
+      "Júpiter",
+      "Saturno",
+      "Urano",
+      "Neptuno"
+    ],
+    "correcta": 1,
+    "dato": "Se le conocen más de 270 lunas."
+  },
+  {
+    "pregunta": "¿Cuál es el animal terrestre más rápido?",
+    "opciones": [
+      "León",
+      "Guepardo",
+      "Antílope",
+      "Caballo"
+    ],
+    "correcta": 1,
+    "dato": "Supera los 100 km/h en carreras cortas."
+  },
+  {
+    "pregunta": "¿En qué año pisó el ser humano la Luna por primera vez?",
+    "opciones": [
+      "1965",
+      "1969",
+      "1972",
+      "1975"
+    ],
+    "correcta": 1,
+    "dato": "Neil Armstrong lo hizo el 20 de julio con el Apolo 11."
+  },
+  {
+    "pregunta": "¿Cuál es la capital de Australia?",
+    "opciones": [
+      "Sídney",
+      "Melbourne",
+      "Canberra",
+      "Perth"
+    ],
+    "correcta": 2,
+    "dato": "Se construyó como punto medio entre Sídney y Melbourne."
+  },
+  {
+    "pregunta": "¿Qué órgano produce la insulina?",
+    "opciones": [
+      "Hígado",
+      "Páncreas",
+      "Riñón",
+      "Estómago"
+    ],
+    "correcta": 1,
+    "dato": "La insulina regula el azúcar en la sangre."
+  },
+  {
+    "pregunta": "¿Qué elemento químico tiene el símbolo Au?",
+    "opciones": [
+      "Plata",
+      "Oro",
+      "Aluminio",
+      "Argón"
+    ],
+    "correcta": 1,
+    "dato": "Viene del latín aurum."
+  },
+  {
+    "pregunta": "¿Cuánto tarda la luz del Sol en llegar a la Tierra?",
+    "opciones": [
+      "1 segundo",
+      "8 minutos",
+      "1 hora",
+      "1 día"
+    ],
+    "correcta": 1,
+    "dato": "Si el Sol se apagara, tardaríamos 8 minutos en notarlo."
+  },
+  {
+    "pregunta": "¿Cuál es el hueso más largo del cuerpo humano?",
+    "opciones": [
+      "Fémur",
+      "Tibia",
+      "Húmero",
+      "Radio"
+    ],
+    "correcta": 0,
+    "dato": "Está en el muslo y es también el más fuerte."
+  },
+  {
+    "pregunta": "¿Cuántos colores tiene el arcoíris?",
+    "opciones": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "correcta": 2,
+    "dato": "Rojo, naranja, amarillo, verde, azul, añil y violeta."
+  },
+  {
+    "pregunta": "¿Cuál es el animal más grande del planeta?",
+    "opciones": [
+      "Elefante africano",
+      "Ballena azul",
+      "Tiburón ballena",
+      "Jirafa"
+    ],
+    "correcta": 1,
+    "dato": "Puede superar los 30 metros de largo."
+  },
+  {
+    "pregunta": "¿Cuál es el desierto más grande del mundo?",
+    "opciones": [
+      "Sahara",
+      "Gobi",
+      "Antártida",
+      "Atacama"
+    ],
+    "correcta": 2,
+    "dato": "Un desierto se define por la poca lluvia, no por el calor."
+  },
+  {
+    "pregunta": "¿Quién pintó la Mona Lisa?",
+    "opciones": [
+      "Picasso",
+      "Leonardo da Vinci",
+      "Van Gogh",
+      "Miguel Ángel"
+    ],
+    "correcta": 1,
+    "dato": "Hoy se expone en el Museo del Louvre, en París."
+  },
+  {
+    "pregunta": "¿Cuál es la montaña más alta del mundo?",
+    "opciones": [
+      "K2",
+      "Everest",
+      "Aconcagua",
+      "Kilimanjaro"
+    ],
+    "correcta": 1,
+    "dato": "Mide unos 8.849 metros sobre el nivel del mar."
+  },
+  {
+    "pregunta": "¿Qué vitamina produce tu piel al tomar el sol?",
+    "opciones": [
+      "Vitamina A",
+      "Vitamina B12",
+      "Vitamina C",
+      "Vitamina D"
+    ],
+    "correcta": 3,
+    "dato": "Ayuda a que tus huesos absorban el calcio."
+  },
+  {
+    "pregunta": "¿Cuántos jugadores de un equipo de fútbol hay en el campo?",
+    "opciones": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "correcta": 2,
+    "dato": "Once, contando al portero."
+  },
+  {
+    "pregunta": "¿Dónde se inventó el papel?",
+    "opciones": [
+      "Egipto",
+      "China",
+      "Grecia",
+      "India"
+    ],
+    "correcta": 1,
+    "dato": "Se atribuye a Cai Lun, hacia el año 105."
+  },
+  {
+    "pregunta": "¿Cuál es el planeta más grande del sistema solar?",
+    "opciones": [
+      "Saturno",
+      "Júpiter",
+      "Neptuno",
+      "Tierra"
+    ],
+    "correcta": 1,
+    "dato": "Dentro de él cabrían más de 1.300 Tierras."
+  }
 ]
