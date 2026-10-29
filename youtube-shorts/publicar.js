@@ -5,10 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const { renderizar } = require('./render');
 const { subirVideo } = require('./upload');
+const { hayVoz, usados, saldo } = require('./voz');
 
 const POR_VIDEO = Number(process.env.PREGUNTAS_POR_VIDEO || 3);
 const banco = require('./preguntas.json');
 const rutaEstado = path.join(__dirname, 'estado.json');
+// Avisar cuando el saldo de ElevenLabs alcance para menos de estos vídeos.
+const VIDEOS_MINIMOS = 5;
+// Caracteres por vídeo si aún no hay ninguna medición (las frases fijas ya grabadas no cuentan).
+const CARACTERES_POR_VIDEO = 450;
 
 function textos(preguntas, numeroVideo) {
   const soluciones = preguntas
@@ -40,9 +45,22 @@ async function main() {
     path.join(outDir, 'texto.md'),
     `**Título** (cópialo en YouTube):\n\n\`\`\`\n${t.titulo}\n\`\`\`\n\n**Descripción:**\n\n\`\`\`\n${t.descripcion}\n\`\`\`\n`
   );
-  if (process.env.GITHUB_OUTPUT) {
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `numero=${numeroVideo + 1}\narchivo=${archivo}\n`);
+  const salidas = [`numero=${numeroVideo + 1}`, `archivo=${archivo}`];
+
+  if (hayVoz()) {
+    const restante = await saldo();
+    const porVideo = Math.max(usados(), CARACTERES_POR_VIDEO);
+    if (restante === null) {
+      console.log('No se pudo consultar el saldo de ElevenLabs (la clave necesita el permiso "User: Read").');
+    } else {
+      const videos = Math.floor(restante / porVideo);
+      console.log(`ElevenLabs: este vídeo usó ${usados()} caracteres; quedan ${restante} (unos ${videos} vídeos).`);
+      if (videos < VIDEOS_MINIMOS) {
+        salidas.push(`aviso=Quedan ${restante} caracteres en ElevenLabs, suficientes para unos ${videos} vídeos. Recarga o cambia de plan en https://elevenlabs.io/app/subscription`);
+      }
+    }
   }
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, salidas.join('\n') + '\n');
 
   if (process.env.DRY_RUN === '1') {
     console.log('Modo prueba: no se sube ni se avanza el estado.');
