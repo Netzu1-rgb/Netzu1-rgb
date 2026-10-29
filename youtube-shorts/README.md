@@ -1,6 +1,14 @@
 # Shorts automáticos de preguntas (quiz)
 
-Cada día genera un Short vertical de unos 35-45 segundos con un reto de **3 preguntas** de cultura general, narrado con voz de **ElevenLabs**, y lo sube a YouTube.
+Cada día genera un Short vertical de unos 35-45 segundos con un reto de **3 preguntas** de cultura general, narrado con voz de **ElevenLabs**, y lo publica en la sección **Releases** del repo para que lo descargues y lo subas tú a YouTube.
+
+## Uso diario (desde el móvil)
+
+1. Abre `https://github.com/Netzu1-rgb/Netzu1-rgb/releases` en Safari.
+2. Entra en el reto más reciente y toca el archivo `.mp4` para descargarlo. Guárdalo en Fotos o en Archivos.
+3. En la app de YouTube, pulsa **+ → Subir un vídeo**, elige el MP4 y copia el título y la descripción que aparecen en el Release.
+
+Se crea un vídeo nuevo cada día a las 17:23 UTC. Para crear uno al momento, ve a **Actions → Crear Short diario → Run workflow**.
 
 ![Ejemplo](ejemplo.png)
 
@@ -39,12 +47,14 @@ Sin `ELEVENLABS_API_KEY`, el vídeo se genera igual pero sin narración, solo co
 ```bash
 cd youtube-shorts
 npm install
-DRY_RUN=1 node publicar.js   # genera out/short-N.mp4 sin subirlo
+DRY_RUN=1 node publicar.js   # genera out/reto-N.mp4 y out/texto.md sin avanzar el estado
 node render.js 2             # renderiza el reto 3 (preguntas 7 a 9)
 ELEVENLABS_API_KEY=xxx DRY_RUN=1 node publicar.js   # igual, con voz
 ```
 
-## Configurar la subida a YouTube
+## (Opcional) Subida automática a YouTube
+
+Si algún día quieres que se suba solo, crea los secretos `YT_CLIENT_ID`, `YT_CLIENT_SECRET` y `YT_REFRESH_TOKEN` siguiendo estos pasos. Sin ellos, el vídeo solo se publica en Releases.
 
 1. En [Google Cloud Console](https://console.cloud.google.com/), crea un proyecto y activa **YouTube Data API v3**.
 2. Configura la **pantalla de consentimiento OAuth** de tipo externo y añade tu cuenta como usuario de prueba.
@@ -55,7 +65,7 @@ ELEVENLABS_API_KEY=xxx DRY_RUN=1 node publicar.js   # igual, con voz
    ```
    Abre la URL que aparece, inicia sesión con la cuenta del canal y copia el `YT_REFRESH_TOKEN`.
 5. En GitHub, ve a **Settings → Secrets and variables → Actions** y crea estos secretos: `YT_CLIENT_ID`, `YT_CLIENT_SECRET` y `YT_REFRESH_TOKEN`.
-6. Para probarlo, ve a la pestaña **Actions**, elige "Publicar Short diario" y pulsa **Run workflow**.
+6. Para probarlo, ve a la pestaña **Actions**, elige "Crear Short diario" y pulsa **Run workflow**.
 
 ### Avisos importantes
 

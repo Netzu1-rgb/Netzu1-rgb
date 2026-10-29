@@ -105,6 +105,7 @@ async function renderizar(preguntas, numeroVideo, salida) {
   const lista = escenas(preguntas, numeroVideo);
   const efectos = crearEfectos(tmp);
   const conVoz = hayVoz();
+  if (!conVoz && process.env.GITHUB_ACTIONS) throw new Error('Falta el secreto ELEVENLABS_API_KEY en GitHub.');
   if (!conVoz) console.warn('Sin ELEVENLABS_API_KEY: el vídeo saldrá sin narración, solo con efectos.');
 
   // 1. Narración y duración de cada escena.
