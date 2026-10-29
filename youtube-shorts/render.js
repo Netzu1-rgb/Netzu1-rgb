@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { hayVoz, narrar, duracion, crearEfectos, pistaEscena } = require('./voz');
+const { hayVoz, narrarPartes, duracion, crearEfectos, pistaEscena } = require('./voz');
 
 const ANCHO = 1080;
 const ALTO = 1920;
@@ -55,12 +55,16 @@ function opciones(q, revelar) {
     .join('')}</div>`;
 }
 
-// Escenas del Short: {html, voz (texto a narrar), efecto ('tic'|'campana'), minimo (segundos)}.
+const fija = (texto) => ({ texto, fija: true });
+const variable = (texto) => ({ texto, fija: false });
+
+// Escenas del Short: {html, voz ([{texto, fija}] a narrar), efecto ('tic'|'campana'), minimo (segundos)}.
+// Las partes fijas se repiten en todos los vídeos y se graban una sola vez.
 function escenas(preguntas, numeroVideo) {
   const total = preguntas.length;
   const lista = [{
     minimo: 2.5,
-    voz: GANCHOS[numeroVideo % GANCHOS.length],
+    voz: [fija(GANCHOS[numeroVideo % GANCHOS.length])],
     html: pagina(`<div class="etiqueta">Reto #${numeroVideo + 1}</div>
       <div class="gancho">${total} preguntas.<br>¿Las aciertas todas?</div>`),
   }];
@@ -69,7 +73,7 @@ function escenas(preguntas, numeroVideo) {
     const etiqueta = `<div class="etiqueta">Pregunta ${n + 1}/${total}</div>`;
     lista.push({
       minimo: 2,
-      voz: `${ORDINALES[n] || 'Siguiente'} pregunta. ${q.pregunta}`,
+      voz: [fija(`${ORDINALES[n] || 'Siguiente'} pregunta.`), variable(q.pregunta)],
       html: pagina(`${etiqueta}<div class="pregunta">${escapar(q.pregunta)}</div>${opciones(q, false)}
         <div class="cuenta">&nbsp;</div><div class="barra"><div style="width:100%"></div></div>`),
     });
@@ -85,7 +89,7 @@ function escenas(preguntas, numeroVideo) {
     lista.push({
       minimo: 3,
       efecto: 'campana',
-      voz: `¡La respuesta es ${q.opciones[q.correcta]}! ${q.dato}`,
+      voz: [variable(`¡La respuesta es ${q.opciones[q.correcta]}! ${q.dato}`)],
       html: pagina(`${etiqueta}<div class="pregunta">${escapar(q.pregunta)}</div>${opciones(q, true)}
         <div class="dato">${escapar(q.dato)}</div>`),
     });
@@ -93,7 +97,7 @@ function escenas(preguntas, numeroVideo) {
 
   lista.push({
     minimo: 2.5,
-    voz: '¿Cuántas acertaste? ¡Dímelo en los comentarios y sígueme para un reto nuevo cada día!',
+    voz: [fija('¿Cuántas acertaste? ¡Dímelo en los comentarios y sígueme para un reto nuevo cada día!')],
     html: pagina(`<div class="gancho">¿Cuántas acertaste?</div>
       <div class="cta">Escríbelo en comentarios<br>y sígueme para más retos</div>`),
   });
@@ -113,7 +117,7 @@ async function renderizar(preguntas, numeroVideo, salida) {
     const e = lista[i];
     e.segundos = e.minimo;
     if (conVoz && e.voz) {
-      e.archivoVoz = await narrar(e.voz, path.join(tmp, `voz${i}.mp3`));
+      e.archivoVoz = await narrarPartes(e.voz, path.join(tmp, `voz${i}.mp3`));
       e.segundos = Math.max(e.minimo, Math.ceil((duracion(e.archivoVoz) + 0.6) * 10) / 10);
     }
   }
