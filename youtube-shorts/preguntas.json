@@ -1,0 +1,22 @@
+[
+  {"pregunta": "¿Cuál es el planeta más caliente del sistema solar?", "opciones": ["Mercurio", "Venus", "Marte", "Júpiter"], "correcta": 1, "dato": "Su atmósfera atrapa el calor: unos 465 °C en la superficie."},
+  {"pregunta": "¿Cuántos corazones tiene un pulpo?", "opciones": ["1", "2", "3", "4"], "correcta": 2, "dato": "Dos bombean sangre a las branquias y uno al resto del cuerpo."},
+  {"pregunta": "¿Qué país tiene más husos horarios?", "opciones": ["Rusia", "Estados Unidos", "Francia", "China"], "correcta": 2, "dato": "Gracias a sus territorios de ultramar, Francia tiene 12."},
+  {"pregunta": "¿Cuál es el único mamífero que puede volar de verdad?", "opciones": ["Ardilla voladora", "Murciélago", "Colugo", "Petauro"], "correcta": 1, "dato": "Los demás solo planean; el murciélago bate sus alas."},
+  {"pregunta": "¿Cuántos huesos tiene un adulto?", "opciones": ["186", "206", "226", "256"], "correcta": 1, "dato": "Al nacer tenemos unos 300: muchos se fusionan al crecer."},
+  {"pregunta": "¿Cuál es el océano más grande del mundo?", "opciones": ["Atlántico", "Índico", "Pacífico", "Ártico"], "correcta": 2, "dato": "Es más grande que toda la tierra firme del planeta junta."},
+  {"pregunta": "¿En qué país está Machu Picchu?", "opciones": ["Bolivia", "Perú", "Chile", "Ecuador"], "correcta": 1, "dato": "La ciudadela inca fue construida en el siglo XV."},
+  {"pregunta": "¿Qué gas absorben las plantas para hacer la fotosíntesis?", "opciones": ["Oxígeno", "Dióxido de carbono", "Nitrógeno", "Helio"], "correcta": 1, "dato": "Lo convierten en azúcar y liberan oxígeno."},
+  {"pregunta": "¿Cuál es el río más caudaloso del mundo?", "opciones": ["Nilo", "Amazonas", "Yangtsé", "Misisipi"], "correcta": 1, "dato": "Lleva más agua que los siguientes siete ríos juntos."},
+  {"pregunta": "¿Cuántas patas tiene una araña?", "opciones": ["6", "8", "10", "12"], "correcta": 1, "dato": "Por eso no es un insecto: los insectos tienen 6."},
+  {"pregunta": "¿Qué idioma tiene más hablantes nativos?", "opciones": ["Inglés", "Español", "Chino mandarín", "Hindi"], "correcta": 2, "dato": "El español ocupa el segundo puesto."},
+  {"pregunta": "¿Cuál es el país más grande del mundo?", "opciones": ["Canadá", "China", "Rusia", "Estados Unidos"], "correcta": 2, "dato": "Ocupa más de 17 millones de km²."},
+  {"pregunta": "¿De qué color es la sangre de un pulpo?", "opciones": ["Roja", "Azul", "Verde", "Transparente"], "correcta": 1, "dato": "Usa cobre en lugar de hierro para transportar oxígeno."},
+  {"pregunta": "¿Qué planeta tiene más lunas conocidas?", "opciones": ["Júpiter", "Saturno", "Urano", "Neptuno"], "correcta": 1, "dato": "Se le conocen más de 270 lunas."},
+  {"pregunta": "¿Cuál es el animal terrestre más rápido?", "opciones": ["León", "Guepardo", "Antílope", "Caballo"], "correcta": 1, "dato": "Supera los 100 km/h en carreras cortas."},
+  {"pregunta": "¿En qué año pisó el ser humano la Luna por primera vez?", "opciones": ["1965", "1969", "1972", "1975"], "correcta": 1, "dato": "Neil Armstrong lo hizo el 20 de julio con el Apolo 11."},
+  {"pregunta": "¿Cuál es la capital de Australia?", "opciones": ["Sídney", "Melbourne", "Canberra", "Perth"], "correcta": 2, "dato": "Se construyó como punto medio entre Sídney y Melbourne."},
+  {"pregunta": "¿Qué órgano produce la insulina?", "opciones": ["Hígado", "Páncreas", "Riñón", "Estómago"], "correcta": 1, "dato": "La insulina regula el azúcar en la sangre."},
+  {"pregunta": "¿Qué elemento químico tiene el símbolo Au?", "opciones": ["Plata", "Oro", "Aluminio", "Argón"], "correcta": 1, "dato": "Viene del latín aurum."},
+  {"pregunta": "¿Cuánto tarda la luz del Sol en llegar a la Tierra?", "opciones": ["1 segundo", "8 minutos", "1 hora", "1 día"], "correcta": 1, "dato": "Si el Sol se apagara, tardaríamos 8 minutos en notarlo."}
+]
