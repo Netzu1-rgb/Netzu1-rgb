@@ -8,5 +8,6 @@ Documentación para crear la publicidad de **NetAI** (plataforma de bienestar y 
 - [`netai-fit.md`](netai-fit.md): planificación de NetAI Fit, la app de gimnasio vinculada a NetAI: funciones, vínculo, beneficios cruzados y web en dos ventanas.
 - [`rea-y-opciones-de-app.md`](rea-y-opciones-de-app.md): análisis de REA y comparación de opciones para construir la app (Capacitor, Expo, Flutter).
 - [`skill-hostinger-web.md`](skill-hostinger-web.md): análisis de la skill de webs estáticas para Hostinger y su encaje con NetAI.
+- [`../netai-web/`](../netai-web/README.md): la web estática con las dos apps para instalar.
 
 El repo ya incluye `youtube-shorts/`, una automatización de Shorts diarios. Se puede reutilizar su pipeline (`render.js`, `voz.js`, `upload.js`) para los vídeos de NetAI.
