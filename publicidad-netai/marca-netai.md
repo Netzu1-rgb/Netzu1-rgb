@@ -24,15 +24,15 @@ Tiene una landing pública (`/`), un acceso familiar por contraseña (`/login`) 
 | Idiomas | La app incluye selector de idiomas (`src/i18n/`), útil para anuncios en varios mercados |
 
 ## Precios (para anuncios con oferta)
-Los precios salen de `PricingSection.jsx`. Compruébalos antes de publicar, porque pueden haber cambiado.
+Planes vigentes en la web (`netai-web/`), en dólares estadounidenses:
 
-| Plan | Precio |
-|---|---|
-| Mensual | $4.990 ARS/mes (aprox. 4,99 USD) |
-| Semestral (el más elegido, ahorro 25 %) | $3.740 ARS/mes, facturado cada 6 meses ($22.440 ARS) |
-| Familiar (hasta 5 personas) | $8.990 ARS/mes |
+| Plan | Precio | Incluye |
+|---|---|---|
+| Gratis | US$0, para siempre | Registro manual ilimitado, sin análisis por foto |
+| Plus | US$0,99/mes | 60 análisis de platos por foto con IA al mes |
+| Pro (recomendado) | US$1,99/mes | 150 análisis de platos por foto con IA al mes (unos 5 platos al día) |
 
-Medios de pago: tarjetas, Mercado Pago, transferencia y cripto (USDT).
+Medios de pago: tarjetas, Mercado Pago, transferencia y cripto (USDT). La landing de Next.js todavía muestra los precios anteriores en pesos (`PricingSection.jsx`).
 
 ## Público
 - Personas que quieren comer mejor sin dietas restrictivas ni culpa.

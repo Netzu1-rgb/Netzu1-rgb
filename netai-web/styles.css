@@ -373,6 +373,9 @@ body.menu-open { overflow: hidden; }
 .plan-price span { font-family: var(--font-display); font-size: 48px; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .plan-price small { font-size: 14px; color: var(--ink-mute); }
 .plan-note { margin: 10px 0 22px; padding-bottom: 22px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-mute); }
+.plan-quota { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; padding: 10px 14px; border-radius: 12px; background: var(--sage-l); color: var(--sage-d); font-size: 14px; font-weight: 600; }
+.plan-quota .ic { width: 18px; height: 18px; }
+.plan-quota-off { background: var(--bg-2); color: var(--ink-mute); }
 .plans-foot { margin-top: 30px; display: flex; gap: 10px; align-items: center; justify-content: center; text-align: center; font-size: 15px; color: var(--ink-soft); }
 .plans-foot .ic { color: #7b6050; }
 

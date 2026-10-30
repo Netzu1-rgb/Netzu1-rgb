@@ -28,7 +28,7 @@ Una web estática no puede guardar correos por sí sola, por eso la lista de esp
 5. **Un día con las dos apps**: efecto firma. El teléfono queda fijo y cambia de pantalla a medida que bajás por los pasos.
 6. Mejor juntas (bento con el pack de lanzamiento).
 7. Filosofía: comparación con las apps de dieta tradicionales.
-8. Precios (los mismos de la landing de Next.js; revisalos antes de publicar).
+8. Precios en US$: Gratis (registro ilimitado, sin fotos), Plus US$0,99/mes (60 fotos) y Pro US$1,99/mes (150 fotos).
 9. Cómo instalar, con pestañas Android / iPhone.
 10. Preguntas frecuentes.
 11. Lista de espera y pie con aviso de salud.

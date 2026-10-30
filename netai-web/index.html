@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter:wght@300;400;500;600&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=20261030" />
+  <link rel="stylesheet" href="styles.css?v=20261031" />
   <script>document.documentElement.className = "js";</script>
 </head>
 <body>
@@ -32,6 +32,7 @@
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3c0 4.5 3.5 8.5 8.5 9-5 .5-8.5 4.5-8.5 9-.5-4.5-4-8.5-8.5-9 4.5-.5 8.5-4.5 8.5-9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
     <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 18h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 21H20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A2 2 0 0 1 6 6.5h2l1.5-2h5l1.5 2h2a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </svg>
@@ -363,38 +364,46 @@
         <header class="section-head">
           <p class="kicker reveal">05 · Precios</p>
           <h2 class="reveal">Planes claros, <em>sin letra chica.</em></h2>
-          <p class="sub reveal">Precios en pesos argentinos. Pagá con tarjeta, Mercado Pago, transferencia o USDT.</p>
+          <p class="sub reveal">Empezá gratis, sin límite de registros. Si querés que la IA reconozca tus platos por foto, elegí Plus o Pro. Precios en dólares estadounidenses. Pagá con tarjeta, Mercado Pago, transferencia o USDT.</p>
         </header>
         <div class="plans">
           <article class="plan reveal">
-            <p class="plan-name">Mensual</p>
-            <p class="plan-price"><span>$4.990</span> <small>ARS / mes</small></p>
-            <p class="plan-note">Para empezar sin compromiso.</p>
+            <p class="plan-name">Gratis</p>
+            <p class="plan-price"><span>US$0</span> <small>para siempre</small></p>
+            <p class="plan-note">Para empezar a cuidarte sin pagar nada.</p>
+            <p class="plan-quota plan-quota-off"><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>Sin análisis por foto</p>
             <ul class="ticks">
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Registro consciente y Modo Intuitivo</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Inspiración de comidas</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>App instalable y sin conexión</li>
-            </ul>
-          </article>
-          <article class="plan plan-featured reveal">
-            <p class="plan-badge">Más elegido · ahorrás 25 %</p>
-            <p class="plan-name">Semestral</p>
-            <p class="plan-price"><span>$3.740</span> <small>ARS / mes</small></p>
-            <p class="plan-note">Se factura cada 6 meses ($22.440 ARS).</p>
-            <ul class="ticks">
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Todo lo del plan mensual</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Módulos completos de educación GAPA</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Hambre física y emocional, paso a paso</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Registro manual ilimitado de comidas</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Modo Intuitivo y Método del Plato</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Biblioteca de alimentos frecuentes y favoritos</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Horarios de comidas personalizables</li>
             </ul>
           </article>
           <article class="plan reveal">
-            <p class="plan-name">Familiar</p>
-            <p class="plan-price"><span>$8.990</span> <small>ARS / mes</small></p>
-            <p class="plan-note">Hasta 5 personas en casa.</p>
+            <p class="plan-name">Plus</p>
+            <p class="plan-price"><span>US$0,99</span> <small>/ mes</small></p>
+            <p class="plan-note">Registrá tus platos con una foto.</p>
+            <p class="plan-quota"><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>60 fotos al mes</p>
             <ul class="ticks">
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Acceso independiente para cada persona</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Datos privados en cada celular</li>
-              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Ayuda para instalar la app</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Todo lo del plan Gratis</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>60 análisis de platos por foto con IA</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Estimación automática de porciones</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Historial completo y exportable</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Soporte prioritario y sin anuncios</li>
+            </ul>
+          </article>
+          <article class="plan plan-featured reveal">
+            <p class="plan-badge">Recomendado</p>
+            <p class="plan-name">Pro</p>
+            <p class="plan-price"><span>US$1,99</span> <small>/ mes</small></p>
+            <p class="plan-note">Para registrar casi todo con una foto.</p>
+            <p class="plan-quota"><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>150 fotos al mes</p>
+            <ul class="ticks">
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Todo lo del plan Plus</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>150 análisis de platos por foto con IA (unos 5 al día)</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Tendencias de tus hábitos y comparación entre períodos</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Sugerencias de comidas con IA</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Informe mensual de hábitos</li>
             </ul>
           </article>
         </div>
@@ -525,7 +534,7 @@
     </div>
   </footer>
 
-  <script defer src="lib/manifest.js?v=20261030"></script>
-  <script defer src="main.js?v=20261030"></script>
+  <script defer src="lib/manifest.js?v=20261031"></script>
+  <script defer src="main.js?v=20261031"></script>
 </body>
 </html>
