@@ -2,221 +2,493 @@
 <html lang="es" class="no-js">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NetAI y NetAI Fit · Comer y moverte sin culpa</title>
-  <meta name="description" content="NetAI es nutrición consciente sin dietas restrictivas. NetAI Fit suma el movimiento. Instalá las dos apps en tu celular." />
-  <meta name="theme-color" content="#3e6d5b" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>NetAI y NetAI Fit · Comer bien y moverte, sin culpa</title>
+  <meta name="description" content="NetAI es nutrición consciente sin dietas restrictivas. NetAI Fit suma el movimiento, a tu ritmo. Dos apps que se hablan, con tus datos en tu celular." />
+  <meta name="theme-color" content="#2a463c" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_AR" />
+  <meta property="og:title" content="NetAI y NetAI Fit · Comer bien y moverte, sin culpa" />
+  <meta property="og:description" content="Nutrición consciente y movimiento amable, en dos apps que se hablan." />
   <link rel="icon" type="image/svg+xml" href="assets/img/netai-icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=20261029" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="styles.css?v=20261030" />
   <script>document.documentElement.className = "js";</script>
 </head>
 <body>
-  <a class="skip" href="#apps">Saltar al contenido</a>
+  <!-- Iconos (trazos propios, estilo lineal) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15M5 19l7-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h3l2.5-6 4 12 3-8 1.5 2H21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 19.5c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M16 5.6a3.2 3.2 0 0 1 0 6M17.5 14.7c1.6.6 2.7 2.2 3 4.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3c0 4.5 3.5 8.5 8.5 9-5 .5-8.5 4.5-8.5 9-.5-4.5-4-8.5-8.5-9 4.5-.5 8.5-4.5 8.5-9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 18h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 21H20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+  <div class="progress" aria-hidden="true"><span data-progress></span></div>
 
   <header class="nav" data-nav>
     <a class="brand" href="#top" aria-label="NetAI, inicio">
-      <img src="assets/img/netai-icon.svg" alt="" width="28" height="28" />
+      <img src="assets/img/netai-icon.svg" alt="" width="30" height="30" />
       <span>NetAI</span>
     </a>
-    <nav aria-label="Principal">
+    <nav class="nav-links" aria-label="Principal">
       <a href="#apps">Las apps</a>
-      <a href="#instalar">Cómo instalar</a>
-      <a href="#juntas">Juntas</a>
-      <a href="#avisame" class="nav-cta">Avisame</a>
+      <a href="#un-dia">Un día</a>
+      <a href="#precios">Precios</a>
+      <a href="#instalar">Instalar</a>
+      <a href="#preguntas">Preguntas</a>
     </nav>
+    <a href="#avisame" class="btn btn-sm btn-primary nav-cta" data-magnetic>Unirme a la beta</a>
+    <button class="burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu" data-burger>
+      <span></span><span></span>
+    </button>
   </header>
+
+  <div class="menu" id="menu" data-menu hidden>
+    <nav aria-label="Menú móvil">
+      <a href="#apps">Las apps</a>
+      <a href="#un-dia">Un día con NetAI</a>
+      <a href="#precios">Precios</a>
+      <a href="#instalar">Cómo instalar</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="#avisame" class="menu-cta">Unirme a la beta</a>
+    </nav>
+  </div>
 
   <main id="top">
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero-text reveal">
-        <p class="kicker">NetAI · NetAI Fit</p>
-        <h1>Comer bien y moverte,<br /><em>sin culpa.</em></h1>
-        <p class="lede">Dos apps que se llevan bien. NetAI te acompaña con la comida, sin dietas restrictivas ni números que presionan. NetAI Fit suma el movimiento, a tu ritmo.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="#apps">Ver las dos apps</a>
-          <a class="btn btn-ghost" href="#instalar">Cómo instalar</a>
-        </div>
-        <ul class="trust" aria-label="Compromisos">
-          <li>Sin culpa</li>
-          <li>Sin contar si no querés</li>
-          <li>Tus datos, en tu celular</li>
-        </ul>
-      </div>
+    <section class="hero" data-hero>
+      <div class="mesh" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
 
-      <div class="hero-phones reveal" aria-hidden="true">
-        <div class="phone phone-a">
-          <div class="screen">
-            <p class="s-kicker">NetAI</p>
-            <p class="s-title">Hola, Familia</p>
-            <span class="pill pill-lav">Modo Intuitivo</span>
-            <div class="card">
-              <p class="s-label">Hidratación</p>
-              <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
-              <p class="s-small">5 de 8 vasos</p>
-            </div>
-            <div class="card">
-              <p class="s-label">Tu plato de hoy</p>
-              <div class="plate"><span class="p50">Vegetales</span><span class="p25">Proteínas</span><span class="p25b">Cereales</span></div>
-            </div>
-            <div class="card">
-              <p class="s-label">¿Cómo te sentís después de comer?</p>
-              <div class="scale"><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
-            </div>
+      <div class="hero-inner">
+        <div class="hero-text">
+          <p class="eyebrow reveal"><span class="dot" aria-hidden="true"></span>Nuevo · NetAI Fit en camino</p>
+          <h1 data-split>Comer bien y moverte,<br /><em>sin culpa.</em></h1>
+          <p class="lede reveal">Dos apps que se hablan. <strong>NetAI</strong> te acompaña con la comida, sin dietas restrictivas ni números que presionan. <strong>NetAI Fit</strong> suma el movimiento, a tu ritmo.</p>
+          <div class="cta-row reveal">
+            <a class="btn btn-primary btn-lg" href="#apps" data-magnetic>Conocer las apps <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-ghost btn-lg" href="#un-dia">Ver cómo funciona</a>
           </div>
+          <ul class="trust reveal" aria-label="Compromisos">
+            <li><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>Enfoque neutral al peso</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>Tus datos, en tu celular</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg>Basada en guías GAPA</li>
+          </ul>
         </div>
-        <div class="phone phone-b">
-          <div class="screen screen-fit">
-            <p class="s-kicker">NetAI Fit · vista previa</p>
-            <p class="s-title">Hoy: fuerza suave</p>
-            <span class="pill pill-sand">Día de entreno</span>
-            <div class="card">
-              <p class="s-label">Rutina de 25 min</p>
-              <ul class="s-list"><li>Sentadilla</li><li>Remo con banda</li><li>Plancha</li></ul>
+
+        <div class="hero-visual reveal" aria-hidden="true">
+          <div class="phones" data-parallax>
+            <div class="phone phone-a">
+              <div class="notch"></div>
+              <div class="screen">
+                <div class="s-top"><span class="s-kicker">NetAI</span><span class="s-time">09:41</span></div>
+                <p class="s-title">Hola, Familia</p>
+                <span class="pill pill-lav">Modo Intuitivo</span>
+                <div class="card">
+                  <p class="s-label">Hidratación</p>
+                  <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+                </div>
+                <div class="card">
+                  <p class="s-label">Tu plato de hoy</p>
+                  <div class="plate"><span class="p50">Vegetales</span><span class="p25">Proteínas</span><span class="p25b">Cereales</span></div>
+                </div>
+                <div class="card">
+                  <p class="s-label">¿Cómo te sentís después de comer?</p>
+                  <div class="scale"><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+                </div>
+              </div>
             </div>
-            <div class="card">
-              <p class="s-label">Esfuerzo percibido</p>
-              <div class="scale scale-sand"><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+            <div class="phone phone-b">
+              <div class="notch"></div>
+              <div class="screen screen-fit">
+                <div class="s-top"><span class="s-kicker s-kicker-fit">NetAI Fit</span><span class="s-time">18:02</span></div>
+                <p class="s-title">Fuerza suave</p>
+                <span class="pill pill-sand">Día de entreno</span>
+                <div class="card">
+                  <p class="s-label">Rutina · 25 min</p>
+                  <ul class="s-list"><li><b>Sentadilla</b><em>3 × 10</em></li><li><b>Remo con banda</b><em>3 × 12</em></li><li><b>Plancha</b><em>3 × 30 s</em></li></ul>
+                </div>
+                <div class="card">
+                  <p class="s-label">Esfuerzo percibido</p>
+                  <div class="scale scale-sand"><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+                </div>
+              </div>
             </div>
-            <div class="card card-link">
-              <p class="s-label">Conectado con NetAI</p>
-              <p class="s-small">Hoy sumá un vaso extra de agua.</p>
-            </div>
+            <div class="chip chip-1"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg>Hoy sumá un vaso extra</div>
+            <div class="chip chip-2"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg>Receta nueva desbloqueada</div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- CINTA -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Sin culpa</span><span>Modo Intuitivo</span><span>Método del Plato</span><span>Guías GAPA</span><span>Fuerza amable</span><span>Hambre y saciedad</span><span>Datos privados</span><span>Para toda la familia</span>
+        <span>Sin culpa</span><span>Modo Intuitivo</span><span>Método del Plato</span><span>Guías GAPA</span><span>Fuerza amable</span><span>Hambre y saciedad</span><span>Datos privados</span><span>Para toda la familia</span>
+      </div>
+    </div>
+
     <!-- LAS APPS -->
     <section class="section" id="apps">
-      <div class="section-head reveal">
-        <p class="kicker">Elegí por dónde empezar</p>
-        <h2>Dos apps, <em>un mismo cuidado.</em></h2>
-      </div>
+      <span id="contenido"></span>
+      <header class="section-head">
+        <p class="kicker reveal">01 · Las apps</p>
+        <h2 class="reveal">Dos apps, <em>un mismo cuidado.</em></h2>
+        <p class="sub reveal">Usalas por separado o juntas. Cuando conviven en tu celular, cada una aprende de la otra.</p>
+      </header>
 
       <div class="app-grid">
         <article class="app-card reveal">
-          <img class="app-icon" src="assets/img/netai-icon.svg" alt="" width="64" height="64" />
+          <div class="app-top">
+            <img class="app-icon" src="assets/img/netai-icon.svg" alt="" width="68" height="68" />
+            <span class="status status-live">Disponible como app web</span>
+          </div>
           <h3>NetAI</h3>
           <p class="tag">Nutrición consciente</p>
-          <p>Registro flexible sin números rojos, Modo Intuitivo para apagar las cifras, Método del Plato y educación basada en las guías alimentarias argentinas (GAPA).</p>
+          <p class="app-desc">Registro flexible sin números rojos, Modo Intuitivo para apagar las cifras, Método del Plato y educación basada en las Guías Alimentarias para la Población Argentina.</p>
           <ul class="ticks">
-            <li>Instalable en Android e iPhone, sin tienda</li>
-            <li>Funciona sin conexión</li>
-            <li>Tus registros se quedan en tu teléfono</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Instalable en Android e iPhone, sin tienda</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Funciona sin conexión</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Escala de hambre y saciedad del 1 al 10</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Tus registros se quedan en tu teléfono</li>
           </ul>
           <div class="card-cta">
             <a class="btn btn-primary is-disabled" href="#instalar" data-app-link="netai" aria-disabled="true">Próximamente</a>
-            <a class="link" href="#instalar">Cómo se instala</a>
+            <a class="link" href="#instalar">Cómo se instala <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </div>
         </article>
 
         <article class="app-card app-card-fit reveal">
-          <div class="app-icon app-icon-fit" aria-hidden="true">Fit</div>
+          <div class="app-top">
+            <img class="app-icon" src="assets/img/netai-fit-icon.svg" alt="" width="68" height="68" />
+            <span class="status status-soon">Beta cerrada · en camino</span>
+          </div>
           <h3>NetAI Fit</h3>
-          <p class="tag tag-soon">En camino · beta cerrada</p>
-          <p>Rutinas por objetivo, registro de entrenos y progreso por constancia, no por kilos. Se conecta con NetAI: los días de entreno, tus comidas se ajustan.</p>
-          <ul class="ticks">
-            <li>Fuerza, resistencia, movilidad o moverte más</li>
-            <li>Sin metas de peso ni medidas</li>
-            <li>Pensada para usarse junto a NetAI</li>
+          <p class="tag tag-fit">Movimiento amable</p>
+          <p class="app-desc">Rutinas por objetivo, registro de entrenos y progreso por constancia, no por kilos. Los días que entrenás, NetAI ajusta tus sugerencias de comida.</p>
+          <ul class="ticks ticks-fit">
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Fuerza, resistencia, movilidad o moverte más</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Sin metas de peso ni medidas</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Escala de esfuerzo percibido</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Avisos de descanso, no de culpa</li>
           </ul>
           <div class="card-cta">
-            <a class="btn btn-primary is-disabled" href="#avisame" data-app-link="fit" aria-disabled="true">Próximamente</a>
-            <a class="link" href="#avisame">Quiero entrar en la beta</a>
+            <a class="btn btn-fit is-disabled" href="#avisame" data-app-link="fit" aria-disabled="true">Próximamente</a>
+            <a class="link link-fit" href="#avisame">Quiero entrar en la beta <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </div>
         </article>
       </div>
 
       <div class="stores reveal" aria-label="Tiendas de aplicaciones">
-        <p class="stores-label">También en las tiendas, más adelante</p>
+        <p class="stores-label">Muy pronto también en las tiendas</p>
         <div class="store-row">
-          <a class="store is-disabled" href="#avisame" data-store="appStore" aria-disabled="true"><small>Próximamente en</small><strong>App Store</strong></a>
-          <a class="store is-disabled" href="#avisame" data-store="playStore" aria-disabled="true"><small>Próximamente en</small><strong>Google Play</strong></a>
+          <a class="store is-disabled" href="#avisame" data-store="appStore" aria-disabled="true"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span><small>Próximamente en</small><strong>App Store</strong></span></a>
+          <a class="store is-disabled" href="#avisame" data-store="playStore" aria-disabled="true"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span><small>Próximamente en</small><strong>Google Play</strong></span></a>
         </div>
       </div>
     </section>
 
-    <!-- CÓMO INSTALAR -->
-    <section class="section section-sand" id="instalar">
-      <div class="section-head reveal">
-        <p class="kicker">En un minuto, sin tienda</p>
-        <h2>Cómo instalar <em>en tu celular.</em></h2>
-        <p class="sub">NetAI se instala desde el navegador y queda como una app más en tu pantalla de inicio.</p>
+    <!-- CIFRAS -->
+    <section class="stats" aria-label="NetAI en cifras">
+      <div class="stat reveal"><p class="num"><span data-count="8">8</span></p><p class="stat-label">vasos de agua al día como guía, según GAPA</p></div>
+      <div class="stat reveal"><p class="num"><span data-count="10">10</span></p><p class="stat-label">niveles en la escala de hambre y saciedad</p></div>
+      <div class="stat reveal"><p class="num"><span data-count="5">5</span></p><p class="stat-label">personas en el plan familiar, cada una con sus datos</p></div>
+      <div class="stat reveal"><p class="num"><span data-count="100">100</span>%</p><p class="stat-label">de tus registros guardados en tu teléfono</p></div>
+    </section>
+
+    <!-- UN DÍA (narrativa con teléfono fijo) -->
+    <section class="section story" id="un-dia">
+      <header class="section-head">
+        <p class="kicker reveal">02 · Un día con las dos apps</p>
+        <h2 class="reveal">Así se acompañan, <em>de la mañana a la noche.</em></h2>
+      </header>
+
+      <div class="story-grid">
+        <div class="story-figure" aria-hidden="true">
+          <div class="phone phone-story">
+            <div class="notch"></div>
+            <div class="screen story-screens">
+              <div class="sc is-on" data-screen="0">
+                <div class="s-top"><span class="s-kicker">NetAI</span><span class="s-time">08:10</span></div>
+                <p class="s-title">Desayuno</p>
+                <div class="card"><p class="s-label">Tu plato</p><div class="plate"><span class="p50">Fruta y avena</span><span class="p25">Yogur</span><span class="p25b">Semillas</span></div></div>
+                <div class="card"><p class="s-label">Hambre antes de comer</p><div class="scale"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+              </div>
+              <div class="sc" data-screen="1">
+                <div class="s-top"><span class="s-kicker">NetAI</span><span class="s-time">13:20</span></div>
+                <p class="s-title">Almuerzo</p>
+                <span class="pill pill-lav">Modo Intuitivo</span>
+                <div class="card"><p class="s-label">¿Cómo te sentís?</p><div class="moods"><span>Con energía</span><span class="on">Satisfecha/o</span><span>Muy lleno/a</span></div></div>
+                <div class="card"><p class="s-label">Grupos de hoy</p><div class="groups"><i class="g1"></i><i class="g2"></i><i class="g3"></i><i class="g4"></i></div></div>
+              </div>
+              <div class="sc sc-fit" data-screen="2">
+                <div class="s-top"><span class="s-kicker s-kicker-fit">NetAI Fit</span><span class="s-time">18:00</span></div>
+                <p class="s-title">Fuerza suave</p>
+                <span class="pill pill-sand">Día de entreno</span>
+                <div class="card"><p class="s-label">Rutina · 25 min</p><ul class="s-list"><li><b>Sentadilla</b><em>3 × 10</em></li><li><b>Remo con banda</b><em>3 × 12</em></li><li><b>Plancha</b><em>3 × 30 s</em></li></ul></div>
+                <div class="card"><p class="s-label">Esfuerzo percibido</p><div class="scale scale-sand"><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+              </div>
+              <div class="sc" data-screen="3">
+                <div class="s-top"><span class="s-kicker">NetAI</span><span class="s-time">20:45</span></div>
+                <p class="s-title">Cena</p>
+                <div class="card card-link"><p class="s-label">Entrenaste hoy</p><p class="s-small">Sumamos más proteína a tu plato y un vaso extra de agua.</p></div>
+                <div class="card"><p class="s-label">Hidratación</p><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+              </div>
+              <div class="sc" data-screen="4">
+                <div class="s-top"><span class="s-kicker">Tu semana</span><span class="s-time">Dom</span></div>
+                <p class="s-title">Una semana con calma</p>
+                <div class="card"><p class="s-label">Días que te cuidaste</p><div class="week"><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+                <div class="card card-link"><p class="s-small">Te moviste 3 días y comiste con atención casi todos. Sin rachas que se rompan: la semana que viene sigue siendo tuya.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ol class="story-steps">
+          <li class="step is-on" data-step="0">
+            <p class="step-time">08:10 · NetAI</p>
+            <h3>Empezás con un plato, no con una cuenta.</h3>
+            <p>Registrás el desayuno con el Método del Plato y anotás cuánta hambre tenías. Sin calorías a la vista si no querés verlas.</p>
+          </li>
+          <li class="step" data-step="1">
+            <p class="step-time">13:20 · NetAI</p>
+            <h3>Escuchás cómo te sienta lo que comés.</h3>
+            <p>Con el Modo Intuitivo, la app reemplaza los números por grupos de alimentos y una pregunta simple: ¿cómo te sentís?</p>
+          </li>
+          <li class="step" data-step="2">
+            <p class="step-time">18:00 · NetAI Fit</p>
+            <h3>Te movés a tu ritmo.</h3>
+            <p>Una rutina corta según tu objetivo, con una escala de esfuerzo para que el progreso sea tuyo, no un número en una balanza.</p>
+          </li>
+          <li class="step" data-step="3">
+            <p class="step-time">20:45 · NetAI</p>
+            <h3>La cena ya sabe que entrenaste.</h3>
+            <p>Fit le avisa a NetAI y tus sugerencias se ajustan: más proteína, otro vaso de agua. Nunca para compensar, solo para acompañar.</p>
+          </li>
+          <li class="step" data-step="4">
+            <p class="step-time">Domingo · Las dos</p>
+            <h3>Un resumen amable de tu semana.</h3>
+            <p>Lo que hiciste por vos, en las dos apps. Si un día no llegaste, no pasa nada: acá no hay rachas que se pierdan.</p>
+          </li>
+        </ol>
       </div>
+    </section>
+
+    <!-- MEJOR JUNTAS -->
+    <section class="section section-tint" id="juntas">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="kicker reveal">03 · Mejor juntas</p>
+          <h2 class="reveal">Una sola semana, <em>dos apps que se hablan.</em></h2>
+        </header>
+        <div class="bento">
+          <article class="bento-card b-a reveal">
+            <svg class="b-ic" aria-hidden="true"><use href="#i-calendar"/></svg>
+            <h3>Racha amable</h3>
+            <p>Cuenta los días en que hiciste algo por vos, en cualquiera de las dos apps. Si un día no llegás, no pasa nada.</p>
+          </article>
+          <article class="bento-card b-b reveal">
+            <svg class="b-ic" aria-hidden="true"><use href="#i-spark"/></svg>
+            <h3>Se desbloquean entre sí</h3>
+            <p>Registrar tus comidas abre rutinas nuevas en Fit. Entrenar abre recetas pensadas para esos días.</p>
+          </article>
+          <article class="bento-card b-c b-feature reveal">
+            <p class="b-kicker">Pack de lanzamiento</p>
+            <h3>Las dos apps, un solo plan.</h3>
+            <p>Quienes entren en la beta tendrán un descuento en el plan que incluye NetAI y NetAI Fit. <span data-beta-date>Fecha por confirmar.</span></p>
+            <a class="btn btn-light" href="#avisame">Reservar mi lugar <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </article>
+          <article class="bento-card b-d reveal">
+            <svg class="b-ic" aria-hidden="true"><use href="#i-move"/></svg>
+            <h3>Plan de la semana</h3>
+            <p>Entrenos y comidas en una sola vista, con el mismo objetivo para las dos.</p>
+          </article>
+          <article class="bento-card b-e reveal">
+            <svg class="b-ic" aria-hidden="true"><use href="#i-users"/></svg>
+            <h3>Con tu familia</h3>
+            <p>Hasta 5 personas en casa, cada una con sus datos privados.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILOSOFÍA -->
+    <section class="section" id="filosofia">
+      <header class="section-head">
+        <p class="kicker reveal">04 · Nuestra forma de ver la comida</p>
+        <h2 class="reveal">Lo que no vas a encontrar <em>en NetAI.</em></h2>
+      </header>
+      <div class="compare reveal">
+        <div class="compare-col compare-no">
+          <p class="compare-title">Apps de dieta tradicionales</p>
+          <ul>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg>Metas de “bajar de peso” y cuentas regresivas</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg>Alertas rojas cuando “te pasaste”</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg>Alimentos buenos y malos</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg>Ejercicio para “quemar lo que comiste”</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg>Rankings y rachas que se pierden</li>
+          </ul>
+        </div>
+        <div class="compare-col compare-yes">
+          <p class="compare-title"><img src="assets/img/netai-icon.svg" alt="" width="22" height="22" />NetAI y NetAI Fit</p>
+          <ul>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Bienestar diario, vitalidad y salud integral</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Rangos flexibles y colores serenos</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Consumo habitual y ocasional, sin culpa</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Moverte para sentirte bien, con días de descanso</li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Constancia que no se castiga</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRECIOS -->
+    <section class="section section-tint" id="precios">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="kicker reveal">05 · Precios</p>
+          <h2 class="reveal">Planes claros, <em>sin letra chica.</em></h2>
+          <p class="sub reveal">Precios en pesos argentinos. Pagá con tarjeta, Mercado Pago, transferencia o USDT.</p>
+        </header>
+        <div class="plans">
+          <article class="plan reveal">
+            <p class="plan-name">Mensual</p>
+            <p class="plan-price"><span>$4.990</span> <small>ARS / mes</small></p>
+            <p class="plan-note">Para empezar sin compromiso.</p>
+            <ul class="ticks">
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Registro consciente y Modo Intuitivo</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Inspiración de comidas</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>App instalable y sin conexión</li>
+            </ul>
+          </article>
+          <article class="plan plan-featured reveal">
+            <p class="plan-badge">Más elegido · ahorrás 25 %</p>
+            <p class="plan-name">Semestral</p>
+            <p class="plan-price"><span>$3.740</span> <small>ARS / mes</small></p>
+            <p class="plan-note">Se factura cada 6 meses ($22.440 ARS).</p>
+            <ul class="ticks">
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Todo lo del plan mensual</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Módulos completos de educación GAPA</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Hambre física y emocional, paso a paso</li>
+            </ul>
+          </article>
+          <article class="plan reveal">
+            <p class="plan-name">Familiar</p>
+            <p class="plan-price"><span>$8.990</span> <small>ARS / mes</small></p>
+            <p class="plan-note">Hasta 5 personas en casa.</p>
+            <ul class="ticks">
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Acceso independiente para cada persona</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Datos privados en cada celular</li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Ayuda para instalar la app</li>
+            </ul>
+          </article>
+        </div>
+        <p class="plans-foot reveal"><svg class="ic" aria-hidden="true"><use href="#i-move"/></svg>El pack con NetAI Fit se anuncia con la beta. Quienes se anoten antes tendrán precio de lanzamiento.</p>
+      </div>
+    </section>
+
+    <!-- CÓMO INSTALAR -->
+    <section class="section" id="instalar">
+      <header class="section-head">
+        <p class="kicker reveal">06 · Cómo instalar</p>
+        <h2 class="reveal">En un minuto, <em>sin pasar por la tienda.</em></h2>
+        <p class="sub reveal">NetAI se instala desde el navegador y queda como una app más en tu pantalla de inicio.</p>
+      </header>
 
       <div class="tabs reveal" role="tablist" aria-label="Sistema del celular">
-        <button role="tab" id="tab-android" aria-controls="panel-android" aria-selected="true" data-tab="android">Android</button>
-        <button role="tab" id="tab-ios" aria-controls="panel-ios" aria-selected="false" data-tab="ios">iPhone</button>
+        <button role="tab" id="tab-android" aria-controls="panel-android" aria-selected="true" data-tab="android" type="button">Android</button>
+        <button role="tab" id="tab-ios" aria-controls="panel-ios" aria-selected="false" data-tab="ios" type="button">iPhone</button>
       </div>
 
       <div class="steps" id="panel-android" role="tabpanel" aria-labelledby="tab-android">
         <ol>
-          <li><span>1</span><div><strong>Abrí el enlace de NetAI en Chrome.</strong><p>Usá el botón de las apps cuando esté disponible.</p></div></li>
+          <li><span>1</span><div><strong>Abrí el enlace de NetAI en Chrome.</strong><p>Usá el botón de la app cuando esté disponible.</p></div></li>
           <li><span>2</span><div><strong>Tocá los tres puntos ⋮ arriba a la derecha.</strong><p>Es el menú del navegador.</p></div></li>
-          <li><span>3</span><div><strong>Elegí “Instalar app” o “Agregar a la pantalla principal”.</strong><p>Confirmá y listo: aparece el ícono de NetAI.</p></div></li>
+          <li><span>3</span><div><strong>Elegí “Instalar app” o “Agregar a la pantalla principal”.</strong><p>Confirmá y aparece el ícono de NetAI.</p></div></li>
         </ol>
       </div>
-
       <div class="steps" id="panel-ios" role="tabpanel" aria-labelledby="tab-ios" hidden>
         <ol>
-          <li><span>1</span><div><strong>Abrí el enlace de NetAI en Safari.</strong><p>En iPhone tiene que ser Safari, no otro navegador.</p></div></li>
-          <li><span>2</span><div><strong>Tocá el botón Compartir.</strong><p>Es el cuadrado con una flecha hacia arriba, abajo en el centro.</p></div></li>
+          <li><span>1</span><div><strong>Abrí el enlace de NetAI en Safari.</strong><p>En iPhone tiene que ser Safari.</p></div></li>
+          <li><span>2</span><div><strong>Tocá el botón Compartir.</strong><p>El cuadrado con una flecha hacia arriba.</p></div></li>
           <li><span>3</span><div><strong>Elegí “Agregar a pantalla de inicio”.</strong><p>Tocá “Agregar” y NetAI queda como una app.</p></div></li>
         </ol>
       </div>
     </section>
 
-    <!-- JUNTAS -->
-    <section class="section" id="juntas">
-      <div class="section-head reveal">
-        <p class="kicker">Mejor juntas</p>
-        <h2>Una sola semana, <em>dos apps que se hablan.</em></h2>
-      </div>
-      <div class="bento">
-        <article class="bento-card reveal">
-          <h3>Racha amable</h3>
-          <p>Cuenta los días en que hiciste algo por vos, en cualquiera de las dos apps. Si un día no llegás, no pasa nada: no hay rachas que se pierdan.</p>
-        </article>
-        <article class="bento-card reveal">
-          <h3>Se desbloquean entre sí</h3>
-          <p>Registrar tus comidas en NetAI abre rutinas nuevas en Fit. Entrenar en Fit abre recetas pensadas para esos días.</p>
-        </article>
-        <article class="bento-card reveal">
-          <h3>Plan de la semana</h3>
-          <p>Entrenos y comidas en una sola vista, con el mismo objetivo para las dos.</p>
-        </article>
-        <article class="bento-card bento-wide reveal">
-          <h3>Pack de lanzamiento</h3>
-          <p>Quienes entren en la beta tendrán un descuento en el plan que incluye las dos apps. <span data-beta-date>Fecha por confirmar.</span></p>
-        </article>
-        <article class="bento-card reveal">
-          <h3>Con tu familia</h3>
-          <p>El plan familiar llega a hasta 5 personas, cada una con sus datos privados.</p>
-        </article>
+    <!-- PREGUNTAS -->
+    <section class="section section-tint" id="preguntas">
+      <div class="wrap faq-wrap">
+        <header class="section-head">
+          <p class="kicker reveal">07 · Preguntas frecuentes</p>
+          <h2 class="reveal">Lo que suelen <em>preguntarnos.</em></h2>
+        </header>
+        <div class="faq reveal">
+          <details>
+            <summary>¿NetAI es una app para hacer dieta?</summary>
+            <p>No. NetAI tiene un enfoque neutral al peso: no te propone bajar de peso ni restringir alimentos. Te ayuda a comer con atención, con rangos flexibles y un piso seguro que nunca baja de lo recomendable.</p>
+          </details>
+          <details>
+            <summary>¿Dónde quedan mis datos?</summary>
+            <p>En tu propio teléfono. Tus registros no se envían a servidores externos. Si en el futuro las dos apps comparten información, vas a poder decidir qué se comparte.</p>
+          </details>
+          <details>
+            <summary>¿Tengo que descargarla de una tienda?</summary>
+            <p>Por ahora no: NetAI se instala desde el navegador en Android y en iPhone. Más adelante también va a estar en App Store y Google Play.</p>
+          </details>
+          <details>
+            <summary>¿Cuándo sale NetAI Fit?</summary>
+            <p>Está en desarrollo y primero abrirá una beta cerrada. Si te anotás en la lista de espera, te avisamos cuando haya fecha y tendrás precio de lanzamiento.</p>
+          </details>
+          <details>
+            <summary>¿Puedo ocultar las calorías y los números?</summary>
+            <p>Sí. El Modo Intuitivo apaga con un toque todos los números de la app y los reemplaza por grupos de alimentos y colores.</p>
+          </details>
+          <details>
+            <summary>¿Reemplaza a un nutricionista o a un profesional del ejercicio?</summary>
+            <p>No. Es una herramienta educativa y de acompañamiento. Ante cualquier duda sobre tu salud, consultá con un profesional matriculado.</p>
+          </details>
+        </div>
       </div>
     </section>
 
     <!-- LISTA DE ESPERA -->
-    <section class="section section-green" id="avisame">
-      <div class="narrow reveal">
+    <section class="cta-final" id="avisame">
+      <div class="mesh mesh-dark" aria-hidden="true"></div>
+      <div class="cta-inner reveal">
         <p class="kicker kicker-light">Lista de espera</p>
-        <h2>Avisame cuando <em>esté lista.</em></h2>
-        <p class="sub">Sumate a la beta de NetAI Fit y a las novedades del lanzamiento. Un correo cuando haya algo real para contarte.</p>
+        <h2>Sé de las primeras personas <em>en probar NetAI Fit.</em></h2>
+        <p class="sub">Un correo cuando haya algo real para contarte. Nada más.</p>
 
         <form class="waitlist" data-waitlist novalidate hidden>
-          <label for="wl-email">Tu correo</label>
-          <input id="wl-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@correo.com" required />
+          <div class="field">
+            <label for="wl-email">Tu correo</label>
+            <div class="field-row">
+              <input id="wl-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@correo.com" required />
+              <button class="btn btn-light" type="submit">Anotarme</button>
+            </div>
+          </div>
           <fieldset>
             <legend>Quiero enterarme de</legend>
             <label class="check"><input type="radio" name="app" value="ambas" checked /> Las dos</label>
             <label class="check"><input type="radio" name="app" value="netai" /> NetAI</label>
             <label class="check"><input type="radio" name="app" value="fit" /> NetAI Fit</label>
           </fieldset>
-          <button class="btn btn-light" type="submit">Anotarme</button>
           <p class="form-status" role="status" aria-live="polite"></p>
         </form>
         <p class="soon" data-waitlist-soon>Muy pronto abrimos la lista de espera. Volvé a pasar por acá.</p>
@@ -226,15 +498,34 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <div>
-        <p class="brand brand-foot"><img src="assets/img/netai-icon.svg" alt="" width="24" height="24" /><span>NetAI</span></p>
+      <div class="footer-brand">
+        <p class="brand"><img src="assets/img/netai-icon.svg" alt="" width="28" height="28" /><span>NetAI</span></p>
         <p class="small">Nutrición consciente y movimiento amable, con enfoque neutral al peso.</p>
       </div>
-      <p class="small disclaimer">Información educativa e inspiradora. No sustituye la consulta ni la indicación de un profesional de la salud matriculado. Si sentís que tu relación con la comida o el ejercicio te genera malestar, consultá con un profesional.</p>
+      <nav class="footer-col" aria-label="Apps">
+        <p class="footer-title">Apps</p>
+        <a href="#apps">NetAI</a>
+        <a href="#apps">NetAI Fit</a>
+        <a href="#precios">Precios</a>
+      </nav>
+      <nav class="footer-col" aria-label="Ayuda">
+        <p class="footer-title">Ayuda</p>
+        <a href="#instalar">Cómo instalar</a>
+        <a href="#preguntas">Preguntas frecuentes</a>
+        <a href="#avisame">Lista de espera</a>
+      </nav>
+      <div class="footer-note">
+        <p class="footer-title">Aviso de salud</p>
+        <p class="small">Información educativa e inspiradora. No sustituye la consulta ni la indicación de un profesional de la salud matriculado. Si sentís que tu relación con la comida o el ejercicio te genera malestar, consultá con un profesional.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span data-year>2026</span> NetAI</p>
+      <p>Enfoque neutral al peso · Guías GAPA</p>
     </div>
   </footer>
 
-  <script defer src="lib/manifest.js?v=20261029"></script>
-  <script defer src="main.js?v=20261029"></script>
+  <script defer src="lib/manifest.js?v=20261030"></script>
+  <script defer src="main.js?v=20261030"></script>
 </body>
 </html>
