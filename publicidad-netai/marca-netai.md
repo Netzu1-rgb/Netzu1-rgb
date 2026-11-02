@@ -43,12 +43,29 @@ Medios de pago: tarjetas, Mercado Pago, transferencia y cripto (USDT). La landin
 ## Tono
 Cálido, sereno y sin juicios. Nada de urgencia agresiva ni de "antes y después". El README del proyecto usa voseo; la landing usa tuteo. Elige uno por campaña y mantenlo.
 
-## Identidad visual (de `tailwind.config.js`)
-- **Salvia** (verde): `#538974` (500), `#3e6d5b` (600), `#e1ede6` (100). Es el color principal.
-- **Tierra** (beige/marrón): `#f4efe8` (100), `#ad917a` (500).
-- **Océano** (azul suave) y **lavanda** como acentos.
-- Fondo claro `#faf9f7`, texto en gris piedra. Tipografía del sistema (`system-ui`).
-- Activos: `public/icons/icon-512.svg`, `public/icons/icon-192.svg`, `src/assets/hero.png`.
+## Identidad visual
+Sistema compartido por la web (`netai-web/`) y la app (`netai-app/`, en `tailwind.config.js` y `src/components/brand/Plate.jsx`).
+
+**Idea central:** el Método del Plato. El logo es un plato visto desde arriba (mitad vegetales, un cuarto proteínas, un cuarto cereales) y los colores salen de esos grupos de alimentos.
+
+| Nombre | Color | Uso |
+|---|---|---|
+| Hoja | `#2D6A4F` (oscuro `#17352A`) | Color de marca, botones principales, vegetales |
+| Remolacha | `#93385A` | Proteínas en el plato |
+| Trigo | `#D9A232` | Cereales en el plato, detalles cálidos |
+| Agua | `#3478A8` (oscuro `#19344C`) | Hidratación y NetAI Fit |
+| Loza | `#F6F8F4` | Fondo, neutro con un leve tinte verde |
+| Tinta | `#1A2A23` | Texto |
+
+**Tipografías (Google Fonts):** Bricolage Grotesque para títulos y Atkinson Hyperlegible para el texto. Atkinson está pensada para leerse fácil; su cero lleva una barra a propósito, para no confundirlo con la letra O.
+
+**NetAI Fit:** misma familia visual, con el azul agua como color propio. Su ícono es un anillo de movimiento sobre fondo azul oscuro.
+
+**Reglas de diseño:**
+- Una sola pieza llamativa por pantalla: el plato.
+- Sin etiquetas en mayúsculas sobre los títulos, sin numerar secciones que no son una secuencia y sin resaltar una palabra del título.
+- Animación solo cuando aporta: el plato se arma una vez al cargar la web y el teléfono cambia de pantalla en "Un día". Siempre se respeta el movimiento reducido.
+- Activos: `netai-web/assets/img/netai-icon.svg`, `netai-web/assets/img/netai-fit-icon.svg`, `netai-app/public/icons/`.
 
 ## Límites éticos (obligatorios en todo anuncio)
 La app prohíbe estos conceptos en su propio texto, y los anuncios deben respetarlo igual:

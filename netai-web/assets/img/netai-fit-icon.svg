@@ -1,13 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="fitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#B59A82" />
-      <stop offset="100%" stop-color="#6E5546" />
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#fitGrad)" />
-  <!-- Arco de movimiento alrededor del destello de NetAI -->
-  <path d="M136 312 A136 136 0 1 1 376 312" fill="none" stroke="#F4EFE8" stroke-width="26" stroke-linecap="round" opacity="0.9" />
-  <path d="M256 150 C256 205 301 250 356 250 C301 250 256 295 256 350 C256 295 211 250 156 250 C211 250 256 205 256 150 Z" fill="#FFFFFF" />
-  <circle cx="256" cy="250" r="24" fill="#EADFD2" />
+  <rect width="512" height="512" rx="112" fill="#19344C" />
+  <circle cx="256" cy="256" r="176" fill="#1F415F" />
+  <path d="M256 104 A152 152 0 1 1 104 256" fill="none" stroke="#7DB1D5" stroke-width="40" stroke-linecap="round" />
+  <path d="M104 256 A152 152 0 0 1 256 104" fill="none" stroke="#E5BB58" stroke-width="40" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="44" fill="#D8E8F3" />
 </svg>

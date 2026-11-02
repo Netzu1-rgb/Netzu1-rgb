@@ -21,24 +21,21 @@ Una web estática no puede guardar correos por sí sola, por eso la lista de esp
 3. Si el plan usa Nginx, el `.htaccess` no se aplica: basta con subir el `?v=` en cada cambio.
 
 ## Secciones
-1. Encabezado con titular animado palabra por palabra, fondo de degradado suave y dos teléfonos con parallax.
-2. Cinta con los principios de la marca.
-3. Las dos apps, con estado (disponible / beta) e insignias de tiendas.
-4. Cifras del producto (contadores).
-5. **Un día con las dos apps**: efecto firma. El teléfono queda fijo y cambia de pantalla a medida que bajás por los pasos.
-6. Mejor juntas (bento con el pack de lanzamiento).
-7. Filosofía: comparación con las apps de dieta tradicionales.
-8. Precios en US$: Gratis (registro ilimitado, sin fotos), Plus US$0,99/mes (60 fotos) y Pro US$1,99/mes (150 fotos).
-9. Cómo instalar, con pestañas Android / iPhone.
-10. Preguntas frecuentes.
-11. Lista de espera y pie con aviso de salud.
+1. Encabezado con el plato del Método del Plato, que se arma una vez al cargar.
+2. Las dos apps, lado a lado, con su estado (disponible o en desarrollo) e insignias de tiendas.
+3. **Un día con las dos apps:** el teléfono queda fijo y cambia de pantalla a medida que bajás por los pasos.
+4. Mejor juntas y pack de lanzamiento.
+5. Lo que no vas a encontrar en NetAI (tabla comparativa).
+6. Planes en US$: Gratis (registro ilimitado, sin fotos), Plus US$0,99/mes (60 fotos) y Pro US$1,99/mes (150 fotos).
+7. Cómo instalar, con pestañas Android / iPhone.
+8. Preguntas frecuentes.
+9. Lista de espera y pie con aviso de salud.
 
-## Decisiones respecto a la skill
-- No usa GSAP ni Lenis: todos los efectos son CSS y JavaScript propio, con un solo bucle de scroll. Hay menos cosas que puedan fallar.
-- **Respeta `prefers-reduced-motion`** en todas las animaciones, porque es una marca de bienestar. La skill recomienda lo contrario para las microinteracciones.
-- Sin cursor personalizado ni pantalla de carga: no aportan a una web de salud y pueden parecer errores.
-- Los teléfonos están dibujados en HTML y CSS. Las pantallas de NetAI Fit son una vista previa, porque la app todavía no existe.
-- Funciona sin JavaScript: todo el contenido se ve, solo se pierden las animaciones.
+## Diseño
+- Mismo sistema visual que la app: colores de los grupos del plato, Bricolage Grotesque y Atkinson Hyperlegible. Detalle en `../publicidad-netai/marca-netai.md`.
+- Rediseñada siguiendo la skill `frontend-design` de Anthropic: sin etiquetas en mayúsculas, sin numeración decorativa, sin animaciones de aparición en cada sección.
+- Sin librerías externas: todo es CSS y JavaScript propio. Funciona sin JavaScript (se pierden solo las animaciones) y respeta el movimiento reducido.
+- El `.htaccess` y el `?v=AAAAMMDD` de la skill de Hostinger se mantienen para la caché.
 
 ## Probar en local
 ```bash
