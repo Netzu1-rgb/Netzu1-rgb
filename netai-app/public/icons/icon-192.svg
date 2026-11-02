@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5E8367" />
+      <stop offset="100%" stop-color="#3C5743" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#bgGrad)" />
+  <!-- Sparkle & Leaf Icon -->
+  <path d="M96 36 C96 66 126 96 156 96 C126 96 96 126 96 156 C96 126 66 96 36 96 C66 96 96 66 96 36 Z" fill="#FFFFFF" />
+  <circle cx="96" cy="96" r="14" fill="#DDEEE2" />
+</svg>
