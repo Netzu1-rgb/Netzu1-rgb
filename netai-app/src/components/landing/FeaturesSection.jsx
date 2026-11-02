@@ -53,12 +53,8 @@ export default function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sage-50 text-sage-800 border border-sage-200 mb-4 text-xs font-bold uppercase tracking-wider">
-            <Heart size={14} className="text-sage-600" />
-            <span>Los 4 Pilares del Producto</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 tracking-tight mb-4">
+        <div className="max-w-3xl mb-14">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 tracking-tight mb-4">
             ¿Qué hace a NetAI una aplicación diferente y segura?
           </h2>
           <p className="text-base sm:text-lg text-stone-600 leading-relaxed">

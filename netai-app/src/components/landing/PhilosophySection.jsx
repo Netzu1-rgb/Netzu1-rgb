@@ -28,16 +28,12 @@ export default function PhilosophySection() {
   ];
 
   return (
-    <section id="filosofia" className="py-20 md:py-28 bg-[#f8f7f4] relative overflow-hidden">
+    <section id="filosofia" className="py-20 md:py-28 bg-loza-50 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-earth-100 text-earth-800 border border-earth-200 mb-4 text-xs font-bold uppercase tracking-wider">
-            <HeartHandshake size={14} className="text-earth-700" />
-            <span>Manifiesto Ético</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 tracking-tight mb-4">
+        <div className="max-w-3xl mb-14">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 tracking-tight mb-4">
             Por qué decidimos romper con la cultura de la dieta
           </h2>
           <p className="text-base sm:text-lg text-stone-600 leading-relaxed">

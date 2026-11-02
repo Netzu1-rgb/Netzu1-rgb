@@ -79,7 +79,7 @@ export default function Footer() {
 
           {/* Nav Links */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-display text-base font-bold text-white mb-4">
               Navegación
             </h4>
             <ul className="space-y-2.5 text-sm">
@@ -113,7 +113,7 @@ export default function Footer() {
 
           {/* Pillars */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-display text-base font-bold text-white mb-4">
               Principios
             </h4>
             <ul className="space-y-2.5 text-sm text-stone-400">
@@ -127,7 +127,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-display text-base font-bold text-white mb-4">
               Contacto y Soporte
             </h4>
             <p className="text-sm text-stone-400 leading-relaxed mb-3">

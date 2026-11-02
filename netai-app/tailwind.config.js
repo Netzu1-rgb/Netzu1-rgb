@@ -1,4 +1,29 @@
 /** @type {import('tailwindcss').Config} */
+
+// Sistema de diseño NetAI: los colores salen de los grupos del Método del Plato.
+// hoja = vegetales (marca), remolacha = proteínas, trigo = cereales, agua = hidratación.
+// loza = neutros con un leve tinte verde, como un plato de cerámica.
+const hoja = {
+  50: '#EEF6F1', 100: '#D7EADF', 200: '#B0D4C0', 300: '#80B89B', 400: '#529A77',
+  500: '#378058', 600: '#2D6A4F', 700: '#255640', 800: '#1E4535', 900: '#17352A', 950: '#0D2019',
+};
+const remolacha = {
+  50: '#FBF0F3', 100: '#F5DCE3', 200: '#EBB8C7', 300: '#DC8CA4', 400: '#C6627F',
+  500: '#AD4566', 600: '#93385A', 700: '#782D49', 800: '#5F243A', 900: '#4A1D2E', 950: '#2E111C',
+};
+const trigo = {
+  50: '#FCF7EA', 100: '#F7EBC9', 200: '#EFD592', 300: '#E5BB58', 400: '#D9A232',
+  500: '#C1871D', 600: '#9E6B16', 700: '#7C5315', 800: '#5F4114', 900: '#4A3312', 950: '#2B1D09',
+};
+const agua = {
+  50: '#EEF5FA', 100: '#D8E8F3', 200: '#B0D0E7', 300: '#7DB1D5', 400: '#4E91BF',
+  500: '#3478A8', 600: '#2C6390', 700: '#255076', 800: '#1F415F', 900: '#19344C', 950: '#0F2131',
+};
+const loza = {
+  50: '#F6F8F4', 100: '#EDF1EC', 200: '#DCE4DD', 300: '#C3CEC5', 400: '#97A69C',
+  500: '#6E7F75', 600: '#53645A', 700: '#3D4C44', 800: '#2A3831', 900: '#1A2A23', 950: '#0F1A15',
+};
+
 module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,103 +34,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        sage: {
-          50: '#f2f7f4',
-          100: '#e1ede6',
-          200: '#c5ddd1',
-          300: '#9ec4b3',
-          400: '#73a591',
-          500: '#538974',
-          600: '#3e6d5b',
-          700: '#335749',
-          800: '#2a463c',
-          900: '#233a32',
-          950: '#11201b',
-        },
-        earth: {
-          50: '#faf8f5',
-          100: '#f4efe8',
-          200: '#e8ded2',
-          300: '#d7c7b5',
-          400: '#c3ad96',
-          500: '#ad917a',
-          600: '#957762',
-          700: '#7b6050',
-          800: '#654f43',
-          900: '#534239',
-        },
-        ocean: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#b9ddfe',
-          300: '#7cc2fd',
-          400: '#36a3f9',
-          500: '#0c87eb',
-          600: '#006ac9',
-          700: '#0154a3',
-          800: '#064886',
-          900: '#0b3c6f',
-        },
-        lavender: {
-          50: '#f7f6fd',
-          100: '#eeebfc',
-          200: '#ded8fa',
-          300: '#c3b7f6',
-          400: '#a38df0',
-          500: '#8462e7',
-          600: '#7043db',
-          700: '#5e32c4',
-          800: '#4f2ba3',
-          900: '#422585',
-        },
-        stonecalm: {
-          50: '#fcfbf9',
-          100: '#f7f5f0',
-          200: '#ece7dd',
-          300: '#ddd5c5',
-          400: '#c6b9a2',
-          500: '#a89880',
-          600: '#897863',
-          700: '#6d5f4e',
-          800: '#574d3f',
-          900: '#483f34',
-        },
+        hoja, remolacha, trigo, agua, loza,
+        // Nombres anteriores, apuntando a la nueva paleta para que todo el proyecto la herede
+        sage: hoja,
+        earth: trigo,
+        ocean: agua,
+        lavender: remolacha,
+        stonecalm: loza,
+        stone: loza,
       },
       fontFamily: {
-        sans: [
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"Segoe UI"',
-          'Roboto',
-          'Helvetica',
-          'Arial',
-          'sans-serif',
-        ],
+        sans: ['"Atkinson Hyperlegible"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Arial', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', '"Atkinson Hyperlegible"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 4px 24px -2px rgba(42, 70, 60, 0.06), 0 2px 8px -1px rgba(42, 70, 60, 0.04)',
-        card: '0 8px 30px -4px rgba(42, 70, 60, 0.08)',
-        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+        soft: '0 1px 2px rgba(15, 26, 21, 0.05), 0 4px 16px -6px rgba(15, 26, 21, 0.10)',
+        card: '0 2px 4px rgba(15, 26, 21, 0.04), 0 16px 32px -16px rgba(15, 26, 21, 0.22)',
+        glass: '0 8px 32px -12px rgba(15, 26, 21, 0.18)',
+        sheet: '0 -12px 40px -12px rgba(15, 26, 21, 0.28)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'fade-in': 'fadeIn 0.25s ease-out forwards',
+        'slide-up': 'slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'pulse-gentle': 'pulseGentle 3s infinite ease-in-out',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        pulseGentle: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.85' },
-        },
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        slideUp: { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        pulseGentle: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.85' } },
       },
     },
   },

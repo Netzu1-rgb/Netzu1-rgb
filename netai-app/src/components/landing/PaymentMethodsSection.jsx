@@ -43,16 +43,12 @@ export default function PaymentMethodsSection() {
   ];
 
   return (
-    <section id="pagos" className="py-16 md:py-24 bg-[#f8f7f4] border-t border-stone-200">
+    <section id="pagos" className="py-16 md:py-24 bg-loza-50 border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-200/70 text-stone-700 mb-3 text-xs font-bold uppercase tracking-wider">
-            <Lock size={12} className="text-stone-600" />
-            <span>Transacciones Seguras</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">
+        <div className="max-w-2xl mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 tracking-tight mb-3">
             Múltiples formas de pago a tu alcance
           </h2>
           <p className="text-sm sm:text-base text-stone-600">
@@ -74,7 +70,7 @@ export default function PaymentMethodsSection() {
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${m.color}`}>
                       <IconComponent size={24} className="stroke-[1.8]" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
                       {m.badge}
                     </span>
                   </div>
