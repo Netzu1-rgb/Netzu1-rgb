@@ -20,11 +20,22 @@ export default function PrivacidadPage() {
         </p>
       </Seccion>
 
-      <Seccion titulo="Tus registros se guardan en tu teléfono">
+      <Seccion titulo="Tus registros y tus datos se guardan en tu teléfono">
         <p>
           Las comidas, los vasos de agua, la escala de hambre y saciedad, tus notas y la preferencia del Modo Intuitivo se
           guardan en el almacenamiento del navegador de tu dispositivo. No se envían a nuestros servidores y nosotros no
           podemos verlos.
+        </p>
+        <p>
+          Si completás “Tus datos”, también se guardan solo en tu dispositivo: nombre, edad, sexo, altura, peso, nivel de
+          actividad, objetivos, preferencias de alimentación y alergias, y tu respuesta sobre si estás en tratamiento por un
+          trastorno de la conducta alimentaria. Todo es opcional. La altura y el peso se usan únicamente para estimar tu
+          rango de energía: la app no los muestra, no calcula tu índice de masa corporal y no propone metas de peso. A
+          menores de 18 años no les pedimos datos físicos.
+        </p>
+        <p>
+          Algunos de estos datos son datos de salud. Podés cambiarlos o borrarlos cuando quieras desde Ajustes, en “Tus
+          datos” o en “Borrar todos mis datos”.
         </p>
         <p>
           Si borrás los datos del navegador o desinstalás la app, esos registros se eliminan y no podemos recuperarlos.

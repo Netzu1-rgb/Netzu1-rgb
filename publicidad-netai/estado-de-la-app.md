@@ -1,12 +1,32 @@
 # Estado de la app NetAI
 
-Revisión del 3 de noviembre de 2026 (versión 1.1.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 3 de noviembre de 2026 (versión 1.2.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
 
-## Hecho en esta versión
+## Versión 1.2.0: tus datos personales y físicos
+
+Recorrido de 7 pasos la primera vez que se abre la app (y editable desde Ajustes, en “Tus datos”):
+
+1. Sobre vos: nombre, edad y sexo.
+2. Tu cuerpo: altura y peso (opcionales; no se pide a menores de 18).
+3. Actividad semanal.
+4. Para qué usás NetAI (objetivos sin metas de peso).
+5. Alimentación: vegetariana, vegana, sin TACC, sin lactosa y alergias.
+6. Cómo ver la app, con una pregunta opcional sobre trastornos de la conducta alimentaria.
+7. Resumen con tu rango de energía.
+
+Con esos datos:
+- El rango de energía de Mi día pasa a ser personal (fórmula de Mifflin-St Jeor por actividad, ±7,5 %), nunca por debajo de 1.500 kcal. Si faltan datos o es menor de edad, se usa el rango general de 1.900 a 2.200 kcal.
+- Quien responde que está en tratamiento por un TCA no ve números en ningún lugar y no puede desactivar el Modo Intuitivo desde el interruptor.
+- Las recetas se filtran según la alimentación elegida.
+- Saludo con el nombre.
+- La app nunca muestra el peso, no calcula IMC ni propone metas de peso.
+- La copia de seguridad incluye estos datos, "Borrar todos mis datos" también los borra, y la política de privacidad los describe.
+
+## Versión 1.1.0
 
 | Antes | Ahora |
 |---|---|
-| La primera vez aparecían comidas de ejemplo como si fueran tuyas | Empieza vacía, con una bienvenida de 3 pasos |
+| La primera vez aparecían comidas de ejemplo como si fueran tuyas | Empieza vacía (en 1.2.0, con el recorrido de datos) |
 | No se podía corregir un registro | Botón para editar cada comida |
 | Borrar no tenía vuelta atrás | Aviso con "Deshacer" durante 6 segundos |
 | Había que escribir siempre la comida completa | "Tus frecuentes": las comidas que más registrás, con un toque |

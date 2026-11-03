@@ -24,6 +24,7 @@ import {
   CalendarDays,
   Download,
   Upload,
+  UserRound,
 } from 'lucide-react';
 import {
   MINIMUM_SAFE_ENERGY_FLOOR,
@@ -36,6 +37,8 @@ import {
 } from '@/lib/ethicalNutrition';
 import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
+import Onboarding from '@/components/onboarding/Onboarding';
+import { PROFILE_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers } from '@/lib/profile';
 
 const MEAL_CATEGORIES = [
   { id: 'desayuno', label: 'Desayuno', Icon: Sunrise, hint: 'Empezá el día con energía amable' },
@@ -45,10 +48,9 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const INTUITIVE_KEY = 'netai_intuitive_mode';
-const WELCOME_KEY = 'netai_welcome_done';
 
 function emptyDay() {
   return { waterGlasses: 0, meals: { desayuno: [], almuerzo: [], merienda: [], cena: [], colacion: [] } };
@@ -88,7 +90,8 @@ export default function PwaAppPage() {
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [logsByDate, setLogsByDate] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
-  const [welcomeDismissed, setWelcomeDismissed] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [onboarding, setOnboarding] = useState(null); // 'inicial' | 'editar' | null
 
   // Hojas
   const [activeMealModal, setActiveMealModal] = useState(null); // momento del día que se está registrando
@@ -119,7 +122,9 @@ export default function PwaAppPage() {
       if (savedData) setLogsByDate(JSON.parse(savedData));
       const savedIntuitive = localStorage.getItem(INTUITIVE_KEY);
       if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
-      setWelcomeDismissed(localStorage.getItem(WELCOME_KEY) === 'true');
+      const savedProfile = loadProfile();
+      setProfile(savedProfile);
+      if (!savedProfile) setOnboarding('inicial');
     } catch (e) {
       console.warn('Error leyendo localStorage', e);
     }
@@ -185,7 +190,9 @@ export default function PwaAppPage() {
     return days;
   }, [logsByDate, today]);
 
-  const isFirstRun = isLoaded && !welcomeDismissed && Object.keys(logsByDate).length === 0;
+  const energyRange = useMemo(() => energyRangeFor(profile), [profile]);
+  const numbersLocked = hidesNumbers(profile); // TCA: nunca se muestran números
+  const showNumbers = !intuitiveMode && !numbersLocked;
 
   const updateDay = (date, fn) => {
     setLogsByDate((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDay()) }));
@@ -288,9 +295,22 @@ export default function PwaAppPage() {
     setSelectedDate(next);
   };
 
-  const dismissWelcome = () => {
-    setWelcomeDismissed(true);
-    try { localStorage.setItem(WELCOME_KEY, 'true'); } catch (e) { /* sin almacenamiento */ }
+  // Recorrido de datos personales y físicos
+  const handleProfileFinish = (data) => {
+    const wasEditing = onboarding === 'editar';
+    saveProfile(data);
+    setProfile(data);
+    setIntuitiveMode(data.viewMode === 'intuitivo' || hidesNumbers(data));
+    if (data.diet.includes('vegetariana') || data.diet.includes('vegana')) setRecipeFilter('Vegetariano');
+    setOnboarding(null);
+    setToast({ text: wasEditing ? 'Guardaste tus datos.' : 'Listo. Ya podés registrar tu primera comida.' });
+  };
+
+  const handleProfileSkip = () => {
+    const data = { ...emptyProfile(), skipped: true };
+    saveProfile(data);
+    setProfile(data);
+    setOnboarding(null);
   };
 
   const handleLogout = async () => {
@@ -304,7 +324,7 @@ export default function PwaAppPage() {
 
   // Copia de seguridad: los registros viven solo en este teléfono
   const handleExport = () => {
-    const payload = { app: 'NetAI', version: 1, exportedAt: new Date().toISOString(), intuitiveMode, logsByDate };
+    const payload = { app: 'NetAI', version: 2, exportedAt: new Date().toISOString(), intuitiveMode, profile, logsByDate };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -322,6 +342,11 @@ export default function PwaAppPage() {
       const data = JSON.parse(await file.text());
       if (!data || data.app !== 'NetAI' || typeof data.logsByDate !== 'object') throw new Error('formato');
       setLogsByDate((prev) => ({ ...prev, ...data.logsByDate }));
+      if (data.profile && typeof data.profile === 'object') {
+        const restored = { ...emptyProfile(), ...data.profile };
+        saveProfile(restored);
+        setProfile(restored);
+      }
       setToast({ text: 'Registros restaurados desde la copia.' });
       setSettingsOpen(false);
     } catch (e) {
@@ -331,8 +356,11 @@ export default function PwaAppPage() {
 
   const handleDeleteAll = () => {
     setLogsByDate({});
+    setProfile(null);
+    try { localStorage.removeItem(PROFILE_KEY); } catch (e) { /* sin almacenamiento */ }
     setSettingsOpen(false);
-    setToast({ text: 'Borraste todos tus registros de este teléfono.' });
+    setToast({ text: 'Borraste todos tus datos de este teléfono.' });
+    setOnboarding('inicial');
   };
 
   const filteredRecipes = useMemo(() => {
@@ -348,6 +376,19 @@ export default function PwaAppPage() {
           <p className="text-loza-600 text-sm">Preparando tu día…</p>
         </div>
       </div>
+    );
+  }
+
+  // Mientras está el recorrido de datos, es lo único en pantalla
+  if (onboarding) {
+    return (
+      <Onboarding
+        mode={onboarding}
+        initial={onboarding === 'editar' ? profile : null}
+        onFinish={handleProfileFinish}
+        onSkip={handleProfileSkip}
+        onClose={() => setOnboarding(null)}
+      />
     );
   }
 
@@ -370,7 +411,7 @@ export default function PwaAppPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
+            {!numbersLocked && <button
               type="button"
               role="switch"
               aria-checked={intuitiveMode}
@@ -386,7 +427,7 @@ export default function PwaAppPage() {
                   className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${intuitiveMode ? 'translate-x-4' : ''}`}
                 />
               </span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -432,31 +473,26 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {activeTab === 'today' && (
           <div className="space-y-10 animate-fade-in">
-            {isFirstRun && (
-              <section aria-labelledby="titulo-bienvenida" className="rounded-[28px] bg-hoja-900 text-hoja-50 p-6 sm:p-7">
-                <h2 id="titulo-bienvenida" className="font-display text-2xl font-bold text-white">Te damos la bienvenida a NetAI</h2>
-                <ol className="mt-4 space-y-2.5 text-[15px] text-hoja-100">
-                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">1</span>Registrá lo que comés con un toque en “Registrar”, sin pesar nada.</li>
-                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">2</span>Anotá cuánta hambre tenías antes y cómo te sentiste después.</li>
-                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">3</span>Si no querés ver calorías, activá el Modo Intuitivo arriba.</li>
-                </ol>
-                <p className="mt-4 text-sm text-hoja-200">Tus registros se guardan solo en este teléfono.</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => { dismissWelcome(); openNewMeal(suggestedMoment()); }} className="px-5 py-3 rounded-full bg-white text-hoja-900 text-sm font-bold hover:bg-hoja-50">
-                    Registrar mi primera comida
-                  </button>
-                  <button type="button" onClick={dismissWelcome} className="px-5 py-3 rounded-full text-sm font-bold text-hoja-100 hover:bg-hoja-800">
-                    Entendido
-                  </button>
+            {profile?.skipped && (
+              <section aria-labelledby="titulo-completar" className="rounded-[24px] bg-white border border-loza-200 p-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <div className="flex-1 min-w-[14rem]">
+                  <h2 id="titulo-completar" className="font-display text-lg font-bold text-loza-900">Completá tus datos</h2>
+                  <p className="text-sm text-loza-600 mt-0.5">Con tu edad, actividad y lo que comés, NetAI adapta tu rango de energía y tus recetas. Lleva 2 minutos.</p>
                 </div>
+                <button type="button" onClick={() => setOnboarding('editar')} className="px-5 py-2.5 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">
+                  Completar
+                </button>
               </section>
             )}
 
             <section aria-labelledby="titulo-dia">
+              {profile?.name?.trim() && (
+                <p className="font-display text-2xl font-bold text-loza-900 mb-1.5">Hola, {profile.name.trim()}</p>
+              )}
               <p className="text-loza-600 text-[15px] leading-relaxed max-w-prose">{dailyEncouragement}</p>
 
               <div className="mt-6 rounded-[28px] bg-white border border-loza-200 p-5 sm:p-7">
-                {intuitiveMode ? (
+                {!showNumbers ? (
                   <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                     <PlateGraphic className="w-40 h-40 sm:w-44 sm:h-44 mx-auto sm:mx-0 shrink-0" />
                     <div className="space-y-3">
@@ -479,7 +515,7 @@ export default function PwaAppPage() {
                         <span className="text-sm text-loza-500 ml-1.5">kcal</span>
                       </p>
                     </div>
-                    <EnergyRange total={totalEnergyToday} />
+                    <EnergyRange total={totalEnergyToday} range={energyRange} />
                   </div>
                 )}
               </div>
@@ -557,7 +593,7 @@ export default function PwaAppPage() {
                               <div className="flex items-start justify-between gap-3">
                                 <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
                                 <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
-                                  {!intuitiveMode && (
+                                  {showNumbers && (
                                     <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal</span>
                                   )}
                                   <button
@@ -845,7 +881,9 @@ export default function PwaAppPage() {
             onDeleteAll={handleDeleteAll}
             onLogout={handleLogout}
             onClose={() => setSettingsOpen(false)}
-            hasData={Object.keys(logsByDate).length > 0}
+            onEditProfile={() => { setSettingsOpen(false); setOnboarding('editar'); }}
+            numbersLocked={numbersLocked}
+            hasData={Object.keys(logsByDate).length > 0 || !!profile?.completedAt}
           />
         </Sheet>
       )}
@@ -942,7 +980,7 @@ export default function PwaAppPage() {
               />
             </div>
 
-            {!intuitiveMode && (
+            {showNumbers && (
               <div>
                 <label htmlFor="meal-energy" className="block text-sm font-bold text-loza-800 mb-1.5">Energía estimada (kcal)</label>
                 <input
@@ -1149,16 +1187,16 @@ function PlateLegend() {
 }
 
 // Rango de energía: marca el piso seguro y la franja flexible, nunca un "límite" que se excede
-function EnergyRange({ total }) {
-  const scaleMax = Math.round(DEFAULT_ENERGY_RANGE.max * 1.2);
+function EnergyRange({ total, range }) {
+  const scaleMax = Math.round(range.max * 1.2);
   const pct = (v) => `${Math.min(100, (v / scaleMax) * 100)}%`;
-  const inRange = total >= DEFAULT_ENERGY_RANGE.min;
+  const inRange = total >= range.min;
   return (
     <div className="mt-6">
       <div className="relative h-3 rounded-full bg-loza-100">
         <div
           className="absolute inset-y-0 rounded-full bg-hoja-100"
-          style={{ left: pct(DEFAULT_ENERGY_RANGE.min), width: `calc(${pct(DEFAULT_ENERGY_RANGE.max)} - ${pct(DEFAULT_ENERGY_RANGE.min)})` }}
+          style={{ left: pct(range.min), width: `calc(${pct(range.max)} - ${pct(range.min)})` }}
         />
         <div className="absolute inset-y-0 left-0 rounded-full bg-hoja-600 transition-[width] duration-500" style={{ width: pct(total) }} />
         <div className="absolute -top-1 -bottom-1 w-0.5 bg-loza-700 rounded" style={{ left: pct(MINIMUM_SAFE_ENERGY_FLOOR) }} aria-hidden="true" />
@@ -1170,7 +1208,7 @@ function EnergyRange({ total }) {
         </li>
         <li className="flex items-center gap-2">
           <span aria-hidden="true" className="w-3.5 h-2.5 rounded-sm bg-hoja-100 border border-hoja-300" />
-          Rango flexible: {DEFAULT_ENERGY_RANGE.min.toLocaleString('es-AR')} a {DEFAULT_ENERGY_RANGE.max.toLocaleString('es-AR')} kcal
+          {range.personal ? 'Tu rango' : 'Rango general'}: {range.min.toLocaleString('es-AR')} a {range.max.toLocaleString('es-AR')} kcal
         </li>
       </ul>
       {inRange && (
@@ -1283,7 +1321,7 @@ function CloseButton({ onClick }) {
 }
 
 // Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
-function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, hasData }) {
+function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, hasData }) {
   const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
   const fileRef = useRef(null);
   const row = 'w-full flex items-center gap-3 py-3.5 text-left text-[15px] text-loza-800 hover:text-loza-900';
@@ -1295,6 +1333,17 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
       </div>
 
       <div className="mt-4 divide-y divide-loza-200 border-y border-loza-200">
+        <button type="button" onClick={onEditProfile} className={row}>
+          <UserRound className="w-5 h-5 text-loza-500 shrink-0" aria-hidden="true" />
+          <span>
+            <span className="block font-bold">Tus datos</span>
+            <span className="block text-sm text-loza-500">Edad, actividad, alimentación y cómo ver la app.</span>
+          </span>
+        </button>
+
+        {numbersLocked ? (
+          <p className="py-3.5 text-sm text-loza-600">El Modo Intuitivo está siempre activo según lo que respondiste en tus datos. Lo podés cambiar desde “Tus datos”.</p>
+        ) : (
         <button type="button" role="switch" aria-checked={intuitiveMode} onClick={onToggleIntuitive} className={`${row} justify-between`}>
           <span>
             <span className="block font-bold">Modo Intuitivo</span>
@@ -1304,10 +1353,11 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${intuitiveMode ? 'translate-x-4' : ''}`} />
           </span>
         </button>
+        )}
 
         <div className="py-3.5">
           <p className="font-bold text-[15px] text-loza-800">Copia de seguridad</p>
-          <p className="text-sm text-loza-500 mt-0.5">Tus registros están solo en este teléfono. Descargá una copia para no perderlos o para pasarlos a otro dispositivo.</p>
+          <p className="text-sm text-loza-500 mt-0.5">Tus registros y tus datos están solo en este teléfono. Descargá una copia para no perderlos o para pasarlos a otro dispositivo.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={onExport} disabled={!hasData} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-loza-900 text-white text-sm font-bold disabled:opacity-40">
               <Download className="w-4 h-4" aria-hidden="true" /> Descargar copia
@@ -1328,8 +1378,8 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
         <div className="py-3.5">
           {confirm === 'delete' ? (
             <div className="rounded-2xl bg-remolacha-50 p-4">
-              <p className="font-bold text-remolacha-900">¿Borrar todos tus registros?</p>
-              <p className="text-sm text-remolacha-800 mt-1">Se borran de este teléfono y no se pueden recuperar, salvo que tengas una copia.</p>
+              <p className="font-bold text-remolacha-900">¿Borrar todos tus datos?</p>
+              <p className="text-sm text-remolacha-800 mt-1">Se borran tus registros y tus datos personales de este teléfono, y no se pueden recuperar salvo que tengas una copia.</p>
               <div className="mt-3 flex gap-2">
                 <button type="button" onClick={onDeleteAll} className="px-4 py-2.5 rounded-full bg-remolacha-700 text-white text-sm font-bold">Sí, borrar todo</button>
                 <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-remolacha-900 hover:bg-remolacha-100">Cancelar</button>
@@ -1337,7 +1387,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
             </div>
           ) : (
             <button type="button" onClick={() => setConfirm('delete')} disabled={!hasData} className="text-[15px] font-bold text-remolacha-700 disabled:opacity-40">
-              Borrar todos mis registros
+              Borrar todos mis datos
             </button>
           )}
         </div>
