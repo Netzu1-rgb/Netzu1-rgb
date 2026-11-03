@@ -16,8 +16,10 @@ export default function TerminosPage() {
       <Seccion titulo="Qué es NetAI">
         <p>
           NetAI es una app de acompañamiento para comer con atención, basada en el Método del Plato, la escala de hambre y
-          saciedad y las Guías Alimentarias para la Población Argentina. Tiene un enfoque neutral al peso y no propone
-          dietas restrictivas.
+          saciedad y las Guías Alimentarias para la Población Argentina. En el modo Bienestar tiene un enfoque neutral al
+          peso y no propone dietas restrictivas. El Modo Sport, opcional y solo para mayores de 18 años, permite trabajar un
+          objetivo de peso o de masa muscular con valores orientativos y límites de seguridad; no está disponible para
+          quien indica estar en tratamiento por un trastorno de la conducta alimentaria.
         </p>
       </Seccion>
 

@@ -29,9 +29,14 @@ export default function PrivacidadPage() {
         <p>
           Si completás “Tus datos”, también se guardan solo en tu dispositivo: nombre, edad, sexo, altura, peso, nivel de
           actividad, objetivos, preferencias de alimentación y alergias, y tu respuesta sobre si estás en tratamiento por un
-          trastorno de la conducta alimentaria. Todo es opcional. La altura y el peso se usan únicamente para estimar tu
-          rango de energía: la app no los muestra, no calcula tu índice de masa corporal y no propone metas de peso. A
-          menores de 18 años no les pedimos datos físicos.
+          trastorno de la conducta alimentaria. Todo es opcional. En el modo Bienestar, la altura y el peso se usan
+          únicamente para estimar tu rango de energía: la app no los muestra, no calcula tu índice de masa corporal y no
+          propone metas de peso. A menores de 18 años no les pedimos datos físicos.
+        </p>
+        <p>
+          Si elegís el Modo Sport, además se guardan en tu dispositivo tu deporte, tus días y minutos de entrenamiento, tu
+          objetivo, tu peso objetivo, el historial de pesos que registres y las proteínas de cada comida. En ese modo vos
+          ves tu peso y tu progreso; nadie más.
         </p>
         <p>
           Algunos de estos datos son datos de salud. Podés cambiarlos o borrarlos cuando quieras desde Ajustes, en “Tus

@@ -74,12 +74,17 @@ Sistema compartido por la web (`netai-web/`) y la app (`netai-app/`, en `tailwin
 - Animación solo cuando aporta: el plato se arma una vez al cargar la web y el teléfono cambia de pantalla en "Un día". Siempre se respeta el movimiento reducido.
 - Activos: `netai-web/assets/img/netai-icon.svg`, `netai-web/assets/img/netai-fit-icon.svg`, `netai-app/public/icons/`.
 
+## Modo Sport
+NetAI tiene dos modos. **Bienestar** (el principal) sigue siendo neutral al peso. **Modo Sport** es opcional, para deportistas mayores de 18: objetivo de bajar de peso, subir masa muscular, recomposición o rendimiento, con energía, proteínas, carbohidratos, grasas, agua y seguimiento de peso. Límites: déficit de hasta 15 % (máximo 500 kcal por día), nunca por debajo del gasto en reposo ni de 1.500 kcal, ritmo de 0,5 a 1 % del peso por semana, peso objetivo dentro de un rango saludable para la altura, y no disponible para quien indica un trastorno de la conducta alimentaria.
+
+En anuncios del Modo Sport se puede hablar de objetivos de peso o de masa muscular, siempre con ritmo seguro y sin promesas de resultados. Siguen prohibidos el "antes y después", los cuerpos como trofeo, los plazos ("bajá 10 kg en un mes") y las palabras de culpa.
+
 ## Límites éticos (obligatorios en todo anuncio)
 La app prohíbe estos conceptos en su propio texto, y los anuncios deben respetarlo igual:
 
 | No usar | Usar en su lugar |
 |---|---|
-| "Bajar de peso", "adelgazar", "quemar grasa" | Bienestar diario, vitalidad, salud integral |
+| "Bajar de peso", "adelgazar", "quemar grasa" (salvo en piezas del Modo Sport, con ritmo seguro) | Bienestar diario, vitalidad, salud integral |
 | "Comida trampa" | Alimentos de consumo ocasional |
 | Alimentos "buenos" o "malos" | Nutrientes de consumo habitual o recreativos |
 | "Calorías excedidas", "meta fallada" | Balance de energía flexible |

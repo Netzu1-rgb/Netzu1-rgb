@@ -25,6 +25,8 @@ import {
   Download,
   Upload,
   UserRound,
+  Scale,
+  Dumbbell,
 } from 'lucide-react';
 import {
   MINIMUM_SAFE_ENERGY_FLOOR,
@@ -38,7 +40,7 @@ import {
 import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
-import { PROFILE_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers } from '@/lib/profile';
+import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
 const MEAL_CATEGORIES = [
   { id: 'desayuno', label: 'Desayuno', Icon: Sunrise, hint: 'Empezá el día con energía amable' },
@@ -48,7 +50,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
@@ -92,6 +94,9 @@ export default function PwaAppPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [profile, setProfile] = useState(null);
   const [onboarding, setOnboarding] = useState(null); // 'inicial' | 'editar' | null
+  const [weightLog, setWeightLog] = useState([]); // [{ date, kg }] solo Modo Sport
+  const [weightSheet, setWeightSheet] = useState(false);
+  const [weightInput, setWeightInput] = useState('');
 
   // Hojas
   const [activeMealModal, setActiveMealModal] = useState(null); // momento del día que se está registrando
@@ -103,7 +108,7 @@ export default function PwaAppPage() {
   const [recipeFilter, setRecipeFilter] = useState('Todos');
   const [toast, setToast] = useState(null); // { text, undo? }
 
-  const emptyForm = { name: '', energy: '400', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const emptyForm = { name: '', energy: '400', protein: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
   const [newMealForm, setNewMealForm] = useState(emptyForm);
 
   const today = getTodayString();
@@ -122,6 +127,8 @@ export default function PwaAppPage() {
       if (savedData) setLogsByDate(JSON.parse(savedData));
       const savedIntuitive = localStorage.getItem(INTUITIVE_KEY);
       if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
+      const savedWeights = localStorage.getItem(WEIGHT_LOG_KEY);
+      if (savedWeights) setWeightLog(JSON.parse(savedWeights));
       const savedProfile = loadProfile();
       setProfile(savedProfile);
       if (!savedProfile) setOnboarding('inicial');
@@ -137,10 +144,11 @@ export default function PwaAppPage() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logsByDate));
       localStorage.setItem(INTUITIVE_KEY, String(intuitiveMode));
+      localStorage.setItem(WEIGHT_LOG_KEY, JSON.stringify(weightLog));
     } catch (e) {
       console.warn('Error guardando en localStorage', e);
     }
-  }, [logsByDate, intuitiveMode, isLoaded]);
+  }, [logsByDate, intuitiveMode, weightLog, isLoaded]);
 
   // El aviso se va solo a los 6 segundos
   useEffect(() => {
@@ -192,7 +200,19 @@ export default function PwaAppPage() {
 
   const energyRange = useMemo(() => energyRangeFor(profile), [profile]);
   const numbersLocked = hidesNumbers(profile); // TCA: nunca se muestran números
-  const showNumbers = !intuitiveMode && !numbersLocked;
+  // Modo Sport: el plan usa el último peso registrado
+  const trend = useMemo(() => weightTrend(weightLog), [weightLog]);
+  const plan = useMemo(() => {
+    if (!isSport(profile)) return null;
+    return sportPlan(trend ? { ...profile, weightKg: trend.latest } : profile);
+  }, [profile, trend]);
+  const sportOn = !!plan;
+  const showNumbers = sportOn || (!intuitiveMode && !numbersLocked);
+  const waterTarget = plan?.waterGlasses || 8;
+  const proteinToday = useMemo(
+    () => Object.values(currentDayLog.meals || {}).flat().reduce((n, m) => n + (Number(m.protein) || 0), 0),
+    [currentDayLog]
+  );
 
   const updateDay = (date, fn) => {
     setLogsByDate((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDay()) }));
@@ -219,6 +239,7 @@ export default function PwaAppPage() {
     setNewMealForm({
       name: meal.name,
       energy: String(meal.energy ?? ''),
+      protein: meal.protein != null ? String(meal.protein) : '',
       satietyBefore: Number(meal.satietyBefore) || 3,
       satietyAfter: Number(meal.satietyAfter) || 7,
       notes: meal.notes || '',
@@ -239,6 +260,7 @@ export default function PwaAppPage() {
       id: editingMealId || 'meal-' + Date.now(),
       name: newMealForm.name.trim(),
       energy: parseInt(newMealForm.energy, 10) || 350,
+      ...(newMealForm.protein !== '' && Number(newMealForm.protein) >= 0 ? { protein: Math.round(Number(newMealForm.protein)) } : {}),
       satietyBefore: parseInt(newMealForm.satietyBefore, 10) || 3,
       satietyAfter: parseInt(newMealForm.satietyAfter, 10) || 7,
       notes: newMealForm.notes.trim(),
@@ -324,7 +346,7 @@ export default function PwaAppPage() {
 
   // Copia de seguridad: los registros viven solo en este teléfono
   const handleExport = () => {
-    const payload = { app: 'NetAI', version: 2, exportedAt: new Date().toISOString(), intuitiveMode, profile, logsByDate };
+    const payload = { app: 'NetAI', version: 3, exportedAt: new Date().toISOString(), intuitiveMode, profile, weightLog, logsByDate };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -342,6 +364,7 @@ export default function PwaAppPage() {
       const data = JSON.parse(await file.text());
       if (!data || data.app !== 'NetAI' || typeof data.logsByDate !== 'object') throw new Error('formato');
       setLogsByDate((prev) => ({ ...prev, ...data.logsByDate }));
+      if (Array.isArray(data.weightLog)) setWeightLog(data.weightLog);
       if (data.profile && typeof data.profile === 'object') {
         const restored = { ...emptyProfile(), ...data.profile };
         saveProfile(restored);
@@ -356,6 +379,7 @@ export default function PwaAppPage() {
 
   const handleDeleteAll = () => {
     setLogsByDate({});
+    setWeightLog([]);
     setProfile(null);
     try { localStorage.removeItem(PROFILE_KEY); } catch (e) { /* sin almacenamiento */ }
     setSettingsOpen(false);
@@ -406,12 +430,12 @@ export default function PwaAppPage() {
             <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
               <p className="font-marca font-bold text-lg leading-none text-hoja-900">NetAI</p>
-              <p className="text-xs text-loza-500 leading-tight mt-0.5">Acceso familiar</p>
+              <p className="text-xs text-loza-500 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Acceso familiar'}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
-            {!numbersLocked && <button
+            {!numbersLocked && !sportOn && <button
               type="button"
               role="switch"
               aria-checked={intuitiveMode}
@@ -515,7 +539,8 @@ export default function PwaAppPage() {
                         <span className="text-sm text-loza-500 ml-1.5">kcal</span>
                       </p>
                     </div>
-                    <EnergyRange total={totalEnergyToday} range={energyRange} />
+                    <EnergyRange total={totalEnergyToday} range={plan ? { ...plan.energy, personal: true, label: 'Tu objetivo' } : energyRange} floor={plan?.floor} />
+                    {plan && <SportMacros plan={plan} proteinToday={proteinToday} goalLabel={SPORT_GOALS.find((g) => g.id === plan.goal)?.label} />}
                   </div>
                 )}
               </div>
@@ -526,12 +551,16 @@ export default function PwaAppPage() {
               <div className="flex items-baseline justify-between gap-4">
                 <h2 id="titulo-agua" className="font-display text-xl font-bold text-loza-900">Agua</h2>
                 <p className="text-sm text-loza-600 tabular">
-                  <span className="font-bold text-agua-700">{water}</span> de 8 vasos
+                  <span className="font-bold text-agua-700">{water}</span> de {waterTarget} vasos
                 </p>
               </div>
-              <p className="text-sm text-loza-500 mt-0.5">Las guías alimentarias argentinas sugieren unos 2 litros al día. Tocá un vaso para marcarlo.</p>
+              <p className="text-sm text-loza-500 mt-0.5">
+                {sportOn
+                  ? `Según tu peso y tu entrenamiento, unos ${waterTarget} vasos de 250 ml. Los días que entrenás, sumá agua durante la sesión.`
+                  : 'Las guías alimentarias argentinas sugieren unos 2 litros al día.'} Tocá un vaso para marcarlo.
+              </p>
               <div className="mt-4 grid grid-cols-8 gap-1.5 sm:gap-3 max-w-md">
-                {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => {
+                {Array.from({ length: waterTarget }, (_, i) => i).map((index) => {
                   const filled = water > index;
                   return (
                     <button
@@ -594,7 +623,7 @@ export default function PwaAppPage() {
                                 <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
                                 <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
                                   {showNumbers && (
-                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal</span>
+                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal{sportOn && meal.protein != null ? `, ${meal.protein} g prot.` : ''}</span>
                                   )}
                                   <button
                                     type="button"
@@ -668,16 +697,26 @@ export default function PwaAppPage() {
               </ol>
             </section>
 
+            {sportOn && (
+              <WeightSection
+                plan={plan}
+                profile={profile}
+                trend={trend}
+                entries={weightLog}
+                onAdd={() => { setToast(null); setWeightInput(trend ? String(trend.latest) : String(profile?.weightKg || '')); setWeightSheet(true); }}
+              />
+            )}
+
             <section aria-labelledby="titulo-agua-semana">
               <div className="flex items-baseline justify-between gap-4">
                 <h2 id="titulo-agua-semana" className="font-display text-xl font-bold text-loza-900">Agua</h2>
-                <p className="text-sm text-loza-500">vasos por día, de 8</p>
+                <p className="text-sm text-loza-500">vasos por día, de {waterTarget}</p>
               </div>
               <div className="mt-4 grid grid-cols-7 gap-1.5 items-end h-36" role="img" aria-label={`Vasos de agua por día: ${weekDays.map((d) => d.water).join(', ')}`}>
                 {weekDays.map((d) => (
                   <div key={d.date} className="flex flex-col items-center justify-end gap-1 h-full">
                     <span className="text-xs text-loza-600 tabular">{d.water || ''}</span>
-                    <span className="w-full max-w-8 rounded-t-lg bg-agua-500" style={{ height: `${Math.max(d.water ? 6 : 2, (Math.min(d.water, 8) / 8) * 100)}%`, opacity: d.water ? 1 : 0.25 }} />
+                    <span className="w-full max-w-8 rounded-t-lg bg-agua-500" style={{ height: `${Math.max(d.water ? 6 : 2, (Math.min(d.water, waterTarget) / waterTarget) * 100)}%`, opacity: d.water ? 1 : 0.25 }} />
                   </div>
                 ))}
               </div>
@@ -883,8 +922,39 @@ export default function PwaAppPage() {
             onClose={() => setSettingsOpen(false)}
             onEditProfile={() => { setSettingsOpen(false); setOnboarding('editar'); }}
             numbersLocked={numbersLocked}
+            sportOn={sportOn}
             hasData={Object.keys(logsByDate).length > 0 || !!profile?.completedAt}
           />
+        </Sheet>
+      )}
+
+      {weightSheet && (
+        <Sheet onClose={() => setWeightSheet(false)} labelledBy="titulo-peso">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="titulo-peso" className="font-display text-xl font-bold text-loza-900">Registrar peso de hoy</h2>
+            <CloseButton onClick={() => setWeightSheet(false)} />
+          </div>
+          <form
+            className="mt-5 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const kg = Number(String(weightInput).replace(',', '.'));
+              if (!(kg >= 30 && kg <= 300)) { setToast({ text: 'Escribí tu peso en kilos, entre 30 y 300.' }); return; }
+              setWeightLog((prev) => [...prev.filter((x) => x.date !== today), { date: today, kg: Math.round(kg * 10) / 10 }]);
+              setWeightSheet(false);
+              setToast({ text: 'Peso registrado. Tu plan se actualizó.' });
+            }}
+          >
+            <div>
+              <label htmlFor="peso-hoy" className="block text-sm font-bold text-loza-800 mb-1.5">Peso (kg)</label>
+              <input id="peso-hoy" type="number" inputMode="decimal" step="0.1" min="30" max="300" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+              <p className="text-sm text-loza-500 mt-1.5">Pesate a la misma hora, idealmente en ayunas. El peso varía de un día a otro: lo que importa es el promedio semanal.</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setWeightSheet(false)} className="px-5 py-3 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">Cancelar</button>
+              <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">Guardar</button>
+            </div>
+          </form>
         </Sheet>
       )}
 
@@ -994,6 +1064,23 @@ export default function PwaAppPage() {
                   className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
                 />
                 <p className="text-sm text-loza-500 mt-1.5">Una estimación alcanza. No hace falta pesar nada.</p>
+              </div>
+            )}
+
+            {sportOn && (
+              <div>
+                <label htmlFor="meal-protein" className="block text-sm font-bold text-loza-800 mb-1.5">Proteínas (g)</label>
+                <input
+                  id="meal-protein"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="300"
+                  value={newMealForm.protein}
+                  onChange={(e) => setNewMealForm({ ...newMealForm, protein: e.target.value })}
+                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
+                />
+                <p className="text-sm text-loza-500 mt-1.5">Opcional. Por ejemplo: 100 g de pollo tienen unos 25 g de proteínas.</p>
               </div>
             )}
 
@@ -1187,7 +1274,7 @@ function PlateLegend() {
 }
 
 // Rango de energía: marca el piso seguro y la franja flexible, nunca un "límite" que se excede
-function EnergyRange({ total, range }) {
+function EnergyRange({ total, range, floor = MINIMUM_SAFE_ENERGY_FLOOR }) {
   const scaleMax = Math.round(range.max * 1.2);
   const pct = (v) => `${Math.min(100, (v / scaleMax) * 100)}%`;
   const inRange = total >= range.min;
@@ -1199,16 +1286,16 @@ function EnergyRange({ total, range }) {
           style={{ left: pct(range.min), width: `calc(${pct(range.max)} - ${pct(range.min)})` }}
         />
         <div className="absolute inset-y-0 left-0 rounded-full bg-hoja-600 transition-[width] duration-500" style={{ width: pct(total) }} />
-        <div className="absolute -top-1 -bottom-1 w-0.5 bg-loza-700 rounded" style={{ left: pct(MINIMUM_SAFE_ENERGY_FLOOR) }} aria-hidden="true" />
+        <div className="absolute -top-1 -bottom-1 w-0.5 bg-loza-700 rounded" style={{ left: pct(floor) }} aria-hidden="true" />
       </div>
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-loza-600 tabular">
         <li className="flex items-center gap-2">
           <span aria-hidden="true" className="w-0.5 h-3.5 rounded bg-loza-700" />
-          Piso seguro: {MINIMUM_SAFE_ENERGY_FLOOR.toLocaleString('es-AR')} kcal
+          Piso seguro: {floor.toLocaleString('es-AR')} kcal
         </li>
         <li className="flex items-center gap-2">
           <span aria-hidden="true" className="w-3.5 h-2.5 rounded-sm bg-hoja-100 border border-hoja-300" />
-          {range.personal ? 'Tu rango' : 'Rango general'}: {range.min.toLocaleString('es-AR')} a {range.max.toLocaleString('es-AR')} kcal
+          {range.label || (range.personal ? 'Tu rango' : 'Rango general')}: {range.min.toLocaleString('es-AR')} a {range.max.toLocaleString('es-AR')} kcal
         </li>
       </ul>
       {inRange && (
@@ -1321,7 +1408,7 @@ function CloseButton({ onClick }) {
 }
 
 // Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
-function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, hasData }) {
+function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
   const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
   const fileRef = useRef(null);
   const row = 'w-full flex items-center gap-3 py-3.5 text-left text-[15px] text-loza-800 hover:text-loza-900';
@@ -1341,8 +1428,12 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
           </span>
         </button>
 
-        {numbersLocked ? (
-          <p className="py-3.5 text-sm text-loza-600">El Modo Intuitivo está siempre activo según lo que respondiste en tus datos. Lo podés cambiar desde “Tus datos”.</p>
+        {numbersLocked || sportOn ? (
+          <p className="py-3.5 text-sm text-loza-600">
+            {sportOn
+              ? 'Estás en el Modo Sport, que muestra energía, proteínas y peso. Para volver al modo Bienestar o al Modo Intuitivo, cambialo desde “Tus datos”.'
+              : 'El Modo Intuitivo está siempre activo según lo que respondiste en tus datos. Lo podés cambiar desde “Tus datos”.'}
+          </p>
         ) : (
         <button type="button" role="switch" aria-checked={intuitiveMode} onClick={onToggleIntuitive} className={`${row} justify-between`}>
           <span>
@@ -1415,3 +1506,95 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
     </div>
   );
 }
+
+// Modo Sport: objetivo, proteínas del día y guía de carbohidratos y grasas
+function SportMacros({ plan, proteinToday, goalLabel }) {
+  const pct = Math.min(100, (proteinToday / plan.proteinG[1]) * 100);
+  return (
+    <div className="mt-6 pt-5 border-t border-loza-200">
+      <p className="flex items-center gap-2 text-sm font-bold text-hoja-800">
+        <Dumbbell className="w-4 h-4" aria-hidden="true" /> Objetivo: {goalLabel}
+      </p>
+      <div className="mt-4">
+        <div className="flex items-baseline justify-between gap-3 text-sm">
+          <span className="font-bold text-loza-800">Proteínas</span>
+          <span className="text-loza-600 tabular"><span className="font-bold text-loza-900">{proteinToday} g</span> de {plan.proteinG[0]} a {plan.proteinG[1]} g</span>
+        </div>
+        <div className="mt-2 relative h-2.5 rounded-full bg-loza-100">
+          <div className="absolute inset-y-0 rounded-full bg-remolacha-100" style={{ left: `${(plan.proteinG[0] / plan.proteinG[1]) * 100}%`, right: 0 }} />
+          <div className="absolute inset-y-0 left-0 rounded-full bg-remolacha-600 transition-[width] duration-500" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm tabular">
+        <div className="rounded-2xl bg-loza-50 p-3"><dt className="text-loza-500">Carbohidratos</dt><dd className="font-bold text-loza-900">{plan.carbsG[0]} a {plan.carbsG[1]} g</dd></div>
+        <div className="rounded-2xl bg-loza-50 p-3"><dt className="text-loza-500">Grasas</dt><dd className="font-bold text-loza-900">{plan.fatG[0]} a {plan.fatG[1]} g</dd></div>
+      </dl>
+      <p className="mt-3 text-xs text-loza-500">Valores orientativos según guías de nutrición deportiva (ACSM e ISSN).</p>
+    </div>
+  );
+}
+
+// Modo Sport: seguimiento de peso con promedio semanal y avisos de ritmo
+function WeightSection({ plan, profile, trend, entries, onAdd }) {
+  const fmt1 = (n) => Number(n).toLocaleString('es-AR', { maximumFractionDigits: 1 });
+  const target = Number(profile?.targetWeightKg) || null;
+  const base = trend?.weekAvg ?? Number(profile?.weightKg);
+  let pace = null; // mensaje sobre el ritmo
+  if (trend?.weeklyChange != null && plan.rateKg) {
+    const ch = trend.weeklyChange;
+    const [lo, hi] = plan.rateKg; // kg por semana
+    if (plan.goal === 'perder-grasa') {
+      if (ch < lo) pace = { tone: 'alerta', text: 'Estás bajando más rápido de lo recomendable (más de 1 % de tu peso por semana). Comé un poco más: protege tu músculo, tu energía y tu rendimiento.' };
+      else if (ch <= hi) pace = { tone: 'bien', text: 'Vas a un ritmo seguro.' };
+      else pace = { tone: 'neutro', text: 'Esta semana el peso casi no cambió. Es normal: mirá la tendencia de 2 o 3 semanas antes de ajustar.' };
+    } else if (plan.goal === 'ganar-musculo') {
+      if (ch > hi) pace = { tone: 'alerta', text: 'Estás subiendo más rápido de lo recomendable. Bajá un poco la energía para ganar músculo con menos grasa.' };
+      else if (ch >= lo) pace = { tone: 'bien', text: 'Vas a un ritmo seguro para ganar músculo.' };
+      else pace = { tone: 'neutro', text: 'Esta semana el peso casi no cambió. Si sigue igual 2 o 3 semanas, sumá un poco de energía.' };
+    }
+  }
+  const remaining = target && base ? target - base : null;
+  const weeks = target && base ? weeksToTarget({ ...profile, weightKg: base }) : null;
+  const recent = [...entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  return (
+    <section aria-labelledby="titulo-peso-semana">
+      <div className="flex items-center justify-between gap-4">
+        <h2 id="titulo-peso-semana" className="font-display text-xl font-bold text-loza-900">Tu peso</h2>
+        <button type="button" onClick={onAdd} className="inline-flex items-center gap-1.5 pl-3 pr-4 py-2 rounded-full text-sm font-bold text-hoja-700 border border-hoja-200 hover:bg-hoja-50">
+          <Scale className="w-4 h-4" aria-hidden="true" /> Registrar peso
+        </button>
+      </div>
+      {!trend ? (
+        <p className="mt-2 text-loza-600">Registrá tu peso una o dos veces por semana para ver tu tendencia.</p>
+      ) : (
+        <>
+          <dl className="mt-4 grid grid-cols-3 gap-3 tabular">
+            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Último</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.latest)} kg</dd></div>
+            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Promedio 7 días</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.weekAvg)} kg</dd></div>
+            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Cambio semanal</dt><dd className="font-display text-xl font-bold text-loza-900">{trend.weeklyChange == null ? '—' : `${trend.weeklyChange > 0 ? '+' : ''}${fmt1(trend.weeklyChange)} kg`}</dd></div>
+          </dl>
+          {pace && (
+            <p className={`mt-3 rounded-2xl p-4 text-[15px] ${pace.tone === 'alerta' ? 'bg-remolacha-50 text-remolacha-900' : pace.tone === 'bien' ? 'bg-hoja-50 text-hoja-900' : 'bg-loza-100 text-loza-800'}`}>{pace.text}</p>
+          )}
+          {remaining != null && Math.abs(remaining) >= 0.5 && (
+            <p className="mt-3 text-[15px] text-loza-700">
+              Te faltan <strong className="tabular">{fmt1(Math.abs(remaining))} kg</strong> para tu objetivo de {fmt1(target)} kg
+              {weeks ? <>, unas <strong className="tabular">{weeks}</strong> semanas a ritmo seguro.</> : '.'}
+            </p>
+          )}
+          <ul className="mt-4 divide-y divide-loza-200 border-y border-loza-200 text-sm tabular">
+            {recent.map((e) => (
+              <li key={e.date} className="py-2 flex justify-between"><span className="text-loza-600">{formatWeekday(e.date)}, {formatDayMonth(e.date)}</span><span className="font-bold text-loza-900">{fmt1(e.kg)} kg</span></li>
+            ))}
+          </ul>
+        </>
+      )}
+      {plan.goal === 'perder-grasa' && (
+        <p className="mt-4 text-sm text-loza-500 leading-relaxed">
+          Si notás cansancio que no se va, lesiones seguidas, mucho frío, problemas para dormir o cambios en tu ciclo menstrual, puede ser falta de energía: comé más y consultá con un profesional.
+        </p>
+      )}
+    </section>
+  );
+}
+

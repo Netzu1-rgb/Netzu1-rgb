@@ -1,6 +1,17 @@
 # Estado de la app NetAI
 
-Revisión del 3 de noviembre de 2026 (versión 1.2.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 3 de noviembre de 2026 (versión 1.3.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.3.0: Modo Sport
+
+Modo opcional para deportistas mayores de 18, elegido en el recorrido inicial o desde Ajustes, en “Tus datos”. No está disponible para quien indica estar en tratamiento por un trastorno de la conducta alimentaria.
+
+- **Pasos propios:** deporte, días y minutos de entrenamiento, objetivo (bajar de peso, subir masa muscular, recomposición o rendimiento) y peso objetivo opcional.
+- **Plan:** energía, proteínas, carbohidratos, grasas y agua, según las guías de nutrición deportiva (ACSM e ISSN). Los tres macronutrientes suman la energía del día.
+- **Límites de seguridad:** déficit de hasta 15 % (máximo 500 kcal por día); nunca por debajo del gasto en reposo ni de 1.500 kcal; ritmo de 0,5 a 1 % del peso por semana para bajar y de 0,25 a 0,5 % para subir; peso objetivo dentro de un rango saludable para la altura.
+- **Mi día:** objetivo, energía, proteínas del día (se registran en cada comida), guía de carbohidratos y grasas, y vasos de agua según peso y entrenamiento.
+- **Semana:** registro de peso, promedio de 7 días, cambio semanal, avisos si el ritmo es demasiado rápido, semanas hasta el objetivo y señales de falta de energía (cansancio, lesiones, ciclo menstrual).
+- **Textos:** se ajustaron la web, la política de privacidad, los términos y la guía de marca: el modo Bienestar sigue siendo neutral al peso y el Modo Sport es opcional.
 
 ## Versión 1.2.0: tus datos personales y físicos
 

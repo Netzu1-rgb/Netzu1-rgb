@@ -14,6 +14,14 @@ import {
   hidesNumbers,
   isAdult,
   validateNumbers,
+  APP_MODES,
+  SPORT_GOALS,
+  SPORT_TYPES,
+  canUseSport,
+  sportPlan,
+  minHealthyWeight,
+  weeksToTarget,
+  validateSport,
 } from '@/lib/profile';
 
 const fmt = (n) => Number(n).toLocaleString('es-AR');
@@ -28,24 +36,31 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   const toggleIn = (key, id) => set({ [key]: p[key].includes(id) ? p[key].filter((x) => x !== id) : [...p[key], id] });
 
   const minor = p.age !== '' && Number(p.age) < 18;
-  const steps = useMemo(
-    () => ['inicio', 'vos', ...(minor ? [] : ['cuerpo']), 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'],
-    [minor]
-  );
+  const sport = p.mode === 'sport' && !minor;
+  const steps = useMemo(() => {
+    if (minor) return ['inicio', 'vos', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'];
+    if (sport) return ['inicio', 'vos', 'modo', 'cuerpo', 'deporte', 'meta', 'alimentacion', 'vista', 'resumen'];
+    return ['inicio', 'vos', 'modo', 'cuerpo', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'];
+  }, [minor, sport]);
   const step = steps[Math.min(stepIndex, steps.length - 1)];
-  const errors = validateNumbers(p);
-  const stepErrors = step === 'vos' ? ['age'] : step === 'cuerpo' ? ['heightCm', 'weightKg'] : [];
+  const errors = { ...validateNumbers(p), ...validateSport(p) };
+  const stepErrors = step === 'vos' ? ['age'] : step === 'cuerpo' ? ['heightCm', 'weightKg'] : step === 'deporte' ? ['trainingDays'] : step === 'meta' ? ['targetWeightKg'] : [];
+  const plan = sportPlan({ ...p, mode: sport ? 'sport' : p.mode });
+  const weeks = weeksToTarget(p);
   const blocked = stepErrors.some((k) => errors[k]);
   const range = energyRangeFor(p);
 
   const next = () => {
     if (blocked) { setTouched(true); return; }
     setTouched(false);
+    if (step === 'meta' && !p.sportGoal) { setTouched(true); return; }
     if (step === 'resumen') {
-      const viewMode = hidesNumbers(p) ? 'intuitivo' : p.viewMode;
+      // El Modo Sport no está disponible para menores ni para quien está en tratamiento por un TCA
+      const mode = p.mode === 'sport' && canUseSport(p) ? 'sport' : 'bienestar';
+      const viewMode = hidesNumbers(p) ? 'intuitivo' : mode === 'sport' ? 'rangos' : p.viewMode;
       // Menores de edad: no se guardan datos físicos
-      const clean = minor ? { ...p, heightCm: '', weightKg: '' } : p;
-      onFinish({ ...clean, viewMode, skipped: false, completedAt: new Date().toISOString() });
+      const clean = minor ? { ...p, heightCm: '', weightKg: '', targetWeightKg: '' } : p;
+      onFinish({ ...clean, mode, viewMode, skipped: false, completedAt: new Date().toISOString() });
       return;
     }
     setStepIndex((i) => Math.min(i + 1, steps.length - 1));
@@ -92,7 +107,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               <ul className="mt-6 space-y-3 text-[15px] text-loza-700">
                 <li className="flex gap-3"><Dot />Todo es opcional. Podés saltear lo que no quieras contestar.</li>
                 <li className="flex gap-3"><Dot />Tus datos se guardan solo en este teléfono.</li>
-                <li className="flex gap-3"><Dot />No vas a ver tu peso en la app ni metas para bajar de peso.</li>
+                <li className="flex gap-3"><Dot />Si sos deportista, podés elegir el Modo Sport para trabajar un objetivo físico.</li>
               </ul>
             </div>
           )}
@@ -120,8 +135,28 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
             </Step>
           )}
 
+          {step === 'modo' && (
+            <Step title="¿Cómo querés usar NetAI?" intro="Lo podés cambiar cuando quieras desde Ajustes.">
+              <div className="grid gap-2" role="radiogroup" aria-label="Modo de uso">
+                {APP_MODES.map((m) => (
+                  <OptionCard key={m.id} role="radio" selected={p.mode === m.id} onClick={() => set({ mode: m.id })} title={m.label} hint={m.hint} />
+                ))}
+              </div>
+              {p.mode === 'sport' && (
+                <p className="rounded-2xl bg-agua-50 text-agua-900 p-4 text-[15px] leading-relaxed">
+                  El Modo Sport usa tu peso y tu entrenamiento para calcular un plan con límites seguros: nunca baja de tu gasto en reposo y apunta a cambios graduales. Si tenés una condición de salud, consultá con un profesional antes de empezar.
+                </p>
+              )}
+            </Step>
+          )}
+
           {step === 'cuerpo' && (
-            <Step title="Tu cuerpo" intro="Lo usamos solo para estimar tu rango de energía. No lo vas a ver en la app, no calculamos tu IMC y no te vamos a proponer metas de peso. Si preferís no contestar, dejalo en blanco.">
+            <Step
+              title="Tu cuerpo"
+              intro={sport
+                ? 'Con tu altura y tu peso calculamos tu plan y seguimos tu progreso. Solo vos los ves.'
+                : 'Lo usamos solo para estimar tu rango de energía. En el modo Bienestar no lo vas a ver en la app, no calculamos tu IMC y no hay metas de peso. Si preferís no contestar, dejalo en blanco.'}
+            >
               <div className="grid grid-cols-2 gap-4">
                 <Field id="ob-altura" label="Altura (cm)" error={touched && errors.heightCm}>
                   <input id="ob-altura" type="number" inputMode="numeric" min="100" max="230" value={p.heightCm} onChange={(e) => set({ heightCm: e.target.value })} className={`${inputCls} tabular`} />
@@ -130,6 +165,46 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
                   <input id="ob-peso" type="number" inputMode="decimal" min="30" max="300" step="0.1" value={p.weightKg} onChange={(e) => set({ weightKg: e.target.value })} className={`${inputCls} tabular`} />
                 </Field>
               </div>
+            </Step>
+          )}
+
+          {step === 'deporte' && (
+            <Step title="Tu entrenamiento">
+              <Choice label="¿Qué deporte hacés principalmente?" options={SPORT_TYPES} value={p.sportType} onChange={(v) => set({ sportType: v })} />
+              <div className="grid grid-cols-2 gap-4">
+                <Field id="ob-dias" label="Días por semana" error={touched && errors.trainingDays}>
+                  <input id="ob-dias" type="number" inputMode="numeric" min="0" max="7" value={p.trainingDays} onChange={(e) => set({ trainingDays: e.target.value })} className={`${inputCls} tabular`} />
+                </Field>
+                <Field id="ob-minutos" label="Minutos por sesión">
+                  <input id="ob-minutos" type="number" inputMode="numeric" min="0" max="300" step="5" value={p.sessionMinutes} onChange={(e) => set({ sessionMinutes: e.target.value })} className={`${inputCls} tabular`} />
+                </Field>
+              </div>
+            </Step>
+          )}
+
+          {step === 'meta' && (
+            <Step title="Tu objetivo">
+              <div className="grid gap-2" role="radiogroup" aria-label="Objetivo físico">
+                {SPORT_GOALS.map((g) => (
+                  <OptionCard key={g.id} role="radio" selected={p.sportGoal === g.id} onClick={() => set({ sportGoal: g.id, targetWeightKg: '' })} title={g.label} hint={g.hint} />
+                ))}
+              </div>
+              {touched && !p.sportGoal && <p role="alert" className="text-sm text-remolacha-700">Elegí un objetivo para seguir.</p>}
+              {(p.sportGoal === 'perder-grasa' || p.sportGoal === 'ganar-musculo') && (
+                <Field
+                  id="ob-objetivo"
+                  label="Peso objetivo (kg)"
+                  hint={p.sportGoal === 'perder-grasa'
+                    ? `Opcional. Para tu altura, lo saludable es no bajar de ${minHealthyWeight(p.heightCm) || '—'} kg.`
+                    : 'Opcional.'}
+                  error={touched && errors.targetWeightKg}
+                >
+                  <input id="ob-objetivo" type="number" inputMode="decimal" min="30" max="300" step="0.5" value={p.targetWeightKg} onChange={(e) => set({ targetWeightKg: e.target.value })} className={`${inputCls} w-36 tabular`} />
+                </Field>
+              )}
+              {weeks && !errors.targetWeightKg && (
+                <p className="text-[15px] text-loza-700">A un ritmo seguro, llegarías en unas <strong className="tabular">{weeks}</strong> semanas.</p>
+              )}
             </Step>
           )}
 
@@ -177,8 +252,11 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               />
               {hidesNumbers(p) ? (
                 <p className="rounded-2xl bg-hoja-50 text-hoja-900 p-4 text-[15px] leading-relaxed">
-                  Gracias por contarnos. Activamos el Modo Intuitivo: vas a registrar con los grupos del plato y la escala de hambre y saciedad, sin números. Seguí las indicaciones de tu equipo de salud; NetAI no reemplaza ese acompañamiento.
+                  Gracias por contarnos. Activamos el Modo Intuitivo: vas a registrar con los grupos del plato y la escala de hambre y saciedad, sin números.
+                  {p.mode === 'sport' && ' Por eso, el Modo Sport y las metas de peso no van a estar disponibles.'} Seguí las indicaciones de tu equipo de salud; NetAI no reemplaza ese acompañamiento.
                 </p>
+              ) : sport ? (
+                <p className="text-[15px] text-loza-600">En el Modo Sport vas a ver tu energía, tus proteínas y tu peso para seguir el objetivo.</p>
               ) : (
                 <div className="grid gap-2" role="radiogroup" aria-label="Cómo ver la app">
                   <OptionCard role="radio" selected={p.viewMode === 'rangos'} onClick={() => set({ viewMode: 'rangos' })} title="Con un rango de energía flexible" hint="Ves una estimación de calorías del día dentro de un rango, sin alertas." />
@@ -190,7 +268,23 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
 
           {step === 'resumen' && (
             <Step title={p.name ? `Listo, ${p.name.trim()}` : 'Listo'}>
-              {!hidesNumbers(p) && p.viewMode === 'rangos' && (
+              {plan && !hidesNumbers(p) && (
+                <div className="rounded-[24px] bg-hoja-900 text-hoja-50 p-6">
+                  <p className="text-sm text-hoja-200">Tu plan: {SPORT_GOALS.find((g) => g.id === p.sportGoal)?.label}</p>
+                  <p className="font-display text-3xl sm:text-4xl font-bold text-white mt-1 tabular">{fmt(plan.energy.min)} a {fmt(plan.energy.max)} kcal</p>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-[15px] tabular">
+                    <dt className="text-hoja-200">Proteínas</dt><dd className="text-white">{plan.proteinG[0]} a {plan.proteinG[1]} g</dd>
+                    <dt className="text-hoja-200">Carbohidratos</dt><dd className="text-white">{plan.carbsG[0]} a {plan.carbsG[1]} g</dd>
+                    <dt className="text-hoja-200">Grasas</dt><dd className="text-white">{plan.fatG[0]} a {plan.fatG[1]} g</dd>
+                    <dt className="text-hoja-200">Agua</dt><dd className="text-white">{plan.waterGlasses} vasos</dd>
+                    {plan.rateKg && (<><dt className="text-hoja-200">Ritmo</dt><dd className="text-white">{Math.abs(plan.rateKg[1]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} a {Math.abs(plan.rateKg[0]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} kg por semana</dd></>)}
+                  </dl>
+                  <p className="text-sm text-hoja-100 mt-4 leading-relaxed">
+                    Mantenimiento estimado: {fmt(plan.maintenance)} kcal. Nunca bajamos de {fmt(plan.floor)} kcal, tu gasto en reposo. Son valores orientativos según las guías de nutrición deportiva (ACSM e ISSN).
+                  </p>
+                </div>
+              )}
+              {!plan && !hidesNumbers(p) && p.viewMode === 'rangos' && (
                 <div className="rounded-[24px] bg-hoja-900 text-hoja-50 p-6">
                   <p className="text-sm text-hoja-200">{range.personal ? 'Tu rango de energía flexible' : 'Rango de energía general'}</p>
                   <p className="font-display text-3xl sm:text-4xl font-bold text-white mt-1 tabular">{fmt(range.min)} a {fmt(range.max)} kcal</p>
@@ -205,11 +299,21 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               )}
               <dl className="divide-y divide-loza-200 border-y border-loza-200 text-[15px]">
                 <Row label="Edad" value={p.age ? `${p.age} años` : 'Sin completar'} />
-                {!minor && <Row label="Altura y peso" value={p.heightCm && p.weightKg ? 'Cargados (no se muestran)' : 'Sin completar'} />}
-                <Row label="Actividad" value={ACTIVITY_LEVELS.find((l) => l.id === p.activity)?.label || 'Sin completar'} />
-                <Row label="Objetivos" value={p.goals.length ? GOALS.filter((g) => p.goals.includes(g.id)).map((g) => g.label).join(', ') : 'Sin completar'} />
+                {!minor && <Row label="Altura y peso" value={p.heightCm && p.weightKg ? (sport ? `${p.heightCm} cm, ${p.weightKg} kg` : 'Cargados (no se muestran)') : 'Sin completar'} />}
+                {sport ? (
+                  <>
+                    <Row label="Modo" value="Sport" />
+                    <Row label="Entrenamiento" value={p.trainingDays ? `${p.trainingDays} días por semana${p.sessionMinutes ? `, ${p.sessionMinutes} min` : ''}` : 'Sin completar'} />
+                    <Row label="Objetivo" value={[SPORT_GOALS.find((g) => g.id === p.sportGoal)?.label, p.targetWeightKg ? `${p.targetWeightKg} kg` : ''].filter(Boolean).join(', ') || 'Sin completar'} />
+                  </>
+                ) : (
+                  <>
+                    <Row label="Actividad" value={ACTIVITY_LEVELS.find((l) => l.id === p.activity)?.label || 'Sin completar'} />
+                    <Row label="Objetivos" value={p.goals.length ? GOALS.filter((g) => p.goals.includes(g.id)).map((g) => g.label).join(', ') : 'Sin completar'} />
+                  </>
+                )}
                 <Row label="Alimentación" value={[...DIET_OPTIONS.filter((d) => p.diet.includes(d.id)).map((d) => d.label), p.allergies.trim()].filter(Boolean).join(', ') || 'Sin restricciones'} />
-                <Row label="Vista" value={hidesNumbers(p) || p.viewMode === 'intuitivo' ? 'Modo Intuitivo' : 'Rango de energía'} />
+                {!sport && <Row label="Vista" value={hidesNumbers(p) || p.viewMode === 'intuitivo' ? 'Modo Intuitivo' : 'Rango de energía'} />}
               </dl>
               <p className="text-sm text-loza-500">Podés cambiar todo desde Ajustes, en “Tus datos”.</p>
             </Step>

@@ -245,6 +245,8 @@ body.menu-open { overflow: hidden; }
 .compare td { padding: 16px 24px 16px 0; border-bottom: 1px solid var(--linea-2); vertical-align: top; width: 50%; }
 .compare td:first-child { color: var(--gris); text-decoration: line-through; text-decoration-color: rgba(110, 127, 117, .5); }
 .compare td:last-child { color: var(--tinta); }
+.sport-note { margin-top: 24px; max-width: 46em; padding: 18px 22px; border-radius: 18px; background: var(--blanco); border: 1px solid var(--linea); color: var(--tinta-2); }
+.sport-note strong { color: var(--tinta); }
 
 /* Precios */
 .plans { margin-top: clamp(36px, 4.5vw, 56px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
