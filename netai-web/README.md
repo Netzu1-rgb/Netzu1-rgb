@@ -10,10 +10,10 @@ Todo está en `lib/manifest.js`. Mientras un dato esté vacío, la web lo muestr
 | `apps.netai.url` | Dirección pública de NetAI en Vercel (por ejemplo `https://…/app`) | El botón dice "Próximamente" |
 | `apps.fit.url` | Dirección de NetAI Fit cuando exista la beta | Igual |
 | `stores.appStore` / `stores.playStore` | Enlaces a las fichas de las tiendas | Las insignias salen apagadas |
-| `waitlistEndpoint` | Dirección de un servicio de formularios (Formspree, Getform…) que reciba un POST con `email` y `app` | Se oculta el formulario y sale "Muy pronto abrimos la lista de espera" |
+| `requestEndpoint` | Adónde llegan las solicitudes de acceso. Está configurado con FormSubmit para musarrajuan99@gmail.com | Se oculta el formulario |
 | `betaDate` | Texto libre, por ejemplo `15 de diciembre` | Sale "Fecha por confirmar" |
 
-Una web estática no puede guardar correos por sí sola, por eso la lista de espera necesita ese servicio externo.
+Una web estática no puede enviar correos por sí sola: FormSubmit recibe cada solicitud y la reenvía por correo. La primera vez manda un correo de activación a esa casilla, que hay que confirmar. Después podés reemplazar el correo de la dirección por el código alternativo que te da FormSubmit, para que no quede visible en el código.
 
 ## Publicar en Hostinger
 1. Sube **el contenido** de esta carpeta (incluido `.htaccess`, que es un archivo oculto) a `public_html`.
@@ -29,7 +29,7 @@ Una web estática no puede guardar correos por sí sola, por eso la lista de esp
 6. Planes en US$: Gratis (registro ilimitado, sin fotos), Plus US$0,99/mes (60 fotos) y Pro US$1,99/mes (150 fotos).
 7. Cómo instalar, con pestañas Android / iPhone.
 8. Preguntas frecuentes.
-9. Lista de espera y pie con aviso de salud.
+9. Solicitud de acceso (llega por correo) y pie con aviso de salud.
 
 ## Diseño
 - Mismo sistema visual que la app: colores de los grupos del plato, Bricolage Grotesque y Atkinson Hyperlegible. Detalle en `../publicidad-netai/marca-netai.md`.

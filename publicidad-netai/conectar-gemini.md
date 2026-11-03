@@ -1,5 +1,7 @@
 # Plan para conectar NetAI a Google Gemini Flash
 
+> **Actualización (versión 1.4.0): ya está implementado.** La ruta `netai-app/src/app/api/analizar-plato/route.js` llama a Gemini (modelo `gemini-2.5-flash`, configurable con `GEMINI_MODEL`) con la foto reducida en el teléfono y pide una respuesta en JSON con nombre, porción, kcal, proteínas, carbohidratos, grasas y proporciones del plato. Solo responde a quien entró a la app, tiene un límite de fotos por hora y no guarda la foto. Para activarlo falta cargar `GEMINI_API_KEY` en Vercel. Lo que sigue (cuentas, cuotas por plan y cobros) continúa pendiente.
+
 Documento de planificación. No incluye código de la app.
 
 > **Estado de la información.** No pude abrir la documentación oficial de Google desde la sesión donde escribí esto (`ai.google.dev` no estaba permitido en la red). Lo que sigue sale de mi conocimiento general. Todo lo que figura en "Por confirmar" hay que comprobarlo en la documentación oficial antes de construir.

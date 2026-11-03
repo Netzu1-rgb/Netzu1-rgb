@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Outfit:wght@700&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=20261105" />
+  <link rel="stylesheet" href="styles.css?v=20261106" />
   <script>document.documentElement.className = "js";</script>
 </head>
 <body>
@@ -35,7 +35,7 @@
         <a href="#instalar">Instalar</a>
         <a href="#preguntas">Preguntas</a>
       </nav>
-      <a class="btn btn-primary btn-sm nav-cta" href="#avisame">Unirme a la beta</a>
+      <a class="btn btn-primary btn-sm nav-cta" href="#solicitar">Pedir acceso</a>
       <button class="burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu" data-burger>
         <span></span><span></span>
       </button>
@@ -50,7 +50,7 @@
       <a href="#instalar">Cómo instalar</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
-    <a class="btn btn-primary menu-cta" href="#avisame">Unirme a la beta</a>
+    <a class="btn btn-primary menu-cta" href="#solicitar">Pedir acceso</a>
   </div>
 
   <main id="top">
@@ -133,16 +133,16 @@
               <li>Avisos de descanso, nunca de culpa</li>
             </ul>
             <div class="app-cta">
-              <a class="btn btn-fit is-disabled" href="#avisame" data-app-link="fit" aria-disabled="true">Próximamente</a>
-              <a class="link link-fit" href="#avisame">Quiero entrar en la beta</a>
+              <a class="btn btn-fit is-disabled" href="#solicitar" data-app-link="fit" aria-disabled="true">Próximamente</a>
+              <a class="link link-fit" href="#solicitar">Pedir acceso a la beta</a>
             </div>
           </article>
         </div>
 
         <div class="stores" aria-label="Tiendas de aplicaciones">
           <p>Más adelante, también en las tiendas:</p>
-          <a class="store is-disabled" href="#avisame" data-store="appStore" aria-disabled="true"><small>Próximamente en</small>App Store</a>
-          <a class="store is-disabled" href="#avisame" data-store="playStore" aria-disabled="true"><small>Próximamente en</small>Google Play</a>
+          <a class="store is-disabled" href="#solicitar" data-store="appStore" aria-disabled="true"><small>Próximamente en</small>App Store</a>
+          <a class="store is-disabled" href="#solicitar" data-store="playStore" aria-disabled="true"><small>Próximamente en</small>Google Play</a>
         </div>
       </div>
     </section>
@@ -284,7 +284,7 @@
             <h3>Pack de lanzamiento</h3>
             <p>Quienes entren en la beta tendrán un descuento en el plan que incluye NetAI y NetAI Fit. <span data-beta-date>La fecha de la beta está por confirmar.</span></p>
           </div>
-          <a class="btn btn-light" href="#avisame">Reservar mi lugar</a>
+          <a class="btn btn-light" href="#solicitar">Pedir acceso</a>
         </div>
       </div>
     </section>
@@ -404,7 +404,7 @@
           </details>
           <details>
             <summary>¿Cuándo sale NetAI Fit?</summary>
-            <p>Está en desarrollo y primero va a abrir una beta cerrada. Si te anotás en la lista de espera, te avisamos cuando haya fecha.</p>
+            <p>Está en desarrollo y primero va a abrir una beta cerrada. Si pedís acceso y marcás el Modo Sport, te avisamos cuando haya fecha.</p>
           </details>
           <details>
             <summary>¿Puedo ocultar las calorías?</summary>
@@ -418,29 +418,55 @@
       </div>
     </section>
 
-    <!-- LISTA DE ESPERA -->
-    <section class="waitband" id="avisame">
+    <!-- SOLICITUD DE ACCESO -->
+    <section class="waitband" id="solicitar">
       <div class="wrap wait-grid">
         <div>
-          <h2>Probá NetAI Fit antes que nadie</h2>
-          <p class="sub">Te escribimos cuando abra la beta. Un correo cuando haya algo real para contarte, nada más.</p>
+          <h2>Pedí acceso a NetAI</h2>
+          <p class="sub">NetAI está en beta cerrada. Dejanos tus datos y te mandamos por correo cómo descargarla e instalarla.</p>
+          <ul class="wait-points">
+            <li>Te respondemos personalmente, sin listas de difusión.</li>
+            <li>Funciona en Android y en iPhone.</li>
+            <li>Podés elegir el modo Bienestar o el Modo Sport.</li>
+          </ul>
         </div>
         <div>
-          <form class="waitlist" data-waitlist novalidate hidden>
-            <label for="wl-email">Tu correo</label>
-            <div class="field">
-              <input id="wl-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@correo.com" required />
-              <button class="btn btn-light" type="submit">Anotarme</button>
+          <form class="request" data-request novalidate hidden>
+            <div class="row-2">
+              <div>
+                <label for="rq-nombre">Nombre</label>
+                <input id="rq-nombre" name="nombre" type="text" autocomplete="name" required />
+              </div>
+              <div>
+                <label for="rq-email">Correo</label>
+                <input id="rq-email" name="email" type="email" inputmode="email" autocomplete="email" required />
+              </div>
+            </div>
+            <div>
+              <label for="rq-tel">WhatsApp <span class="opt">(opcional)</span></label>
+              <input id="rq-tel" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" />
             </div>
             <fieldset>
-              <legend>Quiero novedades de</legend>
-              <label class="check"><input type="radio" name="app" value="ambas" checked /> Las dos apps</label>
-              <label class="check"><input type="radio" name="app" value="netai" /> NetAI</label>
-              <label class="check"><input type="radio" name="app" value="fit" /> NetAI Fit</label>
+              <legend>Tu teléfono</legend>
+              <label class="check"><input type="radio" name="telefono" value="Android" required /> Android</label>
+              <label class="check"><input type="radio" name="telefono" value="iPhone" /> iPhone</label>
             </fieldset>
+            <fieldset>
+              <legend>¿Qué modo te interesa?</legend>
+              <label class="check"><input type="radio" name="modo" value="Bienestar" checked /> Bienestar</label>
+              <label class="check"><input type="radio" name="modo" value="Sport" /> Modo Sport</label>
+              <label class="check"><input type="radio" name="modo" value="Todavía no sé" /> Todavía no sé</label>
+            </fieldset>
+            <div>
+              <label for="rq-msg">¿Algo que quieras contarnos? <span class="opt">(opcional)</span></label>
+              <textarea id="rq-msg" name="mensaje" rows="2"></textarea>
+            </div>
+            <input class="honey" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <label class="check consent"><input type="checkbox" name="consentimiento" required /> Acepto que usen estos datos solo para responderme sobre el acceso a NetAI.</label>
+            <button class="btn btn-light btn-lg" type="submit">Enviar solicitud</button>
             <p class="form-status" role="status" aria-live="polite"></p>
           </form>
-          <p class="soon" data-waitlist-soon>La lista de espera abre muy pronto. Volvé a pasar por acá.</p>
+          <p class="soon" data-request-soon>Las solicitudes abren muy pronto. Volvé a pasar por acá.</p>
         </div>
       </div>
     </section>
@@ -462,7 +488,7 @@
         <p class="foot-title">Ayuda</p>
         <a href="#instalar">Cómo instalar</a>
         <a href="#preguntas">Preguntas frecuentes</a>
-        <a href="#avisame">Lista de espera</a>
+        <a href="#solicitar">Pedir acceso</a>
       </nav>
       <div>
         <p class="foot-title">Aviso de salud</p>
@@ -474,7 +500,7 @@
     </div>
   </footer>
 
-  <script defer src="lib/manifest.js?v=20261105"></script>
-  <script defer src="main.js?v=20261105"></script>
+  <script defer src="lib/manifest.js?v=20261106"></script>
+  <script defer src="main.js?v=20261106"></script>
 </body>
 </html>

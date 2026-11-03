@@ -128,11 +128,11 @@
   }
 
 
-  // Lista de espera: solo se muestra si hay un servicio de formularios configurado
-  function initWaitlist() {
-    var form = $("[data-waitlist]");
-    var soon = $("[data-waitlist-soon]");
-    var endpoint = data.waitlistEndpoint;
+  // Solicitud de acceso: se envía al correo configurado en lib/manifest.js (requestEndpoint)
+  function initRequest() {
+    var form = $("[data-request]");
+    var soon = $("[data-request-soon]");
+    var endpoint = data.requestEndpoint;
     if (!form || !isHttp(endpoint)) return;
     form.hidden = false;
     if (soon) soon.hidden = true;
@@ -143,33 +143,53 @@
       status.textContent = msg;
       status.classList.toggle("is-error", !!isError);
     };
+    var val = function (name) {
+      var el = form.elements[name];
+      if (!el) return "";
+      if (el.length && !el.tagName) { var c = $("input[name=" + name + "]:checked", form); return c ? c.value : ""; }
+      return (el.value || "").trim();
+    };
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (button.disabled) return;
-      var email = form.elements.email.value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        say("Revisá el correo, parece incompleto.", true);
-        form.elements.email.focus();
-        return;
-      }
-      var chosen = $("input[name=app]:checked", form);
+      if (val("_honey")) return; // trampa para robots
+      var nombre = val("nombre");
+      var email = val("email");
+      if (!nombre) { say("Escribí tu nombre.", true); form.elements.nombre.focus(); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say("Revisá el correo, parece incompleto.", true); form.elements.email.focus(); return; }
+      if (!val("telefono")) { say("Elegí si tu teléfono es Android o iPhone.", true); return; }
+      if (!form.elements.consentimiento.checked) { say("Para enviar la solicitud, aceptá el uso de tus datos.", true); return; }
+
       button.disabled = true;
       say("Enviando…", false);
       fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ email: email, app: chosen ? chosen.value : "ambas" })
+        body: JSON.stringify({
+          _subject: "Nueva solicitud de NetAI: " + nombre,
+          _template: "table",
+          _replyto: email,
+          Nombre: nombre,
+          Correo: email,
+          WhatsApp: val("whatsapp") || "No lo dejó",
+          Teléfono: val("telefono"),
+          Modo: val("modo"),
+          Mensaje: val("mensaje") || "Sin mensaje",
+          Fecha: new Date().toLocaleString("es-AR")
+        })
       }).then(function (res) {
-        if (!res.ok) throw new Error("http " + res.status);
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          if (!res.ok || String(body.success) === "false") throw new Error("envío");
+        });
+      }).then(function () {
         form.reset();
-        say("Listo, te avisamos. Gracias por sumarte.", false);
+        say("Listo, " + nombre + ". Recibimos tu solicitud y te escribimos a " + email + ".", false);
       }).catch(function () {
-        say("No pudimos anotarte. Probá de nuevo en unos minutos.", true);
+        say("No pudimos enviar la solicitud. Probá de nuevo en unos minutos.", true);
       }).then(function () { button.disabled = false; });
     });
   }
-
 
   function boot() {
     safe(initNav, "initNav");
@@ -179,7 +199,7 @@
     safe(initBetaDate, "initBetaDate");
     safe(initYear, "initYear");
     safe(initTabs, "initTabs");
-    safe(initWaitlist, "initWaitlist");
+    safe(initRequest, "initRequest");
   }
 
   if (document.readyState === "loading") {

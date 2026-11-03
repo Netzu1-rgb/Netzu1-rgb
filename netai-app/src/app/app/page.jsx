@@ -27,6 +27,8 @@ import {
   UserRound,
   Scale,
   Dumbbell,
+  Camera,
+  Loader2,
 } from 'lucide-react';
 import {
   MINIMUM_SAFE_ENERGY_FLOOR,
@@ -40,6 +42,7 @@ import {
 import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
+import { prepareImage } from '@/lib/photo';
 import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
 const MEAL_CATEGORIES = [
@@ -50,8 +53,9 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
+const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
 function emptyDay() {
@@ -108,7 +112,9 @@ export default function PwaAppPage() {
   const [recipeFilter, setRecipeFilter] = useState('Todos');
   const [toast, setToast] = useState(null); // { text, undo? }
 
-  const emptyForm = { name: '', energy: '400', protein: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const emptyForm = { name: '', energy: '400', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const [photo, setPhoto] = useState({ status: 'idle' }); // idle | consent | loading | done | error
+  const photoInputRef = useRef(null);
   const [newMealForm, setNewMealForm] = useState(emptyForm);
 
   const today = getTodayString();
@@ -209,10 +215,12 @@ export default function PwaAppPage() {
   const sportOn = !!plan;
   const showNumbers = sportOn || (!intuitiveMode && !numbersLocked);
   const waterTarget = plan?.waterGlasses || 8;
-  const proteinToday = useMemo(
-    () => Object.values(currentDayLog.meals || {}).flat().reduce((n, m) => n + (Number(m.protein) || 0), 0),
-    [currentDayLog]
-  );
+  const macrosToday = useMemo(() => {
+    const all = Object.values(currentDayLog.meals || {}).flat();
+    const sum = (k) => all.reduce((n, m) => n + (Number(m[k]) || 0), 0);
+    return { protein: sum('protein'), carbs: sum('carbs'), fat: sum('fat') };
+  }, [currentDayLog]);
+  const proteinToday = macrosToday.protein;
 
   const updateDay = (date, fn) => {
     setLogsByDate((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDay()) }));
@@ -228,6 +236,7 @@ export default function PwaAppPage() {
   // Abrir la hoja para registrar o para editar
   const openNewMeal = (category, preset) => {
     setToast(null);
+    setPhoto({ status: 'idle' });
     setEditingMealId(null);
     setNewMealForm(preset ? { ...emptyForm, ...preset } : emptyForm);
     setActiveMealModal(category);
@@ -235,11 +244,14 @@ export default function PwaAppPage() {
 
   const openEditMeal = (category, meal) => {
     setToast(null);
+    setPhoto({ status: 'idle' });
     setEditingMealId(meal.id);
     setNewMealForm({
       name: meal.name,
       energy: String(meal.energy ?? ''),
       protein: meal.protein != null ? String(meal.protein) : '',
+      carbs: meal.carbs != null ? String(meal.carbs) : '',
+      fat: meal.fat != null ? String(meal.fat) : '',
       satietyBefore: Number(meal.satietyBefore) || 3,
       satietyAfter: Number(meal.satietyAfter) || 7,
       notes: meal.notes || '',
@@ -248,9 +260,56 @@ export default function PwaAppPage() {
   };
 
   const closeMealSheet = () => {
+    setPhoto({ status: 'idle' });
     setActiveMealModal(null);
     setEditingMealId(null);
     setNewMealForm(emptyForm);
+  };
+
+  // Foto del plato: la primera vez pide permiso; después abre la cámara
+  const startPhoto = () => {
+    let consent = false;
+    try { consent = localStorage.getItem(PHOTO_CONSENT_KEY) === 'true'; } catch (e) { /* sin almacenamiento */ }
+    if (!consent) { setPhoto({ status: 'consent' }); return; }
+    photoInputRef.current?.click();
+  };
+
+  const acceptPhotoConsent = () => {
+    try { localStorage.setItem(PHOTO_CONSENT_KEY, 'true'); } catch (e) { /* sin almacenamiento */ }
+    setPhoto({ status: 'idle' });
+    photoInputRef.current?.click();
+  };
+
+  const handlePhotoFile = async (file) => {
+    if (!file) return;
+    let prepared;
+    try {
+      prepared = await prepareImage(file);
+    } catch (e) {
+      setPhoto({ status: 'error', error: 'No pudimos leer esa imagen. Probá con otra foto.' });
+      return;
+    }
+    setPhoto({ status: 'loading', preview: prepared.preview });
+    try {
+      const res = await fetch('/api/analizar-plato', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: prepared.base64, mimeType: prepared.mimeType }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'No pudimos analizar la foto.');
+      setNewMealForm((prev) => ({
+        ...prev,
+        name: data.name,
+        energy: String(data.energy),
+        protein: String(data.protein),
+        carbs: String(data.carbs),
+        fat: String(data.fat),
+      }));
+      setPhoto({ status: 'done', preview: prepared.preview, result: data });
+    } catch (e) {
+      setPhoto({ status: 'error', preview: prepared.preview, error: e.message });
+    }
   };
 
   const handleAddMealSubmit = (e) => {
@@ -261,6 +320,9 @@ export default function PwaAppPage() {
       name: newMealForm.name.trim(),
       energy: parseInt(newMealForm.energy, 10) || 350,
       ...(newMealForm.protein !== '' && Number(newMealForm.protein) >= 0 ? { protein: Math.round(Number(newMealForm.protein)) } : {}),
+      ...(newMealForm.carbs !== '' && Number(newMealForm.carbs) >= 0 ? { carbs: Math.round(Number(newMealForm.carbs)) } : {}),
+      ...(newMealForm.fat !== '' && Number(newMealForm.fat) >= 0 ? { fat: Math.round(Number(newMealForm.fat)) } : {}),
+      ...(photo.status === 'done' ? { source: 'foto' } : {}),
       satietyBefore: parseInt(newMealForm.satietyBefore, 10) || 3,
       satietyAfter: parseInt(newMealForm.satietyAfter, 10) || 7,
       notes: newMealForm.notes.trim(),
@@ -540,7 +602,7 @@ export default function PwaAppPage() {
                       </p>
                     </div>
                     <EnergyRange total={totalEnergyToday} range={plan ? { ...plan.energy, personal: true, label: 'Tu objetivo' } : energyRange} floor={plan?.floor} />
-                    {plan && <SportMacros plan={plan} proteinToday={proteinToday} goalLabel={SPORT_GOALS.find((g) => g.id === plan.goal)?.label} />}
+                    {plan && <SportMacros plan={plan} today={macrosToday} goalLabel={SPORT_GOALS.find((g) => g.id === plan.goal)?.label} />}
                   </div>
                 )}
               </div>
@@ -623,7 +685,7 @@ export default function PwaAppPage() {
                                 <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
                                 <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
                                   {showNumbers && (
-                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal{sportOn && meal.protein != null ? `, ${meal.protein} g prot.` : ''}</span>
+                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal</span>
                                   )}
                                   <button
                                     type="button"
@@ -645,6 +707,11 @@ export default function PwaAppPage() {
                                   </button>
                                 </div>
                               </div>
+                              {sportOn && (meal.protein != null || meal.carbs != null || meal.fat != null) && (
+                                <p className="text-sm text-loza-600 mt-1 tabular">
+                                  {[meal.protein != null && `P ${meal.protein} g`, meal.carbs != null && `C ${meal.carbs} g`, meal.fat != null && `G ${meal.fat} g`].filter(Boolean).join(' · ')}
+                                </p>
+                              )}
                               {meal.notes && <p className="text-sm text-loza-600 mt-1">{meal.notes}</p>}
                               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                                 <ScaleReading label="Hambre antes" value={Number(meal.satietyBefore)} />
@@ -1018,7 +1085,25 @@ export default function PwaAppPage() {
             <CloseButton onClick={closeMealSheet} />
           </div>
 
-          {!editingMealId && frequentMeals.length > 0 && (
+          <PhotoPanel
+            photo={photo}
+            showNumbers={showNumbers}
+            onStart={startPhoto}
+            onAccept={acceptPhotoConsent}
+            onDecline={() => setPhoto({ status: 'idle' })}
+          />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; handlePhotoFile(f); }}
+          />
+
+          {!editingMealId && photo.status !== 'done' && frequentMeals.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -1081,6 +1166,16 @@ export default function PwaAppPage() {
                   className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
                 />
                 <p className="text-sm text-loza-500 mt-1.5">Opcional. Por ejemplo: 100 g de pollo tienen unos 25 g de proteínas.</p>
+                <div className="mt-3 grid grid-cols-2 gap-3 max-w-xs">
+                  <div>
+                    <label htmlFor="meal-carbs" className="block text-sm font-bold text-loza-800 mb-1.5">Carbohidratos (g)</label>
+                    <input id="meal-carbs" type="number" inputMode="numeric" min="0" max="500" value={newMealForm.carbs} onChange={(e) => setNewMealForm({ ...newMealForm, carbs: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+                  </div>
+                  <div>
+                    <label htmlFor="meal-fat" className="block text-sm font-bold text-loza-800 mb-1.5">Grasas (g)</label>
+                    <input id="meal-fat" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.fat} onChange={(e) => setNewMealForm({ ...newMealForm, fat: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1507,29 +1602,99 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
   );
 }
 
-// Modo Sport: objetivo, proteínas del día y guía de carbohidratos y grasas
-function SportMacros({ plan, proteinToday, goalLabel }) {
-  const pct = Math.min(100, (proteinToday / plan.proteinG[1]) * 100);
+// Modo Sport: objetivo y macronutrientes del día contra el plan
+function SportMacros({ plan, today, goalLabel }) {
+  const rows = [
+    { key: 'protein', label: 'Proteínas', range: plan.proteinG, bar: 'bg-remolacha-600', band: 'bg-remolacha-100' },
+    { key: 'carbs', label: 'Carbohidratos', range: plan.carbsG, bar: 'bg-trigo-500', band: 'bg-trigo-100' },
+    { key: 'fat', label: 'Grasas', range: plan.fatG, bar: 'bg-agua-500', band: 'bg-agua-100' },
+  ];
   return (
     <div className="mt-6 pt-5 border-t border-loza-200">
       <p className="flex items-center gap-2 text-sm font-bold text-hoja-800">
         <Dumbbell className="w-4 h-4" aria-hidden="true" /> Objetivo: {goalLabel}
       </p>
-      <div className="mt-4">
-        <div className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="font-bold text-loza-800">Proteínas</span>
-          <span className="text-loza-600 tabular"><span className="font-bold text-loza-900">{proteinToday} g</span> de {plan.proteinG[0]} a {plan.proteinG[1]} g</span>
-        </div>
-        <div className="mt-2 relative h-2.5 rounded-full bg-loza-100">
-          <div className="absolute inset-y-0 rounded-full bg-remolacha-100" style={{ left: `${(plan.proteinG[0] / plan.proteinG[1]) * 100}%`, right: 0 }} />
-          <div className="absolute inset-y-0 left-0 rounded-full bg-remolacha-600 transition-[width] duration-500" style={{ width: `${pct}%` }} />
+      <div className="mt-4 space-y-4">
+        {rows.map((r) => {
+          const val = today[r.key];
+          return (
+            <div key={r.key}>
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="font-bold text-loza-800">{r.label}</span>
+                <span className="text-loza-600 tabular"><span className="font-bold text-loza-900">{val} g</span> de {r.range[0]} a {r.range[1]} g</span>
+              </div>
+              <div className="mt-2 relative h-2.5 rounded-full bg-loza-100" aria-hidden="true">
+                <div className={`absolute inset-y-0 rounded-full ${r.band}`} style={{ left: `${(r.range[0] / r.range[1]) * 100}%`, right: 0 }} />
+                <div className={`absolute inset-y-0 left-0 rounded-full ${r.bar} transition-[width] duration-500`} style={{ width: `${Math.min(100, (val / r.range[1]) * 100)}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-4 text-xs text-loza-500">Valores orientativos según guías de nutrición deportiva (ACSM e ISSN). Se suman los gramos que registres en cada comida o que estime la foto.</p>
+    </div>
+  );
+}
+
+// Foto del plato: permiso, análisis y resultado para revisar
+function PhotoPanel({ photo, showNumbers, onStart, onAccept, onDecline }) {
+  if (photo.status === 'consent') {
+    return (
+      <div className="mt-4 rounded-2xl bg-agua-50 p-4 text-agua-900">
+        <p className="font-bold">Antes de tu primera foto</p>
+        <p className="text-sm mt-1 leading-relaxed">
+          Para reconocer el plato, la foto se envía a Google Gemini, un servicio de inteligencia artificial. No la guardamos y solo se usa para este análisis. El resultado es una estimación que podés corregir.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={onAccept} className="px-4 py-2.5 rounded-full bg-agua-700 text-white text-sm font-bold">Aceptar y sacar foto</button>
+          <button type="button" onClick={onDecline} className="px-4 py-2.5 rounded-full text-sm font-bold text-agua-900 hover:bg-agua-100">Ahora no</button>
         </div>
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm tabular">
-        <div className="rounded-2xl bg-loza-50 p-3"><dt className="text-loza-500">Carbohidratos</dt><dd className="font-bold text-loza-900">{plan.carbsG[0]} a {plan.carbsG[1]} g</dd></div>
-        <div className="rounded-2xl bg-loza-50 p-3"><dt className="text-loza-500">Grasas</dt><dd className="font-bold text-loza-900">{plan.fatG[0]} a {plan.fatG[1]} g</dd></div>
-      </dl>
-      <p className="mt-3 text-xs text-loza-500">Valores orientativos según guías de nutrición deportiva (ACSM e ISSN).</p>
+    );
+  }
+  return (
+    <div className="mt-4">
+      {photo.status === 'idle' && (
+        <button type="button" onClick={onStart} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-hoja-300 text-hoja-800 font-bold hover:bg-hoja-50">
+          <Camera className="w-5 h-5" aria-hidden="true" /> Sacar foto del plato
+        </button>
+      )}
+      {photo.status !== 'idle' && (
+        <div className="flex gap-3 items-start">
+          {photo.preview && <img src={photo.preview} alt="Foto del plato" className="w-20 h-20 rounded-2xl object-cover shrink-0" />}
+          <div className="min-w-0 flex-1" aria-live="polite">
+            {photo.status === 'loading' && (
+              <p className="flex items-center gap-2 text-loza-700"><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Analizando el plato…</p>
+            )}
+            {photo.status === 'error' && (
+              <>
+                <p className="text-remolacha-800 text-sm">{photo.error}</p>
+                <button type="button" onClick={onStart} className="mt-2 text-sm font-bold text-hoja-700 underline underline-offset-4">Probar con otra foto</button>
+              </>
+            )}
+            {photo.status === 'done' && photo.result && (
+              <>
+                <p className="font-bold text-loza-900 leading-snug">{photo.result.name}</p>
+                <p className="text-sm text-loza-600">{photo.result.portion}</p>
+                {showNumbers ? (
+                  <p className="text-sm text-loza-800 mt-1 tabular">
+                    {photo.result.energy} kcal · P {photo.result.protein} g · C {photo.result.carbs} g · G {photo.result.fat} g
+                  </p>
+                ) : (
+                  <p className="text-sm text-loza-800 mt-1">
+                    Vegetales {photo.result.plate.vegetables} % · Proteínas {photo.result.plate.protein} % · Cereales {photo.result.plate.carbs} %
+                  </p>
+                )}
+                <p className="text-xs text-loza-500 mt-1">
+                  Estimación {photo.result.confidence === 'alta' ? 'bastante segura' : photo.result.confidence === 'baja' ? 'poco segura' : 'aproximada'}. Revisá y corregí antes de guardar.
+                  {photo.result.note ? ` ${photo.result.note}` : ''}
+                </p>
+                <button type="button" onClick={onStart} className="mt-1.5 text-sm font-bold text-hoja-700 underline underline-offset-4">Sacar otra foto</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,16 @@
 # Estado de la app NetAI
 
-Revisión del 3 de noviembre de 2026 (versión 1.3.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 3 de noviembre de 2026 (versión 1.4.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
+
+**Foto del plato.** En "Registrar", el botón "Sacar foto del plato" abre la cámara. La foto se reduce en el teléfono, se envía a Google Gemini desde el servidor y vuelve con nombre, porción, kcal, proteínas, carbohidratos y grasas, que completan el formulario para revisar antes de guardar.
+- La primera vez pide permiso y explica que la foto va a Google y no se guarda.
+- Las comidas guardan proteínas, carbohidratos y grasas, y en el Modo Sport Mi día suma las tres contra el plan.
+- En el Modo Intuitivo o con TCA, el resultado muestra solo las proporciones del plato, sin números.
+- Para activarlo hay que cargar `GEMINI_API_KEY` en Vercel; sin la clave, la app pide registrar a mano. Probado con un servidor que imita a Gemini (no hubo acceso real a Google desde esta sesión).
+
+**Solicitudes de acceso en la web.** La sección final de `netai-web` es un formulario (nombre, correo, WhatsApp opcional, Android o iPhone, modo de interés, mensaje y consentimiento) que llega por correo a musarrajuan99@gmail.com a través de FormSubmit. La primera solicitud dispara un correo de activación que hay que confirmar.
 
 ## Versión 1.3.0: Modo Sport
 
@@ -54,7 +64,7 @@ Probado en el navegador en modo producción: 19 comprobaciones de estas funcione
 
 ### Decisiones tuyas (bloquean el lanzamiento)
 1. **Cómo entra una persona nueva:** beta cerrada con contraseña, acceso libre o cuentas (ver `lanzamiento.md`).
-2. **Análisis por foto:** hoy es una simulación. Hay que conectar Gemini (ver `conectar-gemini.md`) antes de vender Plus y Pro.
+2. **Análisis por foto:** ya está conectado a Gemini; falta cargar la clave. Para vender Plus y Pro con cuotas de fotos siguen haciendo falta cuentas.
 3. **Cobros:** no hay sistema de pagos. Para la web, Mercado Pago o Stripe; para las tiendas, el sistema de cada una.
 4. **Datos legales:** responsable, correo, ciudad y país en las páginas de privacidad y términos.
 

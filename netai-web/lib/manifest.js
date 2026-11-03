@@ -13,9 +13,10 @@
       appStore: "",   // enlace a la ficha de App Store, cuando exista
       playStore: ""   // enlace a la ficha de Google Play, cuando exista
     },
-    // Dirección de un servicio de formularios (Formspree, Getform, etc.) que reciba
-    // un POST con los campos "email" y "app". Vacío = se oculta el formulario.
-    waitlistEndpoint: "",
+    // Adónde llegan las solicitudes de acceso. Usa FormSubmit (formsubmit.co), que reenvía cada solicitud por correo.
+    // La primera solicitud dispara un correo de activación a esa casilla: hay que abrirlo y confirmar.
+    // Después FormSubmit da una dirección alternativa para no mostrar el correo en el código.
+    requestEndpoint: "https://formsubmit.co/ajax/musarrajuan99@gmail.com",
     // Texto libre para la fecha de la beta, por ejemplo "15 de diciembre". Vacío = "Fecha por confirmar".
     betaDate: ""
   };
