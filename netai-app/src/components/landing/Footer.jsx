@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Logo } from '@/components/brand/Logo';
 import { 
   Leaf, 
   Heart, 
@@ -15,7 +16,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-stone-900 text-stone-300 pt-16 pb-12 border-t border-stone-800">
+    <footer className="bg-hoja-900 text-stone-300 pt-16 pb-12 border-t border-hoja-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
@@ -24,12 +25,7 @@ export default function Footer() {
           {/* Brand Col */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-4 group">
-              <div className="w-10 h-10 rounded-xl bg-sage-500 text-white flex items-center justify-center">
-                <Leaf size={20} />
-              </div>
-              <span className="text-2xl font-bold text-white tracking-tight">
-                Net<span className="text-sage-400">AI</span>
-              </span>
+              <Logo tone="dark" size="md" />
             </Link>
 
             <p className="text-stone-400 text-sm leading-relaxed max-w-sm mb-6">

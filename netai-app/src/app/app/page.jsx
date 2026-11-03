@@ -29,7 +29,8 @@ import {
   EDUCATION_ARTICLES,
   MINDFUL_ENCOURAGEMENTS,
 } from '@/lib/ethicalNutrition';
-import { PlateMark, PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
+import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
+import { LogoMark } from '@/components/brand/Logo';
 
 const MEAL_CATEGORIES = [
   { id: 'desayuno', label: 'Desayuno', Icon: Sunrise, hint: 'Empezá el día con energía amable' },
@@ -312,7 +313,7 @@ export default function PwaAppPage() {
     return (
       <div className="min-h-screen bg-loza-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <PlateMark className="w-12 h-12" />
+          <LogoMark className="w-12 h-12" />
           <p className="text-loza-600 text-sm">Preparando tu día…</p>
         </div>
       </div>
@@ -331,9 +332,9 @@ export default function PwaAppPage() {
       <header className="sticky top-0 z-30 glass-surface border-x-0 border-t-0 safe-top">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <PlateMark className="w-8 h-8 shrink-0" />
+            <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
-              <p className="font-display font-bold text-lg leading-none text-loza-900">NetAI</p>
+              <p className="font-marca font-bold text-lg leading-none text-hoja-900">NetAI</p>
               <p className="text-xs text-loza-500 leading-tight mt-0.5">Acceso familiar</p>
             </div>
           </div>

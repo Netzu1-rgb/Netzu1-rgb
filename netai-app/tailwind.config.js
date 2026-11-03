@@ -3,9 +3,10 @@
 // Sistema de diseño NetAI: los colores salen de los grupos del Método del Plato.
 // hoja = vegetales (marca), remolacha = proteínas, trigo = cereales, agua = hidratación.
 // loza = neutros con un leve tinte verde, como un plato de cerámica.
+// hoja-900 (#14412C) y el gris #B5B8BA son los colores del logo oficial.
 const hoja = {
   50: '#EEF6F1', 100: '#D7EADF', 200: '#B0D4C0', 300: '#80B89B', 400: '#529A77',
-  500: '#378058', 600: '#2D6A4F', 700: '#255640', 800: '#1E4535', 900: '#17352A', 950: '#0D2019',
+  500: '#378058', 600: '#2D6A4F', 700: '#255640', 800: '#1E4535', 900: '#14412C', 950: '#0C2A1C',
 };
 const remolacha = {
   50: '#FBF0F3', 100: '#F5DCE3', 200: '#EBB8C7', 300: '#DC8CA4', 400: '#C6627F',
@@ -46,6 +47,7 @@ module.exports = {
       fontFamily: {
         sans: ['"Atkinson Hyperlegible"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Arial', 'sans-serif'],
         display: ['"Bricolage Grotesque"', '"Atkinson Hyperlegible"', 'system-ui', 'sans-serif'],
+        marca: ['Outfit', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 1px 2px rgba(15, 26, 21, 0.05), 0 4px 16px -6px rgba(15, 26, 21, 0.10)',

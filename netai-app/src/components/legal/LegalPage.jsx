@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PlateMark } from '@/components/brand/Plate';
+import { Logo } from '@/components/brand/Logo';
 
 // Datos que hay que completar antes de publicar. Se ven resaltados en la página mientras falten.
 export const LEGAL = {
@@ -18,9 +18,8 @@ export default function LegalPage({ title, children }) {
     <div className="min-h-screen bg-loza-50">
       <header className="border-b border-loza-200">
         <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 font-display text-xl font-bold text-loza-900">
-            <PlateMark className="w-8 h-8" />
-            NetAI
+          <Link href="/" aria-label="NetAI, inicio">
+            <Logo size="sm" />
           </Link>
           <nav className="flex gap-5 text-[15px] text-loza-700">
             <Link href="/privacidad" className="hover:underline underline-offset-4">Privacidad</Link>

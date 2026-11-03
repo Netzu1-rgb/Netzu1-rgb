@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { PlateGraphic } from '@/components/brand/Plate';
+import { Logo } from '@/components/brand/Logo';
 import {
   Eye,
   EyeOff,
@@ -148,12 +148,10 @@ export default function LoginPage() {
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           Volver al inicio
         </Link>
-        <div className="mt-8 lg:mt-auto flex items-center gap-5 lg:block">
-          <PlateGraphic tone="dark" decorative className="w-20 h-20 lg:w-64 lg:h-64 shrink-0" />
-          <div className="lg:mt-10">
-            <p className="font-display text-2xl lg:text-4xl font-bold text-white leading-tight">NetAI</p>
-            <p className="text-hoja-100 mt-1 lg:mt-3 lg:text-lg max-w-sm">Comer con calma, sin dietas ni culpa.</p>
-          </div>
+        <div className="mt-8 lg:mt-auto flex flex-col items-start lg:items-center gap-4 lg:gap-8">
+          <Logo tone="dark" size="lg" className="hidden lg:inline-flex" />
+          <Logo tone="dark" size="md" className="lg:hidden" />
+          <p className="text-hoja-100 lg:text-lg lg:text-center max-w-sm">Comer con calma, sin dietas ni culpa.</p>
         </div>
         <p className="hidden lg:block mt-auto pt-10 text-sm text-hoja-200">Tus registros se guardan en tu teléfono.</p>
       </aside>

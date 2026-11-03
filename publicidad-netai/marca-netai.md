@@ -46,23 +46,30 @@ Cálido, sereno y sin juicios. Nada de urgencia agresiva ni de "antes y después
 ## Identidad visual
 Sistema compartido por la web (`netai-web/`) y la app (`netai-app/`, en `tailwind.config.js` y `src/components/brand/Plate.jsx`).
 
-**Idea central:** el Método del Plato. El logo es un plato visto desde arriba (mitad vegetales, un cuarto proteínas, un cuarto cereales) y los colores salen de esos grupos de alimentos.
+**Logo oficial:** una hoja dentro de un recuadro gris, con la palabra NetAI en Outfit (negrita), sobre verde oscuro. Colores del logo: verde `#14412C` y gris `#B5B8BA`. Archivos en `publicidad-netai/marca/`:
+- `logo-original.png`: la imagen que mandaste.
+- `netai-logo-fondo-verde.png` y `netai-logo-transparente.png`: el logo completo en 1200 × 1200.
+- `netai-icono.svg` y `netai-icono-1024.png`: solo el ícono, para la app, las tiendas y las redes.
+
+**Gráfico de la marca:** el Método del Plato (mitad vegetales, un cuarto proteínas, un cuarto cereales). Ya no es el logo, sino la ilustración principal de la web y de la app. Los colores de apoyo salen de esos grupos de alimentos.
 
 | Nombre | Color | Uso |
 |---|---|---|
-| Hoja | `#2D6A4F` (oscuro `#17352A`) | Color de marca, botones principales, vegetales |
+| Verde del logo | `#14412C` | Fondo de marca, logo, superficies oscuras |
+| Gris del logo | `#B5B8BA` | Recuadro del ícono y la palabra NetAI sobre verde |
+| Hoja | `#2D6A4F` | Botones principales, vegetales |
 | Remolacha | `#93385A` | Proteínas en el plato |
 | Trigo | `#D9A232` | Cereales en el plato, detalles cálidos |
 | Agua | `#3478A8` (oscuro `#19344C`) | Hidratación y NetAI Fit |
 | Loza | `#F6F8F4` | Fondo, neutro con un leve tinte verde |
 | Tinta | `#1A2A23` | Texto |
 
-**Tipografías (Google Fonts):** Bricolage Grotesque para títulos y Atkinson Hyperlegible para el texto. Atkinson está pensada para leerse fácil; su cero lleva una barra a propósito, para no confundirlo con la letra O.
+**Tipografías (Google Fonts):** Outfit (negrita) solo para la palabra NetAI del logo, Bricolage Grotesque para títulos y Atkinson Hyperlegible para el texto. Atkinson está pensada para leerse fácil; su cero lleva una barra a propósito, para no confundirlo con la letra O.
 
-**NetAI Fit:** misma familia visual, con el azul agua como color propio. Su ícono es un anillo de movimiento sobre fondo azul oscuro.
+**NetAI Fit:** mismo estilo de ícono (recuadro gris) con una línea de pulso en azul oscuro en lugar de la hoja. Su color propio es el azul agua.
 
 **Reglas de diseño:**
-- Una sola pieza llamativa por pantalla: el plato.
+- Una sola pieza llamativa por pantalla: el plato como ilustración.
 - Sin etiquetas en mayúsculas sobre los títulos, sin numerar secciones que no son una secuencia y sin resaltar una palabra del título.
 - Animación solo cuando aporta: el plato se arma una vez al cargar la web y el teléfono cambia de pantalla en "Un día". Siempre se respeta el movimiento reducido.
 - Activos: `netai-web/assets/img/netai-icon.svg`, `netai-web/assets/img/netai-fit-icon.svg`, `netai-app/public/icons/`.

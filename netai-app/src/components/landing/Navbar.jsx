@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
-import { PlateMark } from '@/components/brand/Plate';
+import { Logo } from '@/components/brand/Logo';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,8 +15,7 @@ export default function Navbar() {
           
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-3 group">
-            <PlateMark className="w-10 h-10" />
-            <span className="font-display text-2xl font-bold tracking-tight text-loza-900">NetAI</span>
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Navigation Links */}
