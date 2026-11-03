@@ -99,7 +99,7 @@ Hacé clic en **"Deploy"**. En menos de 2 minutos tu sitio estará activo con HT
 
 ## 💻 Probar en tu computadora (localhost)
 
-**Requisito:** Node.js 18 o superior ([nodejs.org](https://nodejs.org)).
+**Requisito:** Node.js 20 o superior ([nodejs.org](https://nodejs.org)).
 
 ### Opción rápida
 - **Mac o Linux:** abrí una terminal en esta carpeta y ejecutá `./iniciar-local.sh`

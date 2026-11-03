@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { 
   getFamilyPassword, 
+  isAuthConfigured,
   createSessionToken, 
   SESSION_COOKIE_NAME, 
   SESSION_MAX_AGE_SECONDS 
@@ -15,9 +16,19 @@ export async function POST(request) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'Por favor, ingresa la clave de acceso familiar.' 
+          message: 'Ingresá la contraseña familiar.' 
         },
         { status: 400 }
+      );
+    }
+
+    if (!isAuthConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'El acceso todavía no está configurado. Quien administra la app tiene que definir APP_FAMILY_PASSWORD y SESSION_SECRET en el servidor.',
+        },
+        { status: 503 }
       );
     }
 
@@ -33,7 +44,7 @@ export async function POST(request) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'Contraseña incorrecta. Por favor, solicita la clave familiar correcta.' 
+          message: 'Contraseña incorrecta. Pedísela a quien administra el acceso de tu familia.' 
         },
         { status: 401 }
       );

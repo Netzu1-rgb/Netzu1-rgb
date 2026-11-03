@@ -6,7 +6,7 @@ cd /d "%~dp0"
 
 where node >nul 2>nul
 if errorlevel 1 (
-  echo Falta Node.js. Instalalo desde https://nodejs.org ^(version 18 o superior^) y volve a ejecutar este archivo.
+  echo Falta Node.js. Instalalo desde https://nodejs.org ^(version 20 o superior^) y volve a ejecutar este archivo.
   pause
   exit /b 1
 )

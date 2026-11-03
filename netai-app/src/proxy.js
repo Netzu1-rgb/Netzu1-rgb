@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SESSION_COOKIE_NAME, verifySessionToken } from './lib/auth';
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
   // Permitir assets públicos, imágenes, PWA manifest y Service Worker

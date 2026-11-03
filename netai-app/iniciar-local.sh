@@ -6,13 +6,13 @@ set -e
 cd "$(dirname "$0")"
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "Falta Node.js. Instalalo desde https://nodejs.org (versión 18 o superior) y volvé a ejecutar este archivo."
+  echo "Falta Node.js. Instalalo desde https://nodejs.org (versión 20 o superior) y volvé a ejecutar este archivo."
   exit 1
 fi
 
 NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]")
-if [ "$NODE_MAJOR" -lt 18 ]; then
-  echo "Tu Node.js es la versión $(node -v). NetAI necesita la 18 o superior."
+if [ "$NODE_MAJOR" -lt 20 ]; then
+  echo "Tu Node.js es la versión $(node -v). NetAI necesita la 20 o superior."
   exit 1
 fi
 

@@ -3,11 +3,35 @@
 export const SESSION_COOKIE_NAME = 'netai_family_session';
 export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 días persistente
 
+const DEV_FALLBACK_PASSWORD = 'familia2026';
+
 /**
- * Obtiene la contraseña familiar configurada en Vercel o su fallback local
+ * Contraseña familiar configurada en Vercel.
+ * En desarrollo, si falta, se usa una de prueba; en producción no hay contraseña por defecto.
  */
 export function getFamilyPassword() {
-  return process.env.APP_FAMILY_PASSWORD || 'familia2026';
+  const configured = process.env.APP_FAMILY_PASSWORD;
+  if (configured && configured.trim()) return configured;
+  return process.env.NODE_ENV === 'production' ? null : DEV_FALLBACK_PASSWORD;
+}
+
+/**
+ * Clave con la que se firman las sesiones: SESSION_SECRET más la contraseña,
+ * así cambiar cualquiera de las dos cierra todas las sesiones abiertas.
+ */
+function getSigningSecret() {
+  const password = getFamilyPassword();
+  if (!password) return null;
+  const sessionSecret = process.env.SESSION_SECRET || '';
+  if (process.env.NODE_ENV === 'production' && sessionSecret.length < 32) return null;
+  return `${sessionSecret}:${password}`;
+}
+
+/**
+ * Indica si el acceso está bien configurado para este entorno
+ */
+export function isAuthConfigured() {
+  return getSigningSecret() !== null;
 }
 
 /**
@@ -40,7 +64,8 @@ function bufferToHex(buffer) {
  * Crea un token de sesión criptográfico con duración de 30 días
  */
 export async function createSessionToken() {
-  const secret = getFamilyPassword();
+  const secret = getSigningSecret();
+  if (!secret) throw new Error('El acceso no está configurado');
   const timestamp = Date.now().toString();
   const key = await getCryptoKey(secret);
   const enc = new TextEncoder();
@@ -71,7 +96,8 @@ export async function verifySessionToken(token) {
     return false;
   }
 
-  const secret = getFamilyPassword();
+  const secret = getSigningSecret();
+  if (!secret) return false;
   const key = await getCryptoKey(secret);
   const enc = new TextEncoder();
   const expectedSigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(`netai-session:${timestampStr}`));
