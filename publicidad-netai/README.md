@@ -13,5 +13,6 @@ Documentación para crear la publicidad de **NetAI** (plataforma de bienestar y 
 - [`prompt-claude-code.md`](prompt-claude-code.md): prompt listo para pegar en una sesión nueva de Claude Code con todo este contexto.
 - [`conectar-gemini.md`](conectar-gemini.md): plan para conectar NetAI a Google Gemini Flash (análisis de fotos real, cuotas, privacidad y costos).
 - [`instalar-rea.md`](instalar-rea.md): cómo instalar REA como herramienta de Claude Code y reglas de uso para analizar apps de gimnasio.
+- [`lanzamiento.md`](lanzamiento.md): lista para lanzar NetAI en internet: qué está hecho, qué falta y en qué orden (web primero, tiendas después).
 
 El repo ya incluye `youtube-shorts/`, una automatización de Shorts diarios. Se puede reutilizar su pipeline (`render.js`, `voz.js`, `upload.js`) para los vídeos de NetAI.

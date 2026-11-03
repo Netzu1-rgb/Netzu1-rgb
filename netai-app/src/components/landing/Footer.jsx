@@ -158,9 +158,10 @@ export default function Footer() {
         {/* Bottom Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <p>© {new Date().getFullYear()} NetAI Wellness Platform. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-4">
-            <span className="text-stone-400">Hecho con empatía para uso familiar y bienestar integral.</span>
-          </div>
+          <nav className="flex items-center gap-5" aria-label="Legal">
+            <Link href="/privacidad" className="text-stone-300 hover:text-white transition-colors">Política de privacidad</Link>
+            <Link href="/terminos" className="text-stone-300 hover:text-white transition-colors">Términos de uso</Link>
+          </nav>
         </div>
 
       </div>

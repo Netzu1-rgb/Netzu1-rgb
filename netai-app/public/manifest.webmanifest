@@ -1,26 +1,21 @@
 {
-  "name": "NetAI - Bienestar & Nutrición Consciente",
+  "id": "/app",
+  "name": "NetAI · Nutrición consciente",
   "short_name": "NetAI",
-  "description": "Plataforma de bienestar y nutrición ética con enfoque neutral al peso y acceso familiar privado.",
+  "description": "Comé con calma, sin dietas ni culpa: Método del Plato, escala de hambre y saciedad y Modo Intuitivo.",
+  "lang": "es-AR",
+  "dir": "ltr",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#F6F8F4",
-  "theme_color": "#2D6A4F",
-  "orientation": "portrait-primary",
-  "categories": ["health", "lifestyle", "medical"],
+  "theme_color": "#17352A",
+  "categories": ["health", "lifestyle", "food"],
   "icons": [
-    {
-      "src": "/icons/icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

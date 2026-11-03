@@ -127,6 +127,11 @@ function LoginForm() {
       <p className="text-sm text-loza-500 mt-6 leading-relaxed">
         ¿No sabés la contraseña? Pedísela a quien administra el acceso de tu familia.
       </p>
+      <p className="text-sm text-loza-500 mt-3">
+        <Link href="/privacidad" className="underline underline-offset-4 hover:text-loza-800">Privacidad</Link>
+        {' '}y{' '}
+        <Link href="/terminos" className="underline underline-offset-4 hover:text-loza-800">términos de uso</Link>
+      </p>
     </div>
   );
 }
