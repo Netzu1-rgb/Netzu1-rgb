@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import {
   Utensils,
@@ -19,6 +19,11 @@ import {
   Coffee,
   Moon,
   Apple,
+  Settings2,
+  Pencil,
+  CalendarDays,
+  Download,
+  Upload,
 } from 'lucide-react';
 import {
   MINIMUM_SAFE_ENERGY_FLOOR,
@@ -40,6 +45,35 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
+const APP_VERSION = '1.1.0';
+const STORAGE_KEY = 'netai_wellness_log_v1';
+const INTUITIVE_KEY = 'netai_intuitive_mode';
+const WELCOME_KEY = 'netai_welcome_done';
+
+function emptyDay() {
+  return { waterGlasses: 0, meals: { desayuno: [], almuerzo: [], merienda: [], cena: [], colacion: [] } };
+}
+
+function offsetDate(dateStr, offset) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function average(values) {
+  const v = values.filter((n) => Number.isFinite(n) && n > 0);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+
+// Momento del día sugerido según la hora
+function suggestedMoment() {
+  const h = new Date().getHours();
+  if (h < 11) return 'desayuno';
+  if (h < 16) return 'almuerzo';
+  if (h < 20) return 'merienda';
+  return 'cena';
+}
+
 function getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -49,78 +83,43 @@ function getTodayString() {
 }
 
 export default function PwaAppPage() {
-  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'inspiration' | 'learn'
+  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'week' | 'inspiration' | 'learn'
   const [intuitiveMode, setIntuitiveMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [logsByDate, setLogsByDate] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(true);
 
-  // Modales
-  const [activeMealModal, setActiveMealModal] = useState(null); // 'desayuno' | ...
-  const [activeRecipeModal, setActiveRecipeModal] = useState(null); // recipe object
-  const [activeArticleModal, setActiveArticleModal] = useState(null); // article object
+  // Hojas
+  const [activeMealModal, setActiveMealModal] = useState(null); // momento del día que se está registrando
+  const [editingMealId, setEditingMealId] = useState(null); // id del registro que se edita, o null si es nuevo
+  const [activeRecipeModal, setActiveRecipeModal] = useState(null);
+  const [recipeMoment, setRecipeMoment] = useState(suggestedMoment());
+  const [activeArticleModal, setActiveArticleModal] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [recipeFilter, setRecipeFilter] = useState('Todos');
+  const [toast, setToast] = useState(null); // { text, undo? }
 
-  // Formulario nuevo plato
-  const [newMealForm, setNewMealForm] = useState({
-    name: '',
-    energy: '400',
-    satietyBefore: 3,
-    satietyAfter: 7,
-    notes: '',
-  });
+  const emptyForm = { name: '', energy: '400', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const [newMealForm, setNewMealForm] = useState(emptyForm);
 
-  // Frase inspiradora aleatoria
+  const today = getTodayString();
+  const isToday = selectedDate === today;
+
+  // Frase del día
   const dailyEncouragement = useMemo(() => {
     const index = Math.abs(selectedDate.split('-').reduce((acc, part) => acc + parseInt(part, 10), 0)) % MINDFUL_ENCOURAGEMENTS.length;
     return MINDFUL_ENCOURAGEMENTS[index];
   }, [selectedDate]);
 
-  // Cargar de localStorage
+  // Cargar de localStorage. La primera vez empieza vacío, sin datos de ejemplo.
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem('netai_wellness_log_v1');
-      if (savedData) {
-        setLogsByDate(JSON.parse(savedData));
-      } else {
-        // Datos de ejemplo para el primer día
-        const initialToday = getTodayString();
-        setLogsByDate({
-          [initialToday]: {
-            waterGlasses: 5,
-            meals: {
-              desayuno: [
-                {
-                  id: 'd-1',
-                  name: 'Tostada de masa madre con huevo revuelto y palta',
-                  energy: 410,
-                  satietyBefore: 2,
-                  satietyAfter: 7,
-                  notes: 'Desayuné tranquilo mirando la luz de la mañana.',
-                },
-              ],
-              almuerzo: [
-                {
-                  id: 'a-1',
-                  name: 'Bowl de Quinoa, Calabaza Asada y Lentejas',
-                  energy: 510,
-                  satietyBefore: 3,
-                  satietyAfter: 7,
-                  notes: 'Sabor excelente, textura de calabaza perfecta.',
-                },
-              ],
-              merienda: [],
-              cena: [],
-              colacion: [],
-            },
-          },
-        });
-      }
-
-      const savedIntuitive = localStorage.getItem('netai_intuitive_mode');
-      if (savedIntuitive !== null) {
-        setIntuitiveMode(savedIntuitive === 'true');
-      }
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) setLogsByDate(JSON.parse(savedData));
+      const savedIntuitive = localStorage.getItem(INTUITIVE_KEY);
+      if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
+      setWelcomeDismissed(localStorage.getItem(WELCOME_KEY) === 'true');
     } catch (e) {
       console.warn('Error leyendo localStorage', e);
     }
@@ -131,168 +130,170 @@ export default function PwaAppPage() {
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      localStorage.setItem('netai_wellness_log_v1', JSON.stringify(logsByDate));
-      localStorage.setItem('netai_intuitive_mode', String(intuitiveMode));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logsByDate));
+      localStorage.setItem(INTUITIVE_KEY, String(intuitiveMode));
     } catch (e) {
       console.warn('Error guardando en localStorage', e);
     }
   }, [logsByDate, intuitiveMode, isLoaded]);
 
-  // Datos del día seleccionado
-  const currentDayLog = useMemo(() => {
-    if (!logsByDate[selectedDate]) {
-      return {
-        waterGlasses: 0,
-        meals: {
-          desayuno: [],
-          almuerzo: [],
-          merienda: [],
-          cena: [],
-          colacion: [],
-        },
-      };
-    }
-    return logsByDate[selectedDate];
-  }, [logsByDate, selectedDate]);
+  // El aviso se va solo a los 6 segundos
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
-  // Total de energía consumida hoy
+  const currentDayLog = useMemo(() => logsByDate[selectedDate] || emptyDay(), [logsByDate, selectedDate]);
+
   const totalEnergyToday = useMemo(() => {
     let sum = 0;
-    Object.values(currentDayLog.meals || {}).forEach((mealArray) => {
-      mealArray.forEach((item) => {
-        sum += Number(item.energy) || 0;
-      });
-    });
+    Object.values(currentDayLog.meals || {}).forEach((list) => list.forEach((item) => { sum += Number(item.energy) || 0; }));
     return sum;
   }, [currentDayLog]);
 
-  // Manejo de agua
+  // Comidas frecuentes: las que más registraste, con la última energía usada
+  const frequentMeals = useMemo(() => {
+    const counts = new Map();
+    Object.values(logsByDate).forEach((day) => {
+      Object.values(day.meals || {}).forEach((list) => list.forEach((m) => {
+        const key = (m.name || '').trim().toLowerCase();
+        if (!key) return;
+        const prev = counts.get(key) || { name: m.name.trim(), energy: m.energy, count: 0 };
+        counts.set(key, { name: prev.name, energy: m.energy, count: prev.count + 1 });
+      }));
+    });
+    return [...counts.values()].sort((a, b) => b.count - a.count).slice(0, 6);
+  }, [logsByDate]);
+
+  // Últimos 7 días (hasta hoy) para la vista semanal
+  const weekDays = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = offsetDate(today, -i);
+      const log = logsByDate[date] || emptyDay();
+      const meals = Object.values(log.meals || {}).flat();
+      days.push({
+        date,
+        water: log.waterGlasses || 0,
+        meals: meals.length,
+        hungerAvg: average(meals.map((m) => Number(m.satietyBefore))),
+        satietyAvg: average(meals.map((m) => Number(m.satietyAfter))),
+        cared: meals.length > 0 || (log.waterGlasses || 0) > 0,
+      });
+    }
+    return days;
+  }, [logsByDate, today]);
+
+  const isFirstRun = isLoaded && !welcomeDismissed && Object.keys(logsByDate).length === 0;
+
+  const updateDay = (date, fn) => {
+    setLogsByDate((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDay()) }));
+  };
+
+  // Agua
   const handleToggleWater = (glassIndex) => {
     const current = currentDayLog.waterGlasses || 0;
     const nextWater = glassIndex + 1 === current ? current - 1 : glassIndex + 1;
-
-    setLogsByDate((prev) => ({
-      ...prev,
-      [selectedDate]: {
-        ...currentDayLog,
-        waterGlasses: nextWater,
-      },
-    }));
+    updateDay(selectedDate, (day) => ({ ...day, waterGlasses: nextWater }));
   };
 
-  // Manejo de agregar comida
+  // Abrir la hoja para registrar o para editar
+  const openNewMeal = (category, preset) => {
+    setToast(null);
+    setEditingMealId(null);
+    setNewMealForm(preset ? { ...emptyForm, ...preset } : emptyForm);
+    setActiveMealModal(category);
+  };
+
+  const openEditMeal = (category, meal) => {
+    setToast(null);
+    setEditingMealId(meal.id);
+    setNewMealForm({
+      name: meal.name,
+      energy: String(meal.energy ?? ''),
+      satietyBefore: Number(meal.satietyBefore) || 3,
+      satietyAfter: Number(meal.satietyAfter) || 7,
+      notes: meal.notes || '',
+    });
+    setActiveMealModal(category);
+  };
+
+  const closeMealSheet = () => {
+    setActiveMealModal(null);
+    setEditingMealId(null);
+    setNewMealForm(emptyForm);
+  };
+
   const handleAddMealSubmit = (e) => {
     e.preventDefault();
     if (!newMealForm.name.trim()) return;
-
-    const newEntry = {
-      id: 'meal-' + Date.now(),
+    const entry = {
+      id: editingMealId || 'meal-' + Date.now(),
       name: newMealForm.name.trim(),
       energy: parseInt(newMealForm.energy, 10) || 350,
       satietyBefore: parseInt(newMealForm.satietyBefore, 10) || 3,
       satietyAfter: parseInt(newMealForm.satietyAfter, 10) || 7,
       notes: newMealForm.notes.trim(),
     };
-
-    setLogsByDate((prev) => {
-      const dayData = prev[selectedDate] || {
-        waterGlasses: 0,
-        meals: { desayuno: [], almuerzo: [], merienda: [], cena: [], colacion: [] },
-      };
-
-      const targetList = dayData.meals[activeMealModal] || [];
-
-      return {
-        ...prev,
-        [selectedDate]: {
-          ...dayData,
-          meals: {
-            ...dayData.meals,
-            [activeMealModal]: [...targetList, newEntry],
-          },
-        },
-      };
+    updateDay(selectedDate, (day) => {
+      const list = day.meals[activeMealModal] || [];
+      const next = editingMealId ? list.map((m) => (m.id === editingMealId ? entry : m)) : [...list, entry];
+      return { ...day, meals: { ...day.meals, [activeMealModal]: next } };
     });
-
-    // Reset y cerrar modal
-    setNewMealForm({
-      name: '',
-      energy: '400',
-      satietyBefore: 3,
-      satietyAfter: 7,
-      notes: '',
-    });
-    setActiveMealModal(null);
+    setToast({ text: editingMealId ? 'Registro actualizado.' : 'Comida guardada.' });
+    closeMealSheet();
   };
 
-  // Eliminar comida
+  // Borrar con opción de deshacer
   const handleDeleteMeal = (category, mealId) => {
-    setLogsByDate((prev) => {
-      const dayData = prev[selectedDate];
-      if (!dayData) return prev;
-
-      return {
-        ...prev,
-        [selectedDate]: {
-          ...dayData,
-          meals: {
-            ...dayData.meals,
-            [category]: (dayData.meals[category] || []).filter((item) => item.id !== mealId),
-          },
-        },
-      };
+    const date = selectedDate;
+    const list = (logsByDate[date] || emptyDay()).meals[category] || [];
+    const index = list.findIndex((m) => m.id === mealId);
+    if (index < 0) return;
+    const removed = list[index];
+    updateDay(date, (day) => ({ ...day, meals: { ...day.meals, [category]: (day.meals[category] || []).filter((m) => m.id !== mealId) } }));
+    setToast({
+      text: `Borraste “${removed.name}”.`,
+      undo: () => updateDay(date, (day) => {
+        const current = [...(day.meals[category] || [])];
+        current.splice(index, 0, removed);
+        return { ...day, meals: { ...day.meals, [category]: current } };
+      }),
     });
   };
 
-  // Sumar receta de inspiración al día
-  const handleAddRecipeToDay = (recipe, mealCategory = 'almuerzo') => {
-    const avgEnergy = parseInt(recipe.energyEstimate.split('-')[0].trim(), 10) || 450;
-    const newEntry = {
+  // Sumar una receta al momento elegido
+  const handleAddRecipeToDay = (recipe, mealCategory) => {
+    const avgEnergy = parseInt(String(recipe.energyEstimate || '').split('-')[0].trim(), 10) || 450;
+    const entry = {
       id: 'recipe-' + Date.now(),
       name: recipe.title,
       energy: avgEnergy,
       satietyBefore: 3,
       satietyAfter: 7,
-      notes: 'Preparada siguiendo inspiración de NetAI.',
+      notes: 'Receta de Inspiración.',
     };
-
-    setLogsByDate((prev) => {
-      const dayData = prev[selectedDate] || {
-        waterGlasses: 0,
-        meals: { desayuno: [], almuerzo: [], merienda: [], cena: [], colacion: [] },
-      };
-
-      const targetList = dayData.meals[mealCategory] || [];
-
-      return {
-        ...prev,
-        [selectedDate]: {
-          ...dayData,
-          meals: {
-            ...dayData.meals,
-            [mealCategory]: [...targetList, newEntry],
-          },
-        },
-      };
-    });
-
+    updateDay(selectedDate, (day) => ({ ...day, meals: { ...day.meals, [mealCategory]: [...(day.meals[mealCategory] || []), entry] } }));
+    const label = MEAL_CATEGORIES.find((c) => c.id === mealCategory)?.label.toLowerCase();
+    setToast({ text: `Sumaste la receta a ${label}.` });
     setActiveRecipeModal(null);
     setActiveTab('today');
   };
 
-  // Navegar días
+  // Días: no se puede avanzar más allá de hoy
   const handleDayOffset = (offset) => {
-    const current = new Date(selectedDate + 'T12:00:00');
-    current.setDate(current.getDate() + offset);
-    const year = current.getFullYear();
-    const month = String(current.getMonth() + 1).padStart(2, '0');
-    const day = String(current.getDate()).padStart(2, '0');
-    setSelectedDate(`${year}-${month}-${day}`);
+    const next = offsetDate(selectedDate, offset);
+    if (next > today) return;
+    setSelectedDate(next);
   };
 
-  // Manejo de Logout
+  const dismissWelcome = () => {
+    setWelcomeDismissed(true);
+    try { localStorage.setItem(WELCOME_KEY, 'true'); } catch (e) { /* sin almacenamiento */ }
+  };
+
   const handleLogout = async () => {
-    if (!confirm('¿Deseás cerrar tu sesión familiar en este dispositivo?')) return;
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {
@@ -301,12 +302,42 @@ export default function PwaAppPage() {
     window.location.href = '/login';
   };
 
-  // Filtrado de recetas
+  // Copia de seguridad: los registros viven solo en este teléfono
+  const handleExport = () => {
+    const payload = { app: 'NetAI', version: 1, exportedAt: new Date().toISOString(), intuitiveMode, logsByDate };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `netai-registros-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setToast({ text: 'Descargaste la copia de tus registros.' });
+  };
+
+  const handleImport = async (file) => {
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data || data.app !== 'NetAI' || typeof data.logsByDate !== 'object') throw new Error('formato');
+      setLogsByDate((prev) => ({ ...prev, ...data.logsByDate }));
+      setToast({ text: 'Registros restaurados desde la copia.' });
+      setSettingsOpen(false);
+    } catch (e) {
+      setToast({ text: 'Ese archivo no es una copia de NetAI. Elegí el archivo que descargaste desde Ajustes.' });
+    }
+  };
+
+  const handleDeleteAll = () => {
+    setLogsByDate({});
+    setSettingsOpen(false);
+    setToast({ text: 'Borraste todos tus registros de este teléfono.' });
+  };
+
   const filteredRecipes = useMemo(() => {
     if (recipeFilter === 'Todos') return RECIPES_CATALOG;
-    return RECIPES_CATALOG.filter((r) =>
-      r.tags.includes(recipeFilter) || r.category.includes(recipeFilter)
-    );
+    return RECIPES_CATALOG.filter((r) => r.tags.includes(recipeFilter) || r.category.includes(recipeFilter));
   }, [recipeFilter]);
 
   if (!isLoaded) {
@@ -320,7 +351,6 @@ export default function PwaAppPage() {
     );
   }
 
-  const isToday = selectedDate === getTodayString();
   const water = currentDayLog.waterGlasses || 0;
   const mealCount = Object.values(currentDayLog.meals || {}).reduce((n, list) => n + list.length, 0);
 
@@ -360,12 +390,12 @@ export default function PwaAppPage() {
 
             <button
               type="button"
-              onClick={handleLogout}
-              aria-label="Cerrar sesión"
-              title="Cerrar sesión"
-              className="p-2.5 rounded-full text-loza-500 hover:text-loza-900 hover:bg-loza-100 transition-colors"
+              onClick={() => { setToast(null); setSettingsOpen(true); }}
+              aria-label="Ajustes"
+              title="Ajustes"
+              className="p-2.5 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
             >
-              <LogOut className="w-[18px] h-[18px]" />
+              <Settings2 className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -388,7 +418,8 @@ export default function PwaAppPage() {
             type="button"
             onClick={() => handleDayOffset(1)}
             aria-label="Día siguiente"
-            className="p-2 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
+            disabled={isToday}
+            className="p-2 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -401,6 +432,26 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {activeTab === 'today' && (
           <div className="space-y-10 animate-fade-in">
+            {isFirstRun && (
+              <section aria-labelledby="titulo-bienvenida" className="rounded-[28px] bg-hoja-900 text-hoja-50 p-6 sm:p-7">
+                <h2 id="titulo-bienvenida" className="font-display text-2xl font-bold text-white">Te damos la bienvenida a NetAI</h2>
+                <ol className="mt-4 space-y-2.5 text-[15px] text-hoja-100">
+                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">1</span>Registrá lo que comés con un toque en “Registrar”, sin pesar nada.</li>
+                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">2</span>Anotá cuánta hambre tenías antes y cómo te sentiste después.</li>
+                  <li className="grid grid-cols-[1.5rem_1fr] gap-2"><span className="font-bold text-white tabular">3</span>Si no querés ver calorías, activá el Modo Intuitivo arriba.</li>
+                </ol>
+                <p className="mt-4 text-sm text-hoja-200">Tus registros se guardan solo en este teléfono.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => { dismissWelcome(); openNewMeal(suggestedMoment()); }} className="px-5 py-3 rounded-full bg-white text-hoja-900 text-sm font-bold hover:bg-hoja-50">
+                    Registrar mi primera comida
+                  </button>
+                  <button type="button" onClick={dismissWelcome} className="px-5 py-3 rounded-full text-sm font-bold text-hoja-100 hover:bg-hoja-800">
+                    Entendido
+                  </button>
+                </div>
+              </section>
+            )}
+
             <section aria-labelledby="titulo-dia">
               <p className="text-loza-600 text-[15px] leading-relaxed max-w-prose">{dailyEncouragement}</p>
 
@@ -491,7 +542,7 @@ export default function PwaAppPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => setActiveMealModal(cat.id)}
+                          onClick={() => openNewMeal(cat.id)}
                           className="shrink-0 inline-flex items-center gap-1.5 pl-2.5 pr-3.5 py-2 rounded-full text-sm font-bold text-hoja-700 hover:bg-hoja-50 border border-hoja-200 transition-colors"
                         >
                           <Plus className="w-4 h-4" />
@@ -509,6 +560,15 @@ export default function PwaAppPage() {
                                   {!intuitiveMode && (
                                     <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal</span>
                                   )}
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditMeal(cat.id, meal)}
+                                    aria-label={`Editar ${meal.name}`}
+                                    title="Editar registro"
+                                    className="p-1.5 rounded-lg text-loza-400 hover:text-loza-800 hover:bg-loza-100 transition-colors"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteMeal(cat.id, meal.id)}
@@ -533,6 +593,79 @@ export default function PwaAppPage() {
                   );
                 })}
               </ol>
+            </section>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------ */}
+        {/* SEMANA: constancia amable, sin rachas que se pierdan */}
+        {/* ------------------------------------------------------------ */}
+        {activeTab === 'week' && (
+          <div className="space-y-10 animate-fade-in">
+            <section aria-labelledby="titulo-semana">
+              <h2 id="titulo-semana" className="font-display text-2xl font-bold text-loza-900">Tu semana</h2>
+              <p className="text-loza-600 text-[15px] leading-relaxed mt-1.5 max-w-prose">
+                {(() => {
+                  const n = weekDays.filter((d) => d.cared).length;
+                  if (n === 0) return 'Todavía no hay registros esta semana. Cuando registres una comida o un vaso de agua, lo vas a ver acá.';
+                  if (n === 1) return 'Esta semana te cuidaste 1 día. Cada registro cuenta.';
+                  return `Esta semana te cuidaste ${n} de 7 días. Un día sin registrar no borra nada.`;
+                })()}
+              </p>
+
+              <ol className="mt-6 grid grid-cols-7 gap-1.5" aria-label="Días de la semana">
+                {weekDays.map((d) => (
+                  <li key={d.date}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedDate(d.date); setActiveTab('today'); }}
+                      aria-label={`${formatWeekday(d.date)} ${formatDayMonth(d.date)}: ${d.meals} comidas y ${d.water} vasos de agua`}
+                      className="w-full flex flex-col items-center gap-1.5 rounded-2xl py-2 hover:bg-loza-100 transition-colors"
+                    >
+                      <span className="text-xs text-loza-500 capitalize">{formatWeekday(d.date).slice(0, 3)}</span>
+                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold tabular ${d.cared ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-400'} ${d.date === today ? 'ring-2 ring-offset-2 ring-offset-loza-50 ring-hoja-300' : ''}`}>
+                        {Number(d.date.slice(8))}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <section aria-labelledby="titulo-agua-semana">
+              <div className="flex items-baseline justify-between gap-4">
+                <h2 id="titulo-agua-semana" className="font-display text-xl font-bold text-loza-900">Agua</h2>
+                <p className="text-sm text-loza-500">vasos por día, de 8</p>
+              </div>
+              <div className="mt-4 grid grid-cols-7 gap-1.5 items-end h-36" role="img" aria-label={`Vasos de agua por día: ${weekDays.map((d) => d.water).join(', ')}`}>
+                {weekDays.map((d) => (
+                  <div key={d.date} className="flex flex-col items-center justify-end gap-1 h-full">
+                    <span className="text-xs text-loza-600 tabular">{d.water || ''}</span>
+                    <span className="w-full max-w-8 rounded-t-lg bg-agua-500" style={{ height: `${Math.max(d.water ? 6 : 2, (Math.min(d.water, 8) / 8) * 100)}%`, opacity: d.water ? 1 : 0.25 }} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1.5 mt-1.5 border-t border-loza-200 pt-1.5">
+                {weekDays.map((d) => (
+                  <span key={d.date} className="text-center text-xs text-loza-500 capitalize">{formatWeekday(d.date).slice(0, 1)}</span>
+                ))}
+              </div>
+            </section>
+
+            <section aria-labelledby="titulo-escala-semana">
+              <h2 id="titulo-escala-semana" className="font-display text-xl font-bold text-loza-900">Hambre y saciedad</h2>
+              {(() => {
+                const h = average(weekDays.map((d) => d.hungerAvg));
+                const sat = average(weekDays.map((d) => d.satietyAvg));
+                if (!h && !sat) return <p className="mt-2 text-loza-500">Cuando registres comidas, vas a ver acá cómo te sentiste en promedio.</p>;
+                return (
+                  <div className="mt-4 grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                    <ScaleReading label="Hambre antes, en promedio" value={Math.round(h)} />
+                    <ScaleReading label="Saciedad después, en promedio" value={Math.round(sat)} />
+                  </div>
+                );
+              })()}
+              <p className="mt-4 text-sm text-loza-500 max-w-prose">Comer con calma suele pasar entre el 3 y el 7 de la escala. Es una guía, no una meta.</p>
             </section>
           </div>
         )}
@@ -607,15 +740,15 @@ export default function PwaAppPage() {
                     <div className="flex items-center gap-2 sm:flex-col sm:items-stretch">
                       <button
                         type="button"
-                        onClick={() => handleAddRecipeToDay(recipe, 'almuerzo')}
+                        onClick={() => handleAddRecipeToDay(recipe, suggestedMoment())}
                         className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold transition-colors"
                       >
                         <Plus className="w-4 h-4" />
-                        Sumar al almuerzo
+                        Sumar a {MEAL_CATEGORIES.find((c) => c.id === suggestedMoment())?.label.toLowerCase()}
                       </button>
                       <button
                         type="button"
-                        onClick={() => setActiveRecipeModal(recipe)}
+                        onClick={() => { setToast(null); setRecipeMoment(suggestedMoment()); setActiveRecipeModal(recipe); }}
                         className="px-4 py-2 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100 transition-colors"
                       >
                         Ver receta
@@ -700,12 +833,49 @@ export default function PwaAppPage() {
       </main>
 
       {/* ============================================================== */}
+      {/* HOJA: AJUSTES */}
+      {/* ============================================================== */}
+      {settingsOpen && (
+        <Sheet onClose={() => setSettingsOpen(false)} labelledBy="titulo-ajustes">
+          <SettingsPanel
+            intuitiveMode={intuitiveMode}
+            onToggleIntuitive={() => setIntuitiveMode(!intuitiveMode)}
+            onExport={handleExport}
+            onImport={handleImport}
+            onDeleteAll={handleDeleteAll}
+            onLogout={handleLogout}
+            onClose={() => setSettingsOpen(false)}
+            hasData={Object.keys(logsByDate).length > 0}
+          />
+        </Sheet>
+      )}
+
+      {/* Aviso breve, con opción de deshacer */}
+      <div aria-live="polite" className="fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 pointer-events-none">
+        {toast && (
+          <div className="pointer-events-auto flex items-center gap-4 max-w-md w-full sm:w-auto rounded-2xl bg-loza-900 text-white pl-4 pr-2 py-2.5 shadow-card animate-slide-up">
+            <p className="text-sm flex-1">{toast.text}</p>
+            {toast.undo && (
+              <button
+                type="button"
+                onClick={() => { toast.undo(); setToast(null); }}
+                className="shrink-0 px-3 py-1.5 rounded-xl text-sm font-bold text-hoja-200 hover:bg-loza-800"
+              >
+                Deshacer
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
       {/* NAVEGACIÓN INFERIOR */}
       {/* ============================================================== */}
       <nav aria-label="Secciones" className="fixed bottom-0 inset-x-0 z-40 glass-surface border-x-0 border-b-0 safe-bottom">
-        <div className="max-w-md mx-auto grid grid-cols-3 px-3 pt-1.5 pb-2">
+        <div className="max-w-md mx-auto grid grid-cols-4 px-2 pt-1.5 pb-2">
           {[
             { id: 'today', label: 'Mi día', Icon: Utensils },
+            { id: 'week', label: 'Semana', Icon: CalendarDays },
             { id: 'inspiration', label: 'Inspiración', Icon: Sparkles },
             { id: 'learn', label: 'Aprender', Icon: BookOpen },
           ].map(({ id, label, Icon }) => {
@@ -718,7 +888,7 @@ export default function PwaAppPage() {
                 aria-current={on ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 py-1.5 rounded-2xl transition-colors ${on ? 'text-loza-900' : 'text-loza-500 hover:text-loza-800'}`}
               >
-                <span className={`px-5 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
+                <span className={`px-4 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
                   <Icon className="w-5 h-5" />
                 </span>
                 <span className={`text-xs ${on ? 'font-bold' : ''}`}>{label}</span>
@@ -732,13 +902,31 @@ export default function PwaAppPage() {
       {/* HOJA: REGISTRAR COMIDA */}
       {/* ============================================================== */}
       {activeMealModal && (
-        <Sheet onClose={() => setActiveMealModal(null)} labelledBy="titulo-registro">
+        <Sheet onClose={closeMealSheet} labelledBy="titulo-registro">
           <div className="flex items-center justify-between gap-3">
             <h2 id="titulo-registro" className="font-display text-xl font-bold text-loza-900">
-              Registrar {MEAL_CATEGORIES.find((c) => c.id === activeMealModal)?.label.toLowerCase()}
+              {editingMealId ? 'Editar' : 'Registrar'} {MEAL_CATEGORIES.find((c) => c.id === activeMealModal)?.label.toLowerCase()}
             </h2>
-            <CloseButton onClick={() => setActiveMealModal(null)} />
+            <CloseButton onClick={closeMealSheet} />
           </div>
+
+          {!editingMealId && frequentMeals.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {frequentMeals.map((f) => (
+                  <button
+                    key={f.name}
+                    type="button"
+                    onClick={() => setNewMealForm({ ...newMealForm, name: f.name, energy: String(f.energy ?? newMealForm.energy) })}
+                    className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                  >
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleAddMealSubmit} className="mt-5 space-y-5">
             <div>
@@ -801,13 +989,13 @@ export default function PwaAppPage() {
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setActiveMealModal(null)}
+                onClick={closeMealSheet}
                 className="px-5 py-3 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100"
               >
                 Cancelar
               </button>
               <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">
-                Guardar
+                {editingMealId ? 'Guardar cambios' : 'Guardar'}
               </button>
             </div>
           </form>
@@ -850,6 +1038,24 @@ export default function PwaAppPage() {
 
           <p className="mt-6 rounded-2xl bg-hoja-50 p-4 text-[15px] text-hoja-900 leading-relaxed">{activeRecipeModal.mindfulNote}</p>
 
+          <fieldset className="mt-6">
+            <legend className="text-sm font-bold text-loza-800">¿En qué momento la vas a comer?</legend>
+            <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Momento del día">
+              {MEAL_CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={recipeMoment === c.id}
+                  onClick={() => setRecipeMoment(c.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${recipeMoment === c.id ? 'bg-loza-900 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="mt-6 flex items-center justify-end gap-2">
             <button
               type="button"
@@ -860,10 +1066,10 @@ export default function PwaAppPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleAddRecipeToDay(activeRecipeModal, 'almuerzo')}
+              onClick={() => handleAddRecipeToDay(activeRecipeModal, recipeMoment)}
               className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold"
             >
-              Sumar al almuerzo
+              Sumar a {MEAL_CATEGORIES.find((c) => c.id === recipeMoment)?.label.toLowerCase()}
             </button>
           </div>
         </Sheet>
@@ -1073,5 +1279,89 @@ function CloseButton({ onClick }) {
     >
       <X className="w-5 h-5" />
     </button>
+  );
+}
+
+// Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
+function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, hasData }) {
+  const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
+  const fileRef = useRef(null);
+  const row = 'w-full flex items-center gap-3 py-3.5 text-left text-[15px] text-loza-800 hover:text-loza-900';
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="titulo-ajustes" className="font-display text-xl font-bold text-loza-900">Ajustes</h2>
+        <CloseButton onClick={onClose} />
+      </div>
+
+      <div className="mt-4 divide-y divide-loza-200 border-y border-loza-200">
+        <button type="button" role="switch" aria-checked={intuitiveMode} onClick={onToggleIntuitive} className={`${row} justify-between`}>
+          <span>
+            <span className="block font-bold">Modo Intuitivo</span>
+            <span className="block text-sm text-loza-500">Oculta calorías y números en toda la app.</span>
+          </span>
+          <span aria-hidden="true" className={`relative w-10 h-6 rounded-full shrink-0 transition-colors ${intuitiveMode ? 'bg-hoja-600' : 'bg-loza-300'}`}>
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${intuitiveMode ? 'translate-x-4' : ''}`} />
+          </span>
+        </button>
+
+        <div className="py-3.5">
+          <p className="font-bold text-[15px] text-loza-800">Copia de seguridad</p>
+          <p className="text-sm text-loza-500 mt-0.5">Tus registros están solo en este teléfono. Descargá una copia para no perderlos o para pasarlos a otro dispositivo.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={onExport} disabled={!hasData} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-loza-900 text-white text-sm font-bold disabled:opacity-40">
+              <Download className="w-4 h-4" aria-hidden="true" /> Descargar copia
+            </button>
+            <button type="button" onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-loza-300 text-loza-800 text-sm font-bold hover:border-loza-500">
+              <Upload className="w-4 h-4" aria-hidden="true" /> Restaurar copia
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ''; }}
+            />
+          </div>
+        </div>
+
+        <div className="py-3.5">
+          {confirm === 'delete' ? (
+            <div className="rounded-2xl bg-remolacha-50 p-4">
+              <p className="font-bold text-remolacha-900">¿Borrar todos tus registros?</p>
+              <p className="text-sm text-remolacha-800 mt-1">Se borran de este teléfono y no se pueden recuperar, salvo que tengas una copia.</p>
+              <div className="mt-3 flex gap-2">
+                <button type="button" onClick={onDeleteAll} className="px-4 py-2.5 rounded-full bg-remolacha-700 text-white text-sm font-bold">Sí, borrar todo</button>
+                <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-remolacha-900 hover:bg-remolacha-100">Cancelar</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setConfirm('delete')} disabled={!hasData} className="text-[15px] font-bold text-remolacha-700 disabled:opacity-40">
+              Borrar todos mis registros
+            </button>
+          )}
+        </div>
+
+        <nav aria-label="Legal" className="py-3.5 flex gap-5 text-[15px]">
+          <Link href="/privacidad" className="text-loza-700 underline underline-offset-4">Privacidad</Link>
+          <Link href="/terminos" className="text-loza-700 underline underline-offset-4">Términos de uso</Link>
+        </nav>
+
+        <div className="py-3.5">
+          {confirm === 'logout' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[15px] text-loza-800 w-full">¿Cerrar la sesión en este teléfono? Tus registros no se borran.</p>
+              <button type="button" onClick={onLogout} className="px-4 py-2.5 rounded-full bg-loza-900 text-white text-sm font-bold">Cerrar sesión</button>
+              <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">Cancelar</button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setConfirm('logout')} className="inline-flex items-center gap-2 text-[15px] font-bold text-loza-800">
+              <LogOut className="w-4 h-4" aria-hidden="true" /> Cerrar sesión
+            </button>
+          )}
+        </div>
+      </div>
+      <p className="mt-4 text-xs text-loza-400">NetAI, versión {APP_VERSION}</p>
+    </div>
   );
 }
