@@ -97,20 +97,38 @@ Hacé clic en **"Deploy"**. En menos de 2 minutos tu sitio estará activo con HT
 
 ---
 
-## 💻 Desarrollo Local
+## 💻 Probar en tu computadora (localhost)
 
+**Requisito:** Node.js 18 o superior ([nodejs.org](https://nodejs.org)).
+
+### Opción rápida
+- **Mac o Linux:** abrí una terminal en esta carpeta y ejecutá `./iniciar-local.sh`
+- **Windows:** doble clic en `iniciar-local.bat`
+
+La primera vez crea un archivo `.env.local` con una contraseña de prueba (`familia-local`) y una clave de sesión aleatoria, e instala las dependencias. Después abrí:
+
+| Página | Dirección |
+|---|---|
+| Inicio | http://localhost:3000 |
+| Entrar | http://localhost:3000/login |
+| App | http://localhost:3000/app |
+
+Para cortar el servidor: `Ctrl + C` en la terminal.
+
+### Probar desde el celular
+Con la computadora y el celular en la misma red Wi-Fi:
+- **Mac o Linux:** `./iniciar-local.sh --red` (muestra la dirección a abrir en el celular)
+- **Windows:** `iniciar-local.bat --red` y buscá la IP de la computadora con `ipconfig`
+
+Desde el celular la app se usa normalmente, pero no se puede **instalar** como app: el navegador solo lo permite con HTTPS o en `localhost`.
+
+### A mano
 ```bash
-# 1. Instalar dependencias
+cp .env.example .env.local   # y cambiá los valores
 npm install
-
-# 2. Iniciar servidor de desarrollo
-npm run dev
-
-# 3. Compilar bundle de producción
-npm run build
-
-# 4. Iniciar servidor de producción local
-npm start
+npm run dev                  # o: npm run dev:red
+npm run build && npm start   # versión de producción
 ```
 
-Abrí [http://localhost:3000](http://localhost:3000) en tu navegador para ver la Landing Page o ingresá con la contraseña `familia2026` en `/login`.
+### Contraseña
+La contraseña sale de `APP_FAMILY_PASSWORD`. Si esa variable no existe, la app usa `familia2026`, que figura en este README: **en Vercel tiene que estar configurada** para que nadie entre con la contraseña por defecto.
