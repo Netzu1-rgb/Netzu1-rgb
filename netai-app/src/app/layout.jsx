@@ -1,3 +1,9 @@
+// Tipografías servidas desde el propio sitio (sin pedidos a terceros y disponibles sin conexión)
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/400-italic.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
+import '@fontsource-variable/bricolage-grotesque/wght.css';
+import '@fontsource/outfit/700.css';
 import './globals.css';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 
@@ -47,12 +53,6 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="NetAI" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Outfit:wght@700&display=swap"
-        />
       </head>
       <body className="bg-loza-50 text-loza-900 antialiased selection:bg-hoja-200 selection:text-hoja-900 min-h-screen">
         {children}

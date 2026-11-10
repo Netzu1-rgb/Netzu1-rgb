@@ -47,12 +47,12 @@ export default function PrivacidadPage() {
         </p>
       </Seccion>
 
-      <Seccion titulo="Acceso con contraseña familiar">
+      <Seccion titulo="Acceso con código">
         <p>
-          Para entrar a la app escribís la contraseña que comparte tu familia. Se envía al servidor solo para comprobarla y
+          Para entrar a la app escribís el código de acceso que te dimos. Se envía al servidor solo para comprobarlo y
           no se guarda. Si es correcta, guardamos en tu navegador una cookie de sesión llamada{' '}
           <code className="text-loza-900">netai_family_session</code>, que dura 30 días y sirve únicamente para que no
-          tengas que escribir la contraseña cada vez. No usamos cookies de publicidad ni de seguimiento.
+          tengas que escribir el código cada vez. No usamos cookies de publicidad ni de seguimiento.
         </p>
       </Seccion>
 
@@ -62,10 +62,6 @@ export default function PrivacidadPage() {
             <strong className="text-loza-900">Alojamiento:</strong> la app funciona en un proveedor de alojamiento web que,
             como cualquier servidor, registra datos técnicos de cada visita (dirección IP, navegador y fecha) para operar y
             proteger el servicio.
-          </li>
-          <li>
-            <strong className="text-loza-900">Tipografías:</strong> las fuentes se cargan desde Google Fonts, por lo que
-            Google recibe la dirección IP de tu dispositivo al mostrarlas.
           </li>
           <li>
             <strong className="text-loza-900">Análisis de platos por foto:</strong> si sacás una foto de tu comida, la foto

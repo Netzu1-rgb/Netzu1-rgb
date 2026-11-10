@@ -492,7 +492,7 @@ export default function PwaAppPage() {
             <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
               <p className="font-marca font-bold text-lg leading-none text-hoja-900">NetAI</p>
-              <p className="text-xs text-loza-500 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Acceso familiar'}</p>
+              <p className="text-xs text-loza-500 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Bienestar'}</p>
             </div>
           </div>
 

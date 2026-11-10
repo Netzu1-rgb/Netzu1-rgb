@@ -4,7 +4,7 @@ import { SESSION_COOKIE_NAME } from '@/lib/auth';
 export async function POST() {
   const response = NextResponse.json({
     success: true,
-    message: 'Sesión familiar cerrada correctamente.',
+    message: 'Sesión cerrada.',
   });
 
   // Purgar cookie de sesión

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
-import { 
-  getFamilyPassword, 
+import {
   isAuthConfigured,
-  createSessionToken, 
-  SESSION_COOKIE_NAME, 
-  SESSION_MAX_AGE_SECONDS 
+  matchAccessCode,
+  createSessionToken,
+  clientIp,
+  isLockedOut,
+  recordFailure,
+  clearFailures,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
 } from '@/lib/auth';
 
 export async function POST(request) {
@@ -12,72 +16,51 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     const { password } = body;
 
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Ingresá la contraseña familiar.' 
-        },
-        { status: 400 }
-      );
+    if (!password || typeof password !== 'string' || password.length > 200) {
+      return NextResponse.json({ success: false, message: 'Ingresá tu código de acceso.' }, { status: 400 });
     }
 
     if (!isAuthConfigured()) {
       return NextResponse.json(
         {
           success: false,
-          message: 'El acceso todavía no está configurado. Quien administra la app tiene que definir APP_FAMILY_PASSWORD y SESSION_SECRET en el servidor.',
+          message: 'El acceso todavía no está configurado. Quien administra la app tiene que definir APP_ACCESS_CODES y SESSION_SECRET en el servidor.',
         },
         { status: 503 }
       );
     }
 
-    const expectedPassword = getFamilyPassword();
-
-    // Verificación segura en tiempo constante
-    const inputBuf = Buffer.from(password.trim());
-    const expectedBuf = Buffer.from(expectedPassword.trim());
-    const isMatch = inputBuf.length === expectedBuf.length && 
-      require('crypto').timingSafeEqual(inputBuf, expectedBuf);
-
-    if (!isMatch) {
+    const ip = clientIp(request);
+    if (isLockedOut(ip)) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Contraseña incorrecta. Pedísela a quien administra el acceso de tu familia.' 
-        },
+        { success: false, message: 'Demasiados intentos. Esperá 15 minutos y probá de nuevo.' },
+        { status: 429, headers: { 'Retry-After': '900' } }
+      );
+    }
+
+    const code = await matchAccessCode(password);
+    if (!code) {
+      recordFailure(ip);
+      return NextResponse.json(
+        { success: false, message: 'Código incorrecto. Revisalo o pedí uno nuevo a quien te dio el acceso.' },
         { status: 401 }
       );
     }
 
-    // Generar token criptográfico para 30 días
-    const sessionToken = await createSessionToken();
-
-    const response = NextResponse.json({
-      success: true,
-      message: 'Acceso autorizado. Redirigiendo a tu espacio de bienestar...',
-    });
-
-    // Guardar cookie HTTP-only persistente (30 días)
+    clearFailures(ip);
+    const response = NextResponse.json({ success: true, message: 'Acceso autorizado.' });
     response.cookies.set({
       name: SESSION_COOKIE_NAME,
-      value: sessionToken,
+      value: await createSessionToken(code),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: SESSION_MAX_AGE_SECONDS,
       path: '/',
     });
-
     return response;
   } catch (error) {
-    console.error('Error en autenticación familiar:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Ocurrió un error en el servidor al verificar el acceso.' 
-      },
-      { status: 500 }
-    );
+    console.error('Error al verificar el acceso:', error);
+    return NextResponse.json({ success: false, message: 'No pudimos verificar el acceso. Probá de nuevo.' }, { status: 500 });
   }
 }

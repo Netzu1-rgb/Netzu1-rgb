@@ -1,113 +1,124 @@
-// Web Crypto compatible session signer & verifier (Edge & Node.js on Vercel)
+// Acceso con códigos y sesiones firmadas (Web Crypto: funciona en Edge y en Node.js).
+//
+// - APP_ACCESS_CODES: uno o varios códigos separados por coma o salto de línea.
+//   Cada persona o grupo puede tener el suyo; quitar un código de la lista cierra sus sesiones.
+// - APP_FAMILY_PASSWORD: nombre anterior, se sigue aceptando como un código más.
+// - SESSION_SECRET: clave para firmar las sesiones (mínimo 32 caracteres en producción).
 
 export const SESSION_COOKIE_NAME = 'netai_family_session';
-export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 días persistente
+export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 días
 
-const DEV_FALLBACK_PASSWORD = 'familia2026';
+const DEV_FALLBACK_CODE = 'familia2026';
+const enc = new TextEncoder();
 
-/**
- * Contraseña familiar configurada en Vercel.
- * En desarrollo, si falta, se usa una de prueba; en producción no hay contraseña por defecto.
- */
-export function getFamilyPassword() {
-  const configured = process.env.APP_FAMILY_PASSWORD;
-  if (configured && configured.trim()) return configured;
-  return process.env.NODE_ENV === 'production' ? null : DEV_FALLBACK_PASSWORD;
+/** Lista de códigos válidos. En producción no hay ninguno por defecto. */
+export function getAccessCodes() {
+  const raw = [process.env.APP_ACCESS_CODES, process.env.APP_FAMILY_PASSWORD].filter(Boolean).join('\n');
+  const codes = [...new Set(raw.split(/[\n,]/).map((c) => c.trim()).filter(Boolean))];
+  if (codes.length) return codes;
+  return process.env.NODE_ENV === 'production' ? [] : [DEV_FALLBACK_CODE];
 }
 
-/**
- * Clave con la que se firman las sesiones: SESSION_SECRET más la contraseña,
- * así cambiar cualquiera de las dos cierra todas las sesiones abiertas.
- */
-function getSigningSecret() {
-  const password = getFamilyPassword();
-  if (!password) return null;
-  const sessionSecret = process.env.SESSION_SECRET || '';
-  if (process.env.NODE_ENV === 'production' && sessionSecret.length < 32) return null;
-  return `${sessionSecret}:${password}`;
+function getSessionSecret() {
+  const secret = process.env.SESSION_SECRET || '';
+  if (process.env.NODE_ENV === 'production' && secret.length < 32) return null;
+  return secret || 'solo-para-desarrollo';
 }
 
-/**
- * Indica si el acceso está bien configurado para este entorno
- */
+/** Indica si el acceso está bien configurado para este entorno */
 export function isAuthConfigured() {
-  return getSigningSecret() !== null;
+  return getSessionSecret() !== null && getAccessCodes().length > 0;
 }
 
-/**
- * Deriva una clave criptográfica HMAC a partir de la contraseña
- */
-async function getCryptoKey(secret) {
-  const enc = new TextEncoder();
-  return await crypto.subtle.importKey(
-    'raw',
-    enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign', 'verify']
-  );
+async function hmacHex(secret, message) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const buf = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Comparación en tiempo constante
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// Identificador corto de un código: va dentro de la sesión para saber con cuál se entró
+const codeIdOf = async (secret, code) => (await hmacHex(secret, `code-id:${code}`)).slice(0, 12);
+
 /**
- * Convierte ArrayBuffer a string hexadecimal
+ * Devuelve el código que coincide con lo que escribió la persona, o null.
+ * Se comparan resúmenes HMAC para no filtrar el largo ni el contenido por tiempo de respuesta.
  */
-function bufferToHex(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let hex = '';
-  for (let i = 0; i < bytes.length; i++) {
-    hex += bytes[i].toString(16).padStart(2, '0');
+export async function matchAccessCode(input) {
+  const secret = getSessionSecret();
+  if (!secret || typeof input !== 'string') return null;
+  const given = await hmacHex(secret, `code:${input.trim()}`);
+  let found = null;
+  for (const code of getAccessCodes()) {
+    if (safeEqual(given, await hmacHex(secret, `code:${code}`))) found = code;
   }
-  return hex;
+  return found;
 }
 
-/**
- * Crea un token de sesión criptográfico con duración de 30 días
- */
-export async function createSessionToken() {
-  const secret = getSigningSecret();
-  if (!secret) throw new Error('El acceso no está configurado');
+/** Crea la sesión (30 días). Formato: v2.<idDelCódigo>.<fecha>.<firma> */
+export async function createSessionToken(code) {
+  const secret = getSessionSecret();
+  if (!secret || !code) throw new Error('El acceso no está configurado');
+  const codeId = await codeIdOf(secret, code);
   const timestamp = Date.now().toString();
-  const key = await getCryptoKey(secret);
-  const enc = new TextEncoder();
-  const signatureBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(`netai-session:${timestamp}`));
-  const signatureHex = bufferToHex(signatureBuffer);
-  
-  // Formato: v1.<timestamp>.<signature>
-  return `v1.${timestamp}.${signatureHex}`;
+  const signature = await hmacHex(`${secret}:${code}`, `netai-session:${codeId}:${timestamp}`);
+  return `v2.${codeId}.${timestamp}.${signature}`;
 }
 
-/**
- * Valida si un token de sesión es legítimo y no ha expirado
- */
+/** Valida la sesión: firma correcta, no vencida y de un código que sigue vigente */
 export async function verifySessionToken(token) {
   if (!token || typeof token !== 'string') return false;
-
   const parts = token.split('.');
-  if (parts.length !== 3 || parts[0] !== 'v1') return false;
-
-  const [, timestampStr, signatureHex] = parts;
+  if (parts.length !== 4 || parts[0] !== 'v2') return false;
+  const [, codeId, timestampStr, signature] = parts;
   const timestamp = parseInt(timestampStr, 10);
   if (isNaN(timestamp)) return false;
 
-  // Validar vigencia de 30 días
   const now = Date.now();
-  const maxAgeMs = SESSION_MAX_AGE_SECONDS * 1000;
-  if (now - timestamp > maxAgeMs || timestamp > now + 60000) {
-    return false;
-  }
+  if (now - timestamp > SESSION_MAX_AGE_SECONDS * 1000 || timestamp > now + 60000) return false;
 
-  const secret = getSigningSecret();
+  const secret = getSessionSecret();
   if (!secret) return false;
-  const key = await getCryptoKey(secret);
-  const enc = new TextEncoder();
-  const expectedSigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(`netai-session:${timestampStr}`));
-  const expectedSigHex = bufferToHex(expectedSigBuffer);
-
-  // Comparación en tiempo constante para mitigar timing attacks
-  if (expectedSigHex.length !== signatureHex.length) return false;
-  let result = 0;
-  for (let i = 0; i < expectedSigHex.length; i++) {
-    result |= expectedSigHex.charCodeAt(i) ^ signatureHex.charCodeAt(i);
+  for (const code of getAccessCodes()) {
+    if (!safeEqual(codeId, await codeIdOf(secret, code))) continue;
+    const expected = await hmacHex(`${secret}:${code}`, `netai-session:${codeId}:${timestampStr}`);
+    return safeEqual(expected, signature);
   }
-  return result === 0;
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Límite de intentos fallidos por conexión (en memoria, por instancia del servidor).
+// Frena la prueba masiva de códigos; no reemplaza un código largo y difícil de adivinar.
+// ---------------------------------------------------------------------------
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILS = 8;
+const fails = new Map();
+
+export function clientIp(request) {
+  return (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local';
+}
+
+export function isLockedOut(ip, now = Date.now()) {
+  const list = (fails.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  if (list.length) fails.set(ip, list); else fails.delete(ip);
+  return list.length >= MAX_FAILS;
+}
+
+export function recordFailure(ip, now = Date.now()) {
+  const list = (fails.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  list.push(now);
+  fails.set(ip, list);
+  if (fails.size > 5000) fails.delete(fails.keys().next().value); // tope de memoria
+}
+
+export function clearFailures(ip) {
+  fails.delete(ip);
 }

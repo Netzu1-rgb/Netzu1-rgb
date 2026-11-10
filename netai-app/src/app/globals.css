@@ -5,7 +5,7 @@
 /* Sistema de diseño NetAI (ver tailwind.config.js): colores del Método del Plato sobre neutros "loza". */
 :root {
   --font-sans: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-display: 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif;
   --loza: #F6F8F4;
   --loza-hundida: #EDF1EC;
   --linea: #DCE4DD;

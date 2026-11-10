@@ -32,10 +32,10 @@ export default function TerminosPage() {
         </p>
       </Seccion>
 
-      <Seccion titulo="Acceso y contraseña">
+      <Seccion titulo="Acceso y código">
         <p>
-          El acceso se hace con una contraseña que comparte tu familia. Cuidala y no la publiques. Si creés que alguien que
-          no corresponde la conoce, avisanos a <Pendiente>{LEGAL.contacto}</Pendiente> para cambiarla.
+          El acceso se hace con un código que te damos al aceptar tu solicitud. Cuidalo y no lo publiques. Si creés que alguien que
+          no corresponde lo conoce, avisanos a <Pendiente>{LEGAL.contacto}</Pendiente> para cambiarlo.
         </p>
       </Seccion>
 

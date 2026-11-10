@@ -46,8 +46,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ['"Atkinson Hyperlegible"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Arial', 'sans-serif'],
-        display: ['"Bricolage Grotesque"', '"Atkinson Hyperlegible"', 'system-ui', 'sans-serif'],
-        marca: ['Outfit', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', '"Atkinson Hyperlegible"', 'system-ui', 'sans-serif'],
+        marca: ['Outfit', '"Bricolage Grotesque Variable"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 1px 2px rgba(15, 26, 21, 0.05), 0 4px 16px -6px rgba(15, 26, 21, 0.10)',

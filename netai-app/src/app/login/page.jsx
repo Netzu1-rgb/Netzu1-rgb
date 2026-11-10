@@ -26,7 +26,7 @@ function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!password.trim()) {
-      setError('Por favor, ingresá la contraseña familiar.');
+      setError('Ingresá tu código de acceso.');
       return;
     }
 
@@ -43,7 +43,7 @@ function LoginForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || data.error || 'Contraseña incorrecta.');
+        throw new Error(data.message || data.error || 'Código incorrecto.');
       }
 
       setSuccess(true);
@@ -62,7 +62,7 @@ function LoginForm() {
     <div className="w-full max-w-sm">
       <h1 className="font-display text-3xl sm:text-4xl font-bold text-loza-900 leading-tight">Entrá a NetAI</h1>
       <p className="text-loza-600 text-[15px] leading-relaxed mt-2">
-        Usá la contraseña que comparte tu familia. La sesión queda abierta 30 días en este dispositivo.
+        Usá el código de acceso que te dimos. La sesión queda abierta 30 días en este dispositivo.
       </p>
 
       {error && (
@@ -74,14 +74,14 @@ function LoginForm() {
 
       {success && (
         <p role="status" className="mt-6 p-4 rounded-2xl bg-hoja-50 text-hoja-900 text-sm animate-fade-in">
-          Contraseña correcta. Entrando…
+          Código correcto. Entrando…
         </p>
       )}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div>
           <label htmlFor="family-password" className="block text-sm font-bold text-loza-800 mb-2">
-            Contraseña familiar
+            Código de acceso
           </label>
           <div className="relative">
             <input
@@ -98,7 +98,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              aria-label={showPassword ? 'Ocultar código' : 'Mostrar código'}
               className="absolute inset-y-0 right-0 px-3.5 flex items-center text-loza-500 hover:text-loza-800 transition-colors"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -125,7 +125,7 @@ function LoginForm() {
       </form>
 
       <p className="text-sm text-loza-500 mt-6 leading-relaxed">
-        ¿No sabés la contraseña? Pedísela a quien administra el acceso de tu familia.
+        ¿No tenés un código? <Link href="/#solicitar" className="underline underline-offset-4 hover:text-loza-800">Pedí acceso</Link> y te lo mandamos por correo.
       </p>
       <p className="text-sm text-loza-500 mt-3">
         <Link href="/privacidad" className="underline underline-offset-4 hover:text-loza-800">Privacidad</Link>

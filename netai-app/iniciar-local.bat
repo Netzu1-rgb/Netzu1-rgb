@@ -15,7 +15,7 @@ if not exist .env.local (
   echo Creando .env.local con valores de prueba...
   for /f "delims=" %%s in ('node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"') do set SECRET=%%s
   > .env.local echo # Solo para probar en tu computadora. No se sube al repositorio.
-  >> .env.local echo APP_FAMILY_PASSWORD=familia-local
+  >> .env.local echo APP_ACCESS_CODES=familia-local
   >> .env.local echo SESSION_SECRET=!SECRET!
 )
 
@@ -28,7 +28,7 @@ echo.
 echo NetAI se esta iniciando.
 echo   Inicio:      http://localhost:3000
 echo   App:         http://localhost:3000/app
-echo   Contrasena:  la que figura en .env.local ^(APP_FAMILY_PASSWORD^)
+echo   Codigo:      el que figura en .env.local ^(APP_ACCESS_CODES^)
 echo.
 
 if "%1"=="--red" (
