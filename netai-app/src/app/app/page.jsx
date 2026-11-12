@@ -131,6 +131,8 @@ export default function PwaAppPage() {
   const [toast, setToast] = useState(null); // { text, undo? }
   const [prefs, setPrefs] = useState(emptyPrefs); // favoritas, horarios y recordatorios
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [period, setPeriod] = useState('semana'); // 'semana' | 'mes'
+  const [ideas, setIdeas] = useState({ status: 'idle', list: [], moment: suggestedMoment() });
   const remindedRef = useRef('');
 
   const emptyForm = { name: '', energy: '', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
@@ -239,6 +241,27 @@ export default function PwaAppPage() {
       });
     }
     return days;
+  }, [logsByDate, today]);
+
+  // Mes: últimos 30 días contra los 30 anteriores
+  const monthStats = useMemo(() => {
+    const span = (from, to) => {
+      let cared = 0, mealCount = 0, water = 0, protein = 0, proteinDays = 0;
+      const hunger = [], satiety = [];
+      for (let i = from; i <= to; i++) {
+        const log = logsByDate[offsetDate(today, -i)];
+        if (!log) continue;
+        const meals = Object.values(log.meals || {}).flat();
+        if (meals.length || log.waterGlasses) cared++;
+        mealCount += meals.length;
+        water += log.waterGlasses || 0;
+        meals.forEach((m) => { hunger.push(Number(m.satietyBefore)); satiety.push(Number(m.satietyAfter)); });
+        const p = meals.reduce((n, m) => n + (Number(m.protein) || 0), 0);
+        if (p > 0) { protein += p; proteinDays++; }
+      }
+      return { cared, mealCount, waterAvg: cared ? water / cared : null, hunger: average(hunger), satiety: average(satiety), proteinAvg: proteinDays ? protein / proteinDays : null };
+    };
+    return { now: span(0, 29), prev: span(30, 59) };
   }, [logsByDate, today]);
 
   const energyRange = useMemo(() => energyRangeFor(profile), [profile]);
@@ -419,6 +442,54 @@ export default function PwaAppPage() {
     const csv = '\ufeff' + rows.map((r) => r.map(esc).join(';')).join('\r\n');
     downloadFile(csv, `netai-historial-${today}.csv`, 'text/csv;charset=utf-8');
     setToast({ text: 'Descargaste tu historial.' });
+  };
+
+  // Sugerencias de comidas con IA para el momento elegido
+  const askIdeas = async (moment) => {
+    setIdeas({ status: 'loading', list: [], moment });
+    try {
+      const sport = plan
+        ? { goal: SPORT_GOALS.find((g) => g.id === plan.goal)?.label, energyLeft: Math.max(0, plan.energy.max - totalEnergyToday), proteinLeft: Math.max(0, plan.proteinG[0] - proteinToday) }
+        : null;
+      const res = await fetch('/api/sugerir-comidas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moment, diet: profile?.diet || [], allergies: profile?.allergies || '', sport }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'No pudimos traer sugerencias.');
+      setIdeas({ status: 'done', list: data.suggestions, moment });
+    } catch (e) {
+      setIdeas({ status: 'error', list: [], moment, error: e.message });
+    }
+  };
+
+  const addIdea = (idea) => {
+    const entry = { id: 'idea-' + Date.now(), name: idea.name, energy: idea.energy, protein: idea.protein, carbs: idea.carbs, fat: idea.fat, satietyBefore: 3, satietyAfter: 7, notes: 'Sugerencia de NetAI.' };
+    updateDay(selectedDate, (day) => ({ ...day, meals: { ...day.meals, [ideas.moment]: [...(day.meals[ideas.moment] || []), entry] } }));
+    setToast({ text: `Sumaste la sugerencia a ${MEAL_CATEGORIES.find((c) => c.id === ideas.moment)?.label.toLowerCase()}.` });
+    setActiveTab('today');
+  };
+
+  // Informe del mes en texto, para guardar o compartir con un profesional
+  const handleMonthReport = () => {
+    const f = (n, d = 1) => (n == null ? 'sin datos' : Number(n).toLocaleString('es-AR', { maximumFractionDigits: d }));
+    const { now, prev } = monthStats;
+    const lines = [
+      'NetAI: informe de hábitos de los últimos 30 días',
+      `Generado el ${formatDayMonth(today)} de ${today.slice(0, 4)}`,
+      '',
+      `Días con registros: ${now.cared} de 30 (30 días anteriores: ${prev.cared})`,
+      `Comidas registradas: ${now.mealCount} (antes: ${prev.mealCount})`,
+      `Agua, vasos por día registrado: ${f(now.waterAvg)} (antes: ${f(prev.waterAvg)})`,
+      `Hambre antes de comer, promedio de 1 a 10: ${f(now.hunger)} (antes: ${f(prev.hunger)})`,
+      `Saciedad después de comer, promedio de 1 a 10: ${f(now.satiety)} (antes: ${f(prev.satiety)})`,
+      ...(sportOn ? [`Proteínas por día registrado: ${f(now.proteinAvg, 0)} g (antes: ${f(prev.proteinAvg, 0)} g)`] : []),
+      '',
+      'Los datos salen de lo que registraste en la app. Es información educativa y no reemplaza la consulta con un profesional de la salud.',
+    ];
+    downloadFile(lines.join('\r\n'), `netai-informe-${today}.txt`, 'text/plain;charset=utf-8');
+    setToast({ text: 'Descargaste el informe del mes.' });
   };
 
   const handleAddMealSubmit = (e) => {
@@ -850,6 +921,58 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {activeTab === 'week' && (
           <div className="space-y-10 animate-fade-in">
+            <div className="inline-flex p-1 rounded-full bg-white border border-loza-200" role="group" aria-label="Período">
+              {[['semana', 'Semana'], ['mes', 'Mes']].map(([id, label]) => (
+                <button key={id} type="button" aria-pressed={period === id} onClick={() => setPeriod(id)} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${period === id ? 'bg-hoja-600 text-white' : 'text-loza-600 hover:text-loza-900'}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {period === 'mes' && (
+              <section aria-labelledby="titulo-mes">
+                <h2 id="titulo-mes" className="font-display text-2xl font-bold text-loza-900">Tu mes</h2>
+                <p className="text-loza-600 text-[15px] leading-relaxed mt-1.5 max-w-prose">Los últimos 30 días, al lado de los 30 anteriores. Sirve para ver hacia dónde van tus hábitos, sin metas que cumplir.</p>
+                {monthStats.now.cared === 0 && monthStats.prev.cared === 0 ? (
+                  <p className="mt-5 text-loza-500">Todavía no hay registros. Cuando registres comidas o agua, vas a ver tu mes acá.</p>
+                ) : (
+                  <>
+                    <div className="mt-5 overflow-x-auto">
+                      <table className="w-full text-[15px] tabular">
+                        <thead>
+                          <tr className="text-left text-sm text-loza-500 border-b border-loza-300">
+                            <th scope="col" className="py-2 pr-3 font-normal">Hábito</th>
+                            <th scope="col" className="py-2 px-3 font-normal text-right">Últimos 30 días</th>
+                            <th scope="col" className="py-2 pl-3 font-normal text-right">30 anteriores</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-loza-200">
+                          {[
+                            ['Días con registros', monthStats.now.cared, monthStats.prev.cared, 0],
+                            ['Comidas registradas', monthStats.now.mealCount, monthStats.prev.mealCount, 0],
+                            ['Vasos de agua por día', monthStats.now.waterAvg, monthStats.prev.waterAvg, 1],
+                            ['Hambre antes de comer', monthStats.now.hunger, monthStats.prev.hunger, 1],
+                            ['Saciedad después', monthStats.now.satiety, monthStats.prev.satiety, 1],
+                            ...(sportOn ? [['Proteínas por día (g)', monthStats.now.proteinAvg, monthStats.prev.proteinAvg, 0]] : []),
+                          ].map(([label, now, prev, d]) => (
+                            <tr key={label}>
+                              <th scope="row" className="py-3 pr-3 font-normal text-left text-loza-800">{label}</th>
+                              <td className="py-3 px-3 text-right font-bold text-loza-900">{now == null ? '—' : Number(now).toLocaleString('es-AR', { maximumFractionDigits: d })}</td>
+                              <td className="py-3 pl-3 text-right text-loza-600">{prev == null ? '—' : Number(prev).toLocaleString('es-AR', { maximumFractionDigits: d })}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <button type="button" onClick={handleMonthReport} className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-loza-300 text-loza-800 text-sm font-bold hover:border-loza-500">
+                      <FileDown className="w-4 h-4" aria-hidden="true" /> Descargar informe del mes
+                    </button>
+                  </>
+                )}
+              </section>
+            )}
+
+            {period === 'semana' && (<>
             <section aria-labelledby="titulo-semana">
               <h2 id="titulo-semana" className="font-display text-2xl font-bold text-loza-900">Tu semana</h2>
               <p className="text-loza-600 text-[15px] leading-relaxed mt-1.5 max-w-prose">
@@ -925,6 +1048,7 @@ export default function PwaAppPage() {
               })()}
               <p className="mt-4 text-sm text-loza-500 max-w-prose">Comer con calma suele pasar entre el 3 y el 7 de la escala. Es una guía, no una meta.</p>
             </section>
+            </>)}
           </div>
         )}
 
@@ -961,6 +1085,41 @@ export default function PwaAppPage() {
                 );
               })}
             </dl>
+
+            <section aria-labelledby="titulo-ideas">
+              <h2 id="titulo-ideas" className="font-display text-xl font-bold text-loza-900">Ideas para hoy</h2>
+              <p className="text-sm text-loza-600 mt-1 max-w-prose">La IA te propone tres comidas según el momento del día y lo que comés. Se envían tus preferencias de alimentación a Google Gemini, sin tu nombre.</p>
+              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Momento del día para las ideas">
+                {MEAL_CATEGORIES.map((c) => (
+                  <button key={c.id} type="button" aria-pressed={ideas.moment === c.id} onClick={() => setIdeas((prev) => ({ ...prev, moment: c.id, status: prev.status === 'done' ? 'idle' : prev.status, list: [] }))} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${ideas.moment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}>
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => askIdeas(ideas.moment)} disabled={ideas.status === 'loading'} className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold disabled:opacity-60">
+                {ideas.status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
+                {ideas.status === 'loading' ? 'Pensando ideas…' : ideas.status === 'done' ? 'Pedir otras ideas' : 'Pedir ideas'}
+              </button>
+              <div aria-live="polite">
+                {ideas.status === 'error' && <p className="mt-3 text-sm text-remolacha-800">{ideas.error}</p>}
+                {ideas.status === 'done' && (
+                  <ul className="mt-4 grid gap-3">
+                    {ideas.list.map((idea) => (
+                      <li key={idea.name} className="rounded-2xl bg-white border border-loza-200 p-4 flex flex-wrap items-start gap-x-4 gap-y-2">
+                        <div className="flex-1 min-w-[12rem]">
+                          <p className="font-bold text-loza-900">{idea.name}</p>
+                          <p className="text-sm text-loza-600 mt-0.5">{idea.description}</p>
+                          {showNumbers && <p className="text-sm text-loza-700 mt-1 tabular">{idea.energy} kcal · P {idea.protein} g · C {idea.carbs} g · G {idea.fat} g</p>}
+                        </div>
+                        <button type="button" onClick={() => addIdea(idea)} className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-hoja-200 text-hoja-700 text-sm font-bold hover:bg-hoja-50">
+                          <Plus className="w-4 h-4" aria-hidden="true" /> Sumar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
 
             <section aria-labelledby="titulo-recetas">
               <h2 id="titulo-recetas" className="font-display text-xl font-bold text-loza-900">Recetas para inspirarte</h2>
@@ -1441,7 +1600,7 @@ export default function PwaAppPage() {
                   role="radio"
                   aria-checked={recipeMoment === c.id}
                   onClick={() => setRecipeMoment(c.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${recipeMoment === c.id ? 'bg-loza-900 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${recipeMoment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
                 >
                   {c.label}
                 </button>
