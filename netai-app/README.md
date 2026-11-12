@@ -42,7 +42,7 @@ Están explicadas en `.env.example`. En Vercel se cargan en *Project Settings �
 | `APP_ACCESS_CODES` | Códigos de acceso separados por coma. Un código por persona o grupo; quitar uno cierra sus sesiones | Sí, en producción |
 | `SESSION_SECRET` | Clave que firma las sesiones, de 32 caracteres o más (`openssl rand -base64 32`) | Sí, en producción |
 | `GEMINI_API_KEY` | Foto del plato y sugerencias de comidas. Sin la clave, la app pide registrar a mano | No |
-| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-2.5-flash`) | No |
+| `GEMINI_MODEL` | Modelos de Gemini en orden de preferencia, separados por coma. Por defecto `gemini-2.5-flash-lite` (el más barato) y, si Google lo retira, `gemini-2.5-flash` | No |
 | `PHOTO_ANALYSIS_PER_HOUR` | Máximo de pedidos a la IA por hora y por conexión (por defecto 30) | No |
 | `NEXT_PUBLIC_SITE_URL` | Dirección pública, para la vista previa al compartir | Recomendada |
 | `NEXT_PUBLIC_REQUEST_ENDPOINT` | Adónde llegan las solicitudes de acceso (FormSubmit). Sin ella, el formulario no se muestra | No |

@@ -19,7 +19,11 @@ function fakeGemini() {
     let raw = '';
     req.on('data', (c) => { raw += c; });
     req.on('end', () => {
-      const parts = JSON.parse(raw).contents[0].parts;
+      // Un modelo retirado responde 404: la app tiene que pasar sola al siguiente de la lista
+      if (req.url.includes('modelo-retirado')) { res.writeHead(404); res.end('{}'); return; }
+      const sent = JSON.parse(raw);
+      if (sent.generationConfig?.thinkingConfig?.thinkingBudget !== 0) { res.writeHead(400); res.end('{}'); return; }
+      const parts = sent.contents[0].parts;
       const img = parts.find((p) => p.inlineData);
       let answer;
       if (!img) {
@@ -56,6 +60,7 @@ const waitFor = async (url) => {
     APP_ACCESS_CODES: 'familia-local, codigo-ana',
     SESSION_SECRET: 'clave-de-prueba-de-al-menos-32-caracteres',
     GEMINI_API_KEY: 'clave-de-prueba',
+    GEMINI_MODEL: 'modelo-retirado, gemini-2.5-flash-lite',
     GEMINI_API_BASE: `http://127.0.0.1:${GEMINI_PORT}`,
     PHOTO_ANALYSIS_PER_HOUR: '1000',
     NEXT_PUBLIC_REQUEST_ENDPOINT: 'https://formsubmit.co/ajax/prueba',

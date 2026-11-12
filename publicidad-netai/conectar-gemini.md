@@ -8,6 +8,10 @@ Documento de planificación. No incluye código de la app.
 
 > **Actualización (versión 1.5.0):** se sumó `api/sugerir-comidas` ("Ideas para hoy"), que usa la misma clave. Lo que sigue es el plan original; las partes sobre la simulación ya no aplican. Sigue pendiente lo de cuentas, cuotas por plan y cobros.
 
+> **Modelo más barato (12 de noviembre de 2026):** la app usa por defecto `gemini-2.5-flash-lite` para la foto del plato y las sugerencias. Según comparadores de precios (no pude abrir la página oficial de Google desde esta sesión), cuesta cerca de US$0,10 por millón de tokens de entrada y US$0,40 de salida: una foto sale alrededor de US$0,0003, o sea unas 3.000 fotos por dólar. Confirmá el precio en la página oficial de Gemini antes de fijar los planes. Si Google retira ese modelo, la app pasa sola a `gemini-2.5-flash`. Se puede cambiar la lista con `GEMINI_MODEL`.
+>
+> **Para vincularlo:** 1) crear la clave en Google AI Studio (aistudio.google.com, "Get API key"); 2) cargarla en Vercel como `GEMINI_API_KEY` (Project Settings, Environment Variables); 3) volver a publicar. La clave nunca va en el código ni en el chat.
+
 ## Hallazgo original: el análisis de fotos era una simulación
 En `src/components/FoodScannerModal.jsx` (proyecto NetAI), la función `analyzeMeal` espera un par de segundos con `setTimeout` y devuelve valores fijos. Con texto busca palabras ("pollo", "pizza") y devuelve calorías prefijadas, y la "confianza" del 95 % o 98 % está escrita a mano. No hay ninguna llamada a una IA.
 
