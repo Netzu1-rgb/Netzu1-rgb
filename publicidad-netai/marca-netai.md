@@ -64,7 +64,9 @@ Sistema compartido por la web (`netai-web/`) y la app (`netai-app/`, en `tailwin
 | Loza | `#F6F8F4` | Fondo, neutro con un leve tinte verde |
 | Tinta | `#1A2A23` | Texto |
 
-**Tipografías (Google Fonts):** Outfit (negrita) solo para la palabra NetAI del logo, Bricolage Grotesque para títulos y Atkinson Hyperlegible para el texto. Atkinson está pensada para leerse fácil; su cero lleva una barra a propósito, para no confundirlo con la letra O.
+**Tipografías** (de Google Fonts; la app las trae incluidas, sin pedirlas a Google): Outfit (negrita) solo para la palabra NetAI del logo, Bricolage Grotesque para títulos y Atkinson Hyperlegible para el texto. Atkinson está pensada para leerse fácil; su cero lleva una barra a propósito, para no confundirlo con la letra O.
+
+**Tema oscuro:** la app tiene tema claro y oscuro (Ajustes, Apariencia). Los mismos colores se aclaran sobre fondo verde muy oscuro; las capturas están en `publicidad-netai/tiendas/`.
 
 **NetAI Fit:** mismo estilo de ícono (recuadro gris) con una línea de pulso en azul oscuro en lugar de la hoja. Su color propio es el azul agua.
 

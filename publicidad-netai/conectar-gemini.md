@@ -6,7 +6,9 @@ Documento de planificación. No incluye código de la app.
 
 > **Estado de la información.** No pude abrir la documentación oficial de Google desde la sesión donde escribí esto (`ai.google.dev` no estaba permitido en la red). Lo que sigue sale de mi conocimiento general. Todo lo que figura en "Por confirmar" hay que comprobarlo en la documentación oficial antes de construir.
 
-## Hallazgo clave: hoy el análisis de fotos es una simulación
+> **Actualización (versión 1.5.0):** se sumó `api/sugerir-comidas` ("Ideas para hoy"), que usa la misma clave. Lo que sigue es el plan original; las partes sobre la simulación ya no aplican. Sigue pendiente lo de cuentas, cuotas por plan y cobros.
+
+## Hallazgo original: el análisis de fotos era una simulación
 En `src/components/FoodScannerModal.jsx` (proyecto NetAI), la función `analyzeMeal` espera un par de segundos con `setTimeout` y devuelve valores fijos. Con texto busca palabras ("pollo", "pizza") y devuelve calorías prefijadas, y la "confianza" del 95 % o 98 % está escrita a mano. No hay ninguna llamada a una IA.
 
 Hasta que esto se reemplace por una llamada real, **no se deben cobrar ni anunciar "análisis por foto con IA"**.

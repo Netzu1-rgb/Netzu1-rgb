@@ -1,6 +1,32 @@
 # Estado de la app NetAI
 
-Revisión del 3 de noviembre de 2026 (versión 1.4.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.5.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.5.0: preparación del lanzamiento
+
+**Acceso y seguridad**
+- Códigos de acceso (`APP_ACCESS_CODES`): uno por persona o grupo. Quitar un código de la lista cierra sus sesiones.
+- Bloqueo después de 8 intentos fallidos en 15 minutos por conexión. En producción no hay código por defecto.
+- Cabeceras de seguridad (CSP, HSTS y otras), páginas de error propias, `robots` y `sitemap`; `/app` y `/login` no se indexan.
+
+**Página de inicio única.** Se reescribió `/` con el diseño actual: qué hace la app, los dos modos, planes y formulario para pedir acceso. Durante la beta no se cobra y todas las funciones están habilitadas.
+
+**Funciones que la web prometía y faltaban**
+- Favoritas marcadas a mano (estrella en cada comida), además de las frecuentes.
+- Horarios de comidas personalizables y recordatorios a la hora de cada comida (funcionan con la app abierta; ver límites más abajo).
+- Exportar el historial a CSV.
+- Vista de Mes: compara los últimos 30 días con los 30 anteriores y descarga un informe.
+- "Ideas para hoy": tres sugerencias de comidas con IA según el momento del día, la alimentación y las alergias.
+
+**App instalable**
+- Tema oscuro (automático, claro u oscuro).
+- Service worker reescrito: no guarda redirecciones ni respuestas de la API, y la app abre sin conexión.
+- El día cambia solo a la medianoche. Capturas y accesos directos en el manifiesto.
+- Tipografías incluidas en la app, sin pedirlas a Google.
+
+**Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
+
+**Pruebas guardadas en el proyecto.** `npm test` (16 pruebas de los cálculos y del acceso) y `npm run test:e2e` (90 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
@@ -62,21 +88,20 @@ Probado en el navegador en modo producción: 19 comprobaciones de estas funcione
 
 ## Lo que falta
 
-### Decisiones tuyas (bloquean el lanzamiento)
-1. **Cómo entra una persona nueva:** beta cerrada con contraseña, acceso libre o cuentas (ver `lanzamiento.md`).
-2. **Análisis por foto:** ya está conectado a Gemini; falta cargar la clave. Para vender Plus y Pro con cuotas de fotos siguen haciendo falta cuentas.
-3. **Cobros:** no hay sistema de pagos. Para la web, Mercado Pago o Stripe; para las tiendas, el sistema de cada una.
-4. **Datos legales:** responsable, correo, ciudad y país en las páginas de privacidad y términos.
+### Solo vos podés hacerlo
+1. **Datos legales:** responsable, correo de contacto, ciudad y país, en `netai-app/src/components/legal/LegalPage.jsx`. Hoy las páginas de privacidad y términos los muestran como pendientes. Conviene que un abogado revise los textos.
+2. **Publicar en Vercel** y cargar las variables (pasos en `lanzamiento.md`).
+3. **Clave de Gemini** de pago con tope de gasto. La conexión se probó con un servidor que imita a Gemini; falta la primera prueba con la clave real.
+4. **Activar FormSubmit:** la primera solicitud dispara un correo de activación que hay que confirmar.
+5. **Revisión profesional:** que un nutricionista matriculado revise los valores del Modo Sport y los artículos de Aprender.
+6. **Dominio** y, más adelante, cuentas de desarrollador de Google Play y App Store.
 
-### Código
-- **Código viejo sin usar.** En `netai-app/src/` quedó la versión anterior de la app (Vite: `App.jsx`, `main.jsx`, `components/*View.jsx`, `FoodScannerModal.jsx`, `PremiumModal.jsx`, `i18n/`, `security/`, `nutritionEngine.js`, `App.css`, `mealsAndI18n.css`, `index.css`, más `index.html` y `vite.config.js` en la raíz). La app actual no la usa. Propuesta: sacarla del proyecto o moverla a una carpeta de archivo, para que no confunda.
-- **Promesas del plan Gratis sin hacer:** "Horarios de comidas personalizables" y "Favoritos" (hoy hay frecuentes, no favoritos marcados a mano).
-- **Recordatorios** (por ejemplo, de agua): no existen. Ayudan a la app y Apple los valora para aceptarla en la tienda.
-- **Pruebas automáticas:** las comprobaciones de esta revisión se hicieron a mano con un navegador automatizado; conviene guardarlas en el proyecto para repetirlas antes de cada publicación.
+### Decisiones para después de la beta
+- **Cuentas y cobros.** La app no tiene cuentas ni pagos: en la beta todo está habilitado para quien tiene un código. Para cobrar Plus y Pro con cuotas de fotos hacen falta cuentas, un servidor que guarde la suscripción y un medio de pago (Mercado Pago o Stripe en la web; el sistema de cada tienda en las apps).
+- **Copia en la nube.** Los registros viven en el teléfono; si se pierde o se cambia, solo se recuperan con la copia descargada desde Ajustes.
 
-### Diseño
-- **Página de inicio de la app** (`/`): el encabezado y los precios están rediseñados, pero las secciones del medio (funciones, filosofía, medios de pago) conservan el diseño anterior.
-- **Dos páginas de inicio:** la web `netai-web/` y la página de inicio de la app dicen lo mismo con distinto diseño. Conviene elegir una y que la otra redirija.
-- **Modo oscuro:** la app no lo tiene; se usa mucho de noche.
-- **Recetas sin imágenes.**
-- **NetAI Fit:** solo existe en la web como "en camino".
+### Límites conocidos
+- **Recordatorios:** suenan mientras la app está abierta o en segundo plano reciente. Para que lleguen con la app cerrada hacen falta notificaciones desde un servidor (o la app empaquetada para las tiendas).
+- **Límite de pedidos a la IA y bloqueo por intentos fallidos:** se cuentan en la memoria de cada servidor. En Vercel frenan abusos simples; el tope real de gasto se pone en Google Cloud.
+- **Recetas sin fotos.**
+- **NetAI Fit:** solo existe en la web como "en desarrollo".

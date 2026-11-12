@@ -1,134 +1,88 @@
-# NetAI • Plataforma de Bienestar y Nutrición Consciente
+# NetAI
 
-> **Enfoque Weight-Neutral & Anti-TCA** | Listo para Producción en **Vercel**
+App de nutrición consciente, hecha con Next.js. Se instala en el teléfono desde el navegador (PWA) y guarda los registros en el propio dispositivo.
 
-NetAI es una plataforma web integral de nutrición ética diseñada para erradicar la cultura de las dietas restrictivas y proteger la salud mental familiar. Cumple estrictamente con las **Guías Alimentarias para la Población Argentina (GAPA)** y los principios de **Alimentación Intuitiva**.
+Tiene dos modos:
 
----
+- **Bienestar:** neutral al peso. No muestra el peso ni propone metas de peso, el rango de energía nunca baja de 1.500 kcal y el Modo Intuitivo oculta todos los números. Quien indica estar en tratamiento por un trastorno de la conducta alimentaria no ve números en ningún lugar.
+- **Modo Sport:** opcional, para deportistas mayores de 18. Plan de energía, proteínas, carbohidratos, grasas y agua según el objetivo (bajar de peso, subir masa muscular, recomposición o rendimiento), con límites de seguridad y seguimiento del peso.
 
-## 🏛️ Arquitectura del Sistema (3 Zonas Diferenciadas)
+## Qué incluye
 
-```mermaid
-graph TD
-    A[Usuario Público] -->|Navega| ZONA_A[Zona A: Landing Page /]
-    ZONA_A -->|CTA Acceso Familiar| ZONA_B[Zona B: Gateway /login]
-    ZONA_B -->|Valida APP_FAMILY_PASSWORD| API_AUTH[API Route /api/auth/login]
-    API_AUTH -->|Emite Cookie HttpOnly 30 días HMAC-SHA256| ZONA_C[Zona C: PWA Privada /app]
-    MIDDLEWARE[Edge Middleware] -.->|Protege /app*| ZONA_B
-    ZONA_C --> T1[Pestaña: Mi Día]
-    ZONA_C --> T2[Pestaña: Inspiración de Comidas]
-    ZONA_C --> T3[Pestaña: Aprender Psicoeducación]
-```
-
-### 1. Zona A: Landing Page Comercial Pública (`/`)
-- **Pública e indexable**: Diseñada para comunicar la propuesta de valor ético sin requerir registro.
-- **Componentes**:
-  - `Navbar`: Cabecera sticky con navegación y botón de acceso familiar.
-  - `HeroSection`: Propuesta de valor, sellos de confianza y mockup realista de la PWA.
-  - `FeaturesSection`: Los 4 pilares (Registro Consciente, Modo Intuitivo, Método del Plato, Evidencia GAPA).
-  - `PhilosophySection`: Manifiesto Anti-Dieta y tabla comparativa vs. apps tradicionales punitivas.
-  - `PricingSection`: Planes accesibles y transparentes (Mensual, Semestral, Familiar) sin cobros ocultos.
-  - `PaymentMethodsSection`: Tarjetas, Mercado Pago, Transferencias y Cripto (USDT).
-  - `Footer`: Links, contacto de soporte y **descargo de responsabilidad médica obligatorio**.
-
-### 2. Zona B: Pasarela de Acceso Familiar (`/login` + Middleware)
-- **Acceso por contraseña única familiar**: Sin registro individual complejo para evitar fricción familiar.
-- **Seguridad**:
-  - Comparación en tiempo constante (`timingSafeEqual`) contra `APP_FAMILY_PASSWORD` para mitigar ataques de temporización.
-  - Generación de firma criptográfica `HMAC-SHA256` con Web Crypto API nativa en Node y Edge.
-  - Cookie HttpOnly `netai_family_session` válida por 30 días (`maxAge: 2592000`).
-  - Next.js Edge Middleware que intercepta cualquier intento de acceder a `/app*` sin sesión activa y redirige a `/login?redirect=...`.
-
-### 3. Zona C: Progressive Web App Privada (`/app`)
-- **Experiencia Nativa Móvil**:
-  - Barra de navegación inferior fija (`pb-safe`) con 3 pestañas: **Mi Día**, **Inspiración de Comidas** y **Aprender**.
-  - **Modo Bienestar / Intuitivo Global**: Oculta instantáneamente todos los números, calorías y métricas cuantitativas, sustituyéndolos por armonía de colores y grupos de alimentos.
-  - **Piso Infranqueable Ético**: Límite inferior seguro de **1.500 kcal**; jamás permite metas restrictivas.
-  - **Hidratación Consciente**: Registro de 8 vasos diarios basado en GAPA.
-  - **Escala de Saciedad (1 al 10)**: Registro de autopercepción de hambre antes y plenitud después de comer.
-  - **Inspiración de Recetas**: Catálogo curado con proporciones de Harvard/GAPA (50% vegetales, 25% proteínas, 25% granos) y botón directo "Sumar a mi día".
-  - **Persistencia Local y Privada**: Guarda los datos en `localStorage` del dispositivo sin enviar registros íntimos a servidores externos.
-
----
-
-## 🌿 Reglas Éticas de UX Writing y Diseño Anti-TCA
-
-| Concepto Prohibido | Sustituto Ético en NetAI |
-| :--- | :--- |
-| "Bajar de peso", "adelgazar", "quemar grasa" | **Bienestar diario, vitalidad y salud integral** |
-| "Comida trampa" (cheat meal) | **Alimentos de consumo ocasional** |
-| "Alimentos buenos / malos" | **Nutrientes de consumo habitual vs. recreativos** |
-| "Calorías excedidas", "meta fallada" | **Balance de energía flexible, autorregulación semanal** |
-| Alertas punitivas rojas (`#EF4444`) | **Paleta serena: Salvia (`#4A6B53`), Tierra (`#9C7A5B`) y Océano** |
-
----
-
-## 🚀 Despliegue en Vercel (Guía de 5 Minutos)
-
-### Paso 1: Subir el repositorio a GitHub / GitLab
-```bash
-git add .
-git commit -m "feat: plataforma de bienestar y nutrición consciente NetAI completa"
-git push origin main
-```
-
-### Paso 2: Importar en Vercel
-1. Ingresá a [vercel.com](https://vercel.com) e iniciá sesión con tu cuenta.
-2. Hacé clic en **"Add New..."** > **"Project"**.
-3. Seleccioná el repositorio `netAI`.
-4. El framework se detectará automáticamente como **Next.js**.
-
-### Paso 3: Configurar Variables de Entorno
-En la sección **"Environment Variables"** del panel de Vercel, agregá las siguientes dos variables:
-
-| Variable | Valor Recomendado | Descripción |
-| :--- | :--- | :--- |
-| `APP_FAMILY_PASSWORD` | Tu contraseña secreta familiar (ej: `familia2026`) | Clave única de acceso para la Zona B |
-| `SESSION_SECRET` | Clave aleatoria de al menos 32 caracteres | Clave de firma para las cookies HMAC-SHA256 |
-
-> **Tip para generar `SESSION_SECRET`**:
-> Podés generar una clave segura abriendo tu terminal y ejecutando:
-> ```bash
-> openssl rand -base64 32
-> ```
-
-### Paso 4: Deploy
-Hacé clic en **"Deploy"**. En menos de 2 minutos tu sitio estará activo con HTTPS automático, Edge Middleware global y soporte PWA offline.
-
----
-
-## 💻 Probar en tu computadora (localhost)
-
-**Requisito:** Node.js 20 o superior ([nodejs.org](https://nodejs.org)).
-
-### Opción rápida
-- **Mac o Linux:** abrí una terminal en esta carpeta y ejecutá `./iniciar-local.sh`
-- **Windows:** doble clic en `iniciar-local.bat`
-
-La primera vez crea un archivo `.env.local` con una contraseña de prueba (`familia-local`) y una clave de sesión aleatoria, e instala las dependencias. Después abrí:
-
-| Página | Dirección |
+| Sección | Qué hace |
 |---|---|
-| Inicio | http://localhost:3000 |
-| Entrar | http://localhost:3000/login |
-| App | http://localhost:3000/app |
+| Recorrido inicial | Datos personales y físicos, modo, actividad u objetivos deportivos, alimentación y forma de ver la app |
+| Mi día | Registro de comidas con horarios propios, agua, hambre y saciedad, favoritas y frecuentes, editar y deshacer |
+| Foto del plato | La cámara envía la foto a Google Gemini y vuelve con kcal, proteínas, carbohidratos y grasas para revisar antes de guardar |
+| Semana y Mes | Días registrados, agua, hambre y saciedad; comparación de los últimos 30 días con los anteriores e informe descargable; en Sport, peso y ritmo |
+| Inspiración | Método del Plato, "Ideas para hoy" (sugerencias con IA) y recetas filtradas por alimentación |
+| Aprender | Artículos breves de alimentación consciente |
+| Ajustes | Tus datos, Modo Intuitivo, tema claro u oscuro, horarios y recordatorios, copia de seguridad, exportar a CSV y borrar todo |
 
-Para cortar el servidor: `Ctrl + C` en la terminal.
+La página de inicio (`/`) presenta la app, los planes y el formulario para pedir acceso. `/app` pide un código de acceso.
 
-### Probar desde el celular
-Con la computadora y el celular en la misma red Wi-Fi:
-- **Mac o Linux:** `./iniciar-local.sh --red` (muestra la dirección a abrir en el celular)
-- **Windows:** `iniciar-local.bat --red` y buscá la IP de la computadora con `ipconfig`
+## Probar en tu computadora
 
-Desde el celular la app se usa normalmente, pero no se puede **instalar** como app: el navegador solo lo permite con HTTPS o en `localhost`.
+Hace falta Node.js 20.9 o posterior.
 
-### A mano
 ```bash
-cp .env.example .env.local   # y cambiá los valores
-npm install
-npm run dev                  # o: npm run dev:red
-npm run build && npm start   # versión de producción
+./iniciar-local.sh        # en Windows: iniciar-local.bat
 ```
 
-### Contraseña
-La contraseña sale de `APP_FAMILY_PASSWORD`. Si esa variable no existe, la app usa `familia2026`, que figura en este README: **en Vercel tiene que estar configurada** para que nadie entre con la contraseña por defecto.
+El script instala lo necesario, crea `.env.local` y abre la app en `http://localhost:3000`. En desarrollo, si no cargaste ningún código, el código de acceso es `familia2026`.
+
+A mano: `npm install`, copiar `.env.example` como `.env.local` y `npm run dev`.
+
+## Variables de entorno
+
+Están explicadas en `.env.example`. En Vercel se cargan en *Project Settings → Environment Variables*.
+
+| Variable | Para qué | Obligatoria |
+|---|---|---|
+| `APP_ACCESS_CODES` | Códigos de acceso separados por coma. Un código por persona o grupo; quitar uno cierra sus sesiones | Sí, en producción |
+| `SESSION_SECRET` | Clave que firma las sesiones, de 32 caracteres o más (`openssl rand -base64 32`) | Sí, en producción |
+| `GEMINI_API_KEY` | Foto del plato y sugerencias de comidas. Sin la clave, la app pide registrar a mano | No |
+| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-2.5-flash`) | No |
+| `PHOTO_ANALYSIS_PER_HOUR` | Máximo de pedidos a la IA por hora y por conexión (por defecto 30) | No |
+| `NEXT_PUBLIC_SITE_URL` | Dirección pública, para la vista previa al compartir | Recomendada |
+| `NEXT_PUBLIC_REQUEST_ENDPOINT` | Adónde llegan las solicitudes de acceso (FormSubmit). Sin ella, el formulario no se muestra | No |
+
+Las variables `NEXT_PUBLIC_…` quedan dentro de la app al compilar: si las cambiás en Vercel, hay que volver a publicar.
+
+## Pruebas
+
+```bash
+npm test            # cálculos de energía, Modo Sport y acceso (segundos)
+npm run test:e2e    # compila la app y la recorre en un navegador (unos minutos)
+npm run test:e2e -- foto   # solo los archivos cuyo nombre contiene "foto"
+```
+
+Las pruebas de navegador usan Playwright y un Gemini simulado, así que no gastan cuota ni necesitan clave. La primera vez hay que instalar el navegador con `npx playwright install chromium`. Incluyen una revisión de accesibilidad (axe) en tema claro y oscuro. GitHub las corre en cada cambio (`.github/workflows/netai-app.yml`).
+
+## Publicar
+
+Paso a paso en [`../publicidad-netai/lanzamiento.md`](../publicidad-netai/lanzamiento.md). En resumen: proyecto nuevo en Vercel con *Root Directory* `netai-app`, cargar las variables y conectar el dominio.
+
+## Dónde está cada cosa
+
+| Ruta | Contenido |
+|---|---|
+| `src/app/page.jsx` | Página de inicio |
+| `src/app/app/page.jsx` | La app completa (pestañas, hojas y ajustes) |
+| `src/components/onboarding/Onboarding.jsx` | Recorrido inicial |
+| `src/lib/profile.js`, `src/lib/ethicalNutrition.js` | Cálculos de energía, plan del Modo Sport y límites de seguridad |
+| `src/lib/auth.js`, `src/proxy.js`, `src/app/api/auth/` | Códigos de acceso, sesiones y protección de `/app` |
+| `src/lib/gemini.js`, `src/app/api/analizar-plato/`, `src/app/api/sugerir-comidas/` | Conexión con Gemini |
+| `src/app/privacidad/`, `src/app/terminos/`, `src/components/legal/LegalPage.jsx` | Textos legales (faltan los datos del responsable) |
+| `public/sw.js`, `public/manifest.webmanifest`, `public/icons/` | Instalación y uso sin conexión |
+| `tailwind.config.js`, `src/app/globals.css` | Colores (claro y oscuro) y tipografías |
+| `tests/` | Pruebas unitarias y de navegador |
+
+## Datos y privacidad
+
+- Los registros, el perfil y las preferencias se guardan en el teléfono (`localStorage`). No hay cuentas ni base de datos.
+- La foto del plato se reduce en el teléfono, pasa por el servidor hacia Google Gemini y no se guarda. La app pide permiso la primera vez.
+- El pedido de sugerencias envía el momento del día, el tipo de alimentación y las alergias, sin el nombre.
+- Los valores que devuelve la IA son estimaciones: la persona los revisa antes de guardar.
+
+NetAI no reemplaza la consulta con profesionales de la salud.
