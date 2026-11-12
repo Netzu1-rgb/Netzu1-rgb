@@ -3,7 +3,7 @@
 // En el modo Bienestar el peso no se muestra ni hay metas de peso.
 // El Modo Sport (opcional, solo adultos y nunca con TCA) agrega objetivos físicos con límites seguros.
 
-import { MINIMUM_SAFE_ENERGY_FLOOR, DEFAULT_ENERGY_RANGE } from '@/lib/ethicalNutrition';
+import { MINIMUM_SAFE_ENERGY_FLOOR, DEFAULT_ENERGY_RANGE } from './ethicalNutrition.js';
 
 export const PROFILE_KEY = 'netai_profile_v1';
 

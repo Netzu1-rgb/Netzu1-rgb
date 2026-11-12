@@ -1,0 +1,59 @@
+const BASE = process.env.BASE || 'http://localhost:3210';
+const FIX = require('path').join(__dirname, 'fixtures');
+const { chromium } = require('playwright');
+const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
+async function fresh(b) {
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(String(e)));
+  await p.request.post(BASE + '/api/auth/login', { data: { password: 'familia-local' } });
+  await p.goto(BASE + '/app', { waitUntil: 'networkidle' }); await p.waitForTimeout(400);
+  return p;
+}
+const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:has-text("Empezar")');
+(async () => {
+  const b = await chromium.launch();
+  // 1. Recorrido completo, adulto
+  let p = await fresh(b);
+  ok(await p.isVisible('text=Antes de empezar, contanos un poco de vos'), 'la primera vez abre el recorrido');
+  await next(p);
+  await p.fill('#ob-nombre', 'Juan'); await p.fill('#ob-edad', '35'); await p.click('[role=radio]:has-text("Masculino")');
+  await next(p); await next(p);
+  await p.fill('#ob-altura', '180'); await p.fill('#ob-peso', '400');
+  await next(p); ok(await p.isVisible('text=Escribí tu peso en kilos'), 'valida un peso fuera de rango');
+  await p.fill('#ob-peso', '80'); await next(p);
+  await p.click('[role=radio]:has-text("Moderado")'); await next(p);
+  await p.click('button:has-text("Comer con más calma")'); await p.click('button:has-text("Acompañar mi entrenamiento")'); await next(p);
+  await p.click('button:has-text("Vegetariana")'); await p.fill('#ob-alergias', 'maní'); await next(p);
+  await p.click('[role=radio]:has-text("No")'); await next(p);
+  const rango = await p.textContent('main p.font-display.tabular');
+  ok(rango.includes('2.500 a 2.900'), 'calcula el rango personal: ' + rango);
+  await p.click('footer button:has-text("Ir a mi día")'); await p.waitForTimeout(400);
+  ok(await p.isVisible('text=Hola, Juan'), 'saluda por el nombre');
+  ok((await p.textContent('body')).includes('Tu rango: 2.500 a 2.900 kcal'), 'Mi día usa el rango personal');
+  await p.click('nav[aria-label=Secciones] button:nth-child(3)'); await p.waitForTimeout(200);
+  ok((await p.getAttribute('[aria-pressed=true]:has-text("Vegetariano")', 'aria-pressed')) === 'true', 'recetas filtradas por vegetariana');
+  await p.click('nav[aria-label=Secciones] button:nth-child(1)');
+  await p.click('button[aria-label="Ajustes"]'); await p.click('button:has-text("Tus datos")'); await p.waitForTimeout(300);
+  ok((await p.inputValue('#ob-nombre')) === 'Juan', 'editar datos desde Ajustes: vienen cargados');
+  await p.click('button[aria-label="Cerrar sin guardar"]');
+  ok(p.errs.length === 0, 'sin errores (adulto) ' + p.errs.join(' | '));
+  // 2. TCA: nunca números
+  p = await fresh(b);
+  await next(p); await p.fill('#ob-edad', '28'); await next(p); await next(p); await next(p); await next(p); await next(p); await next(p);
+  await p.click('[role=radio]:has-text("Sí")'); await p.waitForTimeout(150);
+  ok(await p.isVisible('text=Activamos el Modo Intuitivo'), 'TCA: activa el Modo Intuitivo');
+  await next(p); ok(!(await p.isVisible('text=kcal')), 'TCA: el resumen no muestra calorías');
+  await p.click('footer button:has-text("Ir a mi día")'); await p.waitForTimeout(400);
+  ok(!(await p.isVisible('[role=switch]')) && !(await p.textContent('main')).includes('kcal'), 'TCA: Mi día sin números ni interruptor');
+  // 3. Menor de edad
+  p = await fresh(b);
+  await next(p); await p.fill('#ob-edad', '15'); await p.waitForTimeout(100);
+  ok(await p.isVisible('text=Como sos menor de 18'), 'menor: aviso');
+  await next(p); ok(await p.isVisible('text=¿Cuánto te movés'), 'menor: saltea peso y altura');
+  // 4. Completar después
+  p = await fresh(b);
+  await p.click('text=Prefiero completarlo después'); await p.waitForTimeout(300);
+  ok(await p.isVisible('#titulo-completar'), 'saltear: queda el recordatorio en Mi día');
+  ok((await p.textContent('body')).includes('Rango general: 1.900 a 2.200 kcal'), 'saltear: rango general');
+  await b.close();
+})();

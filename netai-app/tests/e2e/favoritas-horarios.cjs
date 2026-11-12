@@ -1,0 +1,35 @@
+const BASE = process.env.BASE || 'http://localhost:3210';
+const FIX = require('path').join(__dirname, 'fixtures');
+const { chromium } = require('playwright'); const fs = require('fs');
+const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
+(async () => {
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
+  await p.request.post(BASE + '/api/auth/login', { data: { password: 'familia-local' } });
+  await p.goto(BASE + '/app', { waitUntil: 'networkidle' });
+  await p.click('text=Prefiero completarlo después'); await p.waitForTimeout(300);
+  ok((await p.locator('h1').count()) === 1, 'la app tiene un título principal');
+  ok((await p.textContent('ol')).includes('08:00'), 'la línea de tiempo muestra los horarios');
+  await p.getByRole('button', { name: 'Registrar' }).first().click(); await p.fill('#meal-name', 'Tostadas con queso'); await p.click('button:has-text("Guardar")'); await p.waitForTimeout(300);
+  ok((await p.textContent('main')).includes('sin estimar'), 'sin calorías cargadas dice "sin estimar" (no inventa 400)');
+  await p.click('button[aria-label="Guardar Tostadas con queso en favoritas"]'); await p.waitForTimeout(200);
+  ok(await p.isVisible('text=Guardada en tus favoritas.'), 'marca favorita');
+  await p.getByRole('button', { name: 'Registrar' }).nth(1).click(); await p.waitForTimeout(200);
+  ok(await p.isVisible('text=Tus favoritas'), 'la hoja muestra las favoritas');
+  await p.click('form >> xpath=preceding::button[contains(., "Tostadas con queso")][1]'); 
+  ok((await p.inputValue('#meal-name')) === 'Tostadas con queso', 'un toque completa el registro');
+  await p.click('button:has-text("Cancelar")');
+  // horarios y recordatorio
+  await p.click('button[aria-label="Ajustes"]'); await p.click('button:has-text("Horarios y recordatorios")'); await p.waitForTimeout(200);
+  const now = await p.evaluate(() => { const d = new Date(Date.now() + 60000); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); });
+  await p.fill('#hora-cena', now); await p.click('[role=switch]:has-text("Recordarme")'); await p.click('button:has-text("Listo")');
+  ok((await p.textContent('ol')).includes(now), 'el horario nuevo aparece en Mi día');
+  await p.waitForSelector('text=Es la hora de tu cena', { timeout: 100000 }); ok(true, 'el recordatorio aparece a la hora');
+  await p.reload({ waitUntil: 'networkidle' }); ok((await p.textContent('ol')).includes(now), 'los horarios quedan guardados');
+  await p.click('button[aria-label="Ajustes"]');
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('button:has-text("Historial en planilla")')]);
+  const csv = fs.readFileSync(await dl.path(), 'utf8');
+  ok(dl.suggestedFilename().endsWith('.csv') && csv.includes('"Desayuno";"Tostadas con queso"'), 'descarga el historial en CSV');
+  ok(errs.length === 0, 'sin errores ' + errs.join('|'));
+  await b.close();
+})();

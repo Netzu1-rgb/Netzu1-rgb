@@ -1,0 +1,37 @@
+const BASE = process.env.BASE || 'http://localhost:3210';
+const FIX = require('path').join(__dirname, 'fixtures');
+const { chromium } = require('playwright'); const fs = require('fs');
+const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
+(async () => {
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
+  await p.request.post(BASE + '/api/auth/login', { data: { password: 'familia-local' } });
+  await p.goto(BASE + '/app', { waitUntil: 'networkidle' });
+  await p.evaluate(() => {
+    localStorage.setItem('netai_profile_v1', JSON.stringify({ version: 1, name: 'Ana', age: '32', sex: 'femenino', heightCm: '165', weightKg: '60', mode: 'bienestar', activity: 'moderada', tca: 'no', viewMode: 'rangos', goals: [], diet: ['vegetariana'], allergies: 'maní', completedAt: 'x' }));
+    const d = (n) => { const x = new Date(); x.setDate(x.getDate() - n); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+    const logs = {}; const meal = (i) => ({ id: 'm' + i, name: 'Comida ' + i, energy: 500, satietyBefore: 3, satietyAfter: 7, notes: '' });
+    for (const i of [0, 1, 2, 5, 9, 14, 20]) logs[d(i)] = { waterGlasses: 6, meals: { desayuno: [meal(i)], almuerzo: [meal(i + 100)], merienda: [], cena: [], colacion: [] } };
+    for (const i of [33, 40, 45]) logs[d(i)] = { waterGlasses: 4, meals: { desayuno: [meal(i)], almuerzo: [], merienda: [], cena: [], colacion: [] } };
+    localStorage.setItem('netai_wellness_log_v1', JSON.stringify(logs));
+  });
+  await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(300);
+  await p.click('nav[aria-label=Secciones] button:nth-child(2)'); await p.click('button:has-text("Mes")'); await p.waitForTimeout(200);
+  const rows = await p.$$eval('#titulo-mes ~ div table tbody tr', trs => trs.map(t => t.innerText.replace(/\s+/g, ' ')));
+  console.log('     ', rows.join(' | '));
+  ok(rows[0].includes('7 3') && rows[1].includes('14 3') && rows[2].includes('6 4'), 'el mes compara los últimos 30 días con los anteriores');
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('button:has-text("Descargar informe del mes")')]);
+  const txt = fs.readFileSync(await dl.path(), 'utf8');
+  ok(txt.includes('Días con registros: 7 de 30 (30 días anteriores: 3)'), 'descarga el informe del mes');
+  await p.click('button:has-text("Semana")'); ok(await p.isVisible('#titulo-semana'), 'vuelve a la semana');
+  await p.click('nav[aria-label=Secciones] button:nth-child(3)'); await p.waitForTimeout(200);
+  await p.click('[aria-label="Momento del día para las ideas"] button:has-text("Cena")'); await p.click('button:has-text("Pedir ideas")');
+  await p.waitForSelector('text=Guiso de lentejas', { timeout: 15000 });
+  ok((await p.locator('button:has-text("Sumar")').count()) >= 3, 'muestra tres ideas');
+  await p.locator('li:has-text("Guiso de lentejas") button:has-text("Sumar")').click(); await p.waitForTimeout(300);
+  ok(await p.isVisible('text=Sumaste la sugerencia a cena.') && (await p.textContent('main')).includes('Guiso de lentejas'), 'suma la idea al momento elegido');
+  const log = fs.readFileSync(process.env.GEMINI_LOG, 'utf8');
+  ok(log.includes('vegetariana') && log.includes('maní') && log.includes('cena') && !log.includes('Ana'), 'el pedido lleva alimentación y alergias, sin el nombre');
+  ok(errs.length === 0, 'sin errores ' + errs.join('|'));
+  await b.close();
+})();

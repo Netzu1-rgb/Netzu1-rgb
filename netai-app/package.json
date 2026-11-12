@@ -1,14 +1,15 @@
 {
-  "name": "netai-wellness-platform",
+  "name": "netai-app",
   "version": "1.4.0",
   "private": true,
-  "description": "Plataforma web de nutrición y bienestar consciente con enfoque neutral al peso y acceso familiar privado",
+  "description": "NetAI: app de nutrición consciente (modo Bienestar y Modo Sport), con acceso por código y registros guardados en el teléfono",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "dev:red": "next dev -H 0.0.0.0"
+    "dev:red": "next dev -H 0.0.0.0",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "node tests/e2e/run.cjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
@@ -22,7 +23,9 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "playwright": "1.63.0",
+    "axe-core": "^4.10.0"
   },
   "engines": {
     "node": ">=20.9.0"
