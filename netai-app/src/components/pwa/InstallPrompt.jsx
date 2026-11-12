@@ -66,16 +66,16 @@ export default function InstallPrompt() {
   return (
     <>
       <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-4">
-        <div className="w-full max-w-md flex items-center gap-3 rounded-2xl bg-hoja-900 text-white p-3 pr-2 shadow-card animate-slide-up">
+        <div className="w-full max-w-md flex items-center gap-3 rounded-2xl bg-hoja-900 text-hoja-50 p-3 pr-2 shadow-card animate-slide-up">
           <LogoMark className="w-10 h-10 shrink-0 rounded-[22%]" />
           <p className="flex-1 text-sm leading-snug">
             <span className="font-bold block">Instalá NetAI</span>
             <span className="text-hoja-100">Queda en tu pantalla de inicio y funciona sin conexión.</span>
           </p>
-          <button type="button" onClick={install} className="shrink-0 px-4 py-2 rounded-full bg-white text-hoja-900 text-sm font-bold hover:bg-hoja-50">
+          <button type="button" onClick={install} className="shrink-0 px-4 py-2 rounded-full bg-papel text-hoja-900 text-sm font-bold hover:bg-hoja-50">
             Instalar
           </button>
-          <button type="button" onClick={dismiss} aria-label="No mostrar más" className="shrink-0 p-2 rounded-full text-hoja-200 hover:text-white hover:bg-hoja-800">
+          <button type="button" onClick={dismiss} aria-label="No mostrar más" className="shrink-0 p-2 rounded-full text-hoja-200 hover:text-hoja-50 hover:bg-hoja-800">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -83,7 +83,7 @@ export default function InstallPrompt() {
 
       {showIOSSteps && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-          <div className="absolute inset-0 bg-loza-950/45" onClick={() => setShowIOSSteps(false)} aria-hidden="true" />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowIOSSteps(false)} aria-hidden="true" />
           <div role="dialog" aria-modal="true" aria-labelledby="titulo-ios" className="relative w-full sm:max-w-sm bg-loza-50 rounded-t-[28px] sm:rounded-[28px] p-6 pb-8 shadow-sheet safe-bottom">
             <div className="flex items-start justify-between gap-3">
               <h2 id="titulo-ios" className="font-display text-xl font-bold text-loza-900">Instalar en iPhone</h2>

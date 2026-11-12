@@ -12,7 +12,8 @@ export async function proxy(request) {
     pathname === '/manifest.webmanifest' ||
     pathname === '/manifest.json' ||
     pathname === '/favicon.ico' ||
-    pathname.startsWith('/icons/')
+    pathname.startsWith('/icons/') ||
+    pathname.startsWith('/screenshots/')
   ) {
     return NextResponse.next();
   }

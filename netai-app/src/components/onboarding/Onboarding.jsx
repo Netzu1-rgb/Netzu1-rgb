@@ -271,13 +271,13 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               {plan && !hidesNumbers(p) && (
                 <div className="rounded-[24px] bg-hoja-900 text-hoja-50 p-6">
                   <p className="text-sm text-hoja-200">Tu plan: {SPORT_GOALS.find((g) => g.id === p.sportGoal)?.label}</p>
-                  <p className="font-display text-3xl sm:text-4xl font-bold text-white mt-1 tabular">{fmt(plan.energy.min)} a {fmt(plan.energy.max)} kcal</p>
+                  <p className="font-display text-3xl sm:text-4xl font-bold text-hoja-50 mt-1 tabular">{fmt(plan.energy.min)} a {fmt(plan.energy.max)} kcal</p>
                   <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-[15px] tabular">
-                    <dt className="text-hoja-200">Proteínas</dt><dd className="text-white">{plan.proteinG[0]} a {plan.proteinG[1]} g</dd>
-                    <dt className="text-hoja-200">Carbohidratos</dt><dd className="text-white">{plan.carbsG[0]} a {plan.carbsG[1]} g</dd>
-                    <dt className="text-hoja-200">Grasas</dt><dd className="text-white">{plan.fatG[0]} a {plan.fatG[1]} g</dd>
-                    <dt className="text-hoja-200">Agua</dt><dd className="text-white">{plan.waterGlasses} vasos</dd>
-                    {plan.rateKg && (<><dt className="text-hoja-200">Ritmo</dt><dd className="text-white">{Math.abs(plan.rateKg[1]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} a {Math.abs(plan.rateKg[0]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} kg por semana</dd></>)}
+                    <dt className="text-hoja-200">Proteínas</dt><dd className="text-hoja-50">{plan.proteinG[0]} a {plan.proteinG[1]} g</dd>
+                    <dt className="text-hoja-200">Carbohidratos</dt><dd className="text-hoja-50">{plan.carbsG[0]} a {plan.carbsG[1]} g</dd>
+                    <dt className="text-hoja-200">Grasas</dt><dd className="text-hoja-50">{plan.fatG[0]} a {plan.fatG[1]} g</dd>
+                    <dt className="text-hoja-200">Agua</dt><dd className="text-hoja-50">{plan.waterGlasses} vasos</dd>
+                    {plan.rateKg && (<><dt className="text-hoja-200">Ritmo</dt><dd className="text-hoja-50">{Math.abs(plan.rateKg[1]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} a {Math.abs(plan.rateKg[0]).toLocaleString('es-AR', { maximumFractionDigits: 1 })} kg por semana</dd></>)}
                   </dl>
                   <p className="text-sm text-hoja-100 mt-4 leading-relaxed">
                     Mantenimiento estimado: {fmt(plan.maintenance)} kcal. Nunca bajamos de {fmt(plan.floor)} kcal, tu gasto en reposo. Son valores orientativos según las guías de nutrición deportiva (ACSM e ISSN).
@@ -287,7 +287,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               {!plan && !hidesNumbers(p) && p.viewMode === 'rangos' && (
                 <div className="rounded-[24px] bg-hoja-900 text-hoja-50 p-6">
                   <p className="text-sm text-hoja-200">{range.personal ? 'Tu rango de energía flexible' : 'Rango de energía general'}</p>
-                  <p className="font-display text-3xl sm:text-4xl font-bold text-white mt-1 tabular">{fmt(range.min)} a {fmt(range.max)} kcal</p>
+                  <p className="font-display text-3xl sm:text-4xl font-bold text-hoja-50 mt-1 tabular">{fmt(range.min)} a {fmt(range.max)} kcal</p>
                   <p className="text-sm text-hoja-100 mt-2 leading-relaxed">
                     {range.personal
                       ? 'Es una estimación según tu edad, altura, peso y actividad. El cuerpo se regula a lo largo de la semana: no es un límite.'
@@ -326,7 +326,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               Atrás
             </button>
           )}
-          <button type="button" onClick={next} className="ml-auto px-7 py-3.5 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-[15px] font-bold">
+          <button type="button" onClick={next} className="ml-auto px-7 py-3.5 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-[15px] font-bold">
             {step === 'inicio' ? 'Empezar' : step === 'resumen' ? (mode === 'editar' ? 'Guardar cambios' : 'Ir a mi día') : 'Siguiente'}
           </button>
         </footer>
@@ -340,7 +340,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   );
 }
 
-const inputCls = 'w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[16px] text-loza-900 focus:outline-none focus:border-hoja-500';
+const inputCls = 'w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[16px] text-loza-900 focus:outline-none focus:border-hoja-500';
 
 function Dot() {
   return <span aria-hidden="true" className="mt-2 w-1.5 h-1.5 rounded-full bg-hoja-500 shrink-0" />;
@@ -390,7 +390,7 @@ function Pill({ selected, onClick, children, role }) {
       type="button"
       onClick={onClick}
       {...a11y}
-      className={`px-4 py-2.5 rounded-full text-[15px] font-bold transition-colors ${selected ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-300 text-loza-700 hover:border-loza-500'}`}
+      className={`px-4 py-2.5 rounded-full text-[15px] font-bold transition-colors ${selected ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-300 text-loza-700 hover:border-loza-500'}`}
     >
       {children}
     </button>
@@ -404,7 +404,7 @@ function OptionCard({ selected, onClick, title, hint, role }) {
       role={role}
       aria-checked={selected}
       onClick={onClick}
-      className={`w-full text-left rounded-2xl p-4 border transition-colors ${selected ? 'border-hoja-600 bg-hoja-50 ring-1 ring-hoja-600' : 'border-loza-300 bg-white hover:border-loza-500'}`}
+      className={`w-full text-left rounded-2xl p-4 border transition-colors ${selected ? 'border-hoja-600 bg-hoja-50 ring-1 ring-hoja-600' : 'border-loza-300 bg-papel hover:border-loza-500'}`}
     >
       <span className="block font-bold text-[16px] text-loza-900">{title}</span>
       <span className="block text-sm text-loza-600 mt-0.5">{hint}</span>

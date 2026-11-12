@@ -1,75 +1,72 @@
-/**
- * NetAI Service Worker - PWA Offline Caching
- */
+// NetAI: modo sin conexión.
+// - Archivos con nombre único (/_next/static): primero la copia guardada, porque nunca cambian.
+// - Páginas y demás: primero la red; si no hay conexión, la última copia guardada.
+// - Las rutas /api nunca se guardan.
 
-const CACHE_NAME = 'netai-cache-v2';
-const PRECACHE_ASSETS = [
-  '/',
-  '/login',
-  '/app',
+const CACHE = 'netai-cache-v3';
+const PRECACHE = [
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  '/icons/icon-512.svg',
   '/icons/apple-touch-icon.png',
 ];
 
-// Instalación: Pre-almacenar en caché el núcleo de la aplicación
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
 });
 
-// Activación: Limpieza de cachés antiguas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((name) => name !== CACHE_NAME)
-            .map((name) => caches.delete(name))
-        );
-      })
+    caches.keys()
+      .then((names) => Promise.all(names.filter((n) => n !== CACHE).map((n) => caches.delete(n))))
       .then(() => self.clients.claim())
   );
 });
 
-// Intercepción de peticiones (Network First con fallback a Cache)
+// Solo se guardan respuestas completas, propias y que no sean redirecciones (por ejemplo, al login)
+const storable = (res) => res && res.status === 200 && res.type === 'basic' && !res.redirected;
+
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones que no sean GET o que sean hacia las APIs dinámicas
-  if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('/api/auth')) return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+        if (storable(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      }))
+    );
+    return;
+  }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Si la respuesta es válida, clonar y actualizar caché
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+    fetch(req)
+      .then((res) => {
+        if (storable(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      })
+      .catch(async () => {
+        const hit = await caches.match(req, { ignoreSearch: req.mode === 'navigate' });
+        if (hit) return hit;
+        if (req.mode === 'navigate') {
+          const app = await caches.match('/app');
+          if (app) return app;
         }
-        return response;
+        return new Response('Sin conexión', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
       })
-      .catch(() => {
-        // En caso de estar sin conexión, devolver del caché
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Si es una navegación y no está en caché, devolver la PWA
-          if (event.request.mode === 'navigate') {
-            return caches.match('/app');
-          }
-          return new Response('Sin conexión', { status: 503, statusText: 'Offline' });
-        });
-      })
+  );
+});
+
+// Al tocar un recordatorio, abre la app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const open = list.find((c) => new URL(c.url).pathname.startsWith('/app'));
+      return open ? open.focus() : self.clients.openWindow('/app');
+    })
   );
 });

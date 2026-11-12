@@ -4,26 +4,15 @@
 // hoja = vegetales (marca), remolacha = proteínas, trigo = cereales, agua = hidratación.
 // loza = neutros con un leve tinte verde, como un plato de cerámica.
 // hoja-900 (#14412C) y el gris #B5B8BA son los colores del logo oficial.
-const hoja = {
-  50: '#EEF6F1', 100: '#D7EADF', 200: '#B0D4C0', 300: '#80B89B', 400: '#529A77',
-  500: '#378058', 600: '#2D6A4F', 700: '#255640', 800: '#1E4535', 900: '#14412C', 950: '#0C2A1C',
-};
-const remolacha = {
-  50: '#FBF0F3', 100: '#F5DCE3', 200: '#EBB8C7', 300: '#DC8CA4', 400: '#C6627F',
-  500: '#AD4566', 600: '#93385A', 700: '#782D49', 800: '#5F243A', 900: '#4A1D2E', 950: '#2E111C',
-};
-const trigo = {
-  50: '#FCF7EA', 100: '#F7EBC9', 200: '#EFD592', 300: '#E5BB58', 400: '#D9A232',
-  500: '#C1871D', 600: '#9E6B16', 700: '#7C5315', 800: '#5F4114', 900: '#4A3312', 950: '#2B1D09',
-};
-const agua = {
-  50: '#EEF5FA', 100: '#D8E8F3', 200: '#B0D0E7', 300: '#7DB1D5', 400: '#4E91BF',
-  500: '#3478A8', 600: '#2C6390', 700: '#255076', 800: '#1F415F', 900: '#19344C', 950: '#0F2131',
-};
-const loza = {
-  50: '#F6F8F4', 100: '#EDF1EC', 200: '#DCE4DD', 300: '#C3CEC5', 400: '#97A69C',
-  500: '#5F7066', 600: '#4F6056', 700: '#3D4C44', 800: '#2A3831', 900: '#1A2A23', 950: '#0F1A15',
-};
+// Cada color apunta a una variable CSS (definidas en src/app/globals.css) para poder cambiar de tema.
+const scale = (name) => Object.fromEntries(
+  [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((k) => [k, `rgb(var(--${name}-${k}) / <alpha-value>)`])
+);
+const hoja = scale('hoja');
+const remolacha = scale('remolacha');
+const trigo = scale('trigo');
+const agua = scale('agua');
+const loza = scale('loza');
 
 module.exports = {
   content: [
@@ -36,6 +25,7 @@ module.exports = {
     extend: {
       colors: {
         hoja, remolacha, trigo, agua, loza,
+        papel: 'rgb(var(--papel) / <alpha-value>)', // superficie de tarjetas: blanco en claro, verde muy oscuro en oscuro
         // Nombres anteriores, apuntando a la nueva paleta para que todo el proyecto la herede
         sage: hoja,
         earth: trigo,

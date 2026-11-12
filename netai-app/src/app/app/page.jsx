@@ -61,7 +61,7 @@ const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
 const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };
-const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false });
+const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false, theme: 'auto' }); // theme: 'auto' | 'claro' | 'oscuro'
 const sameName = (a, b) => (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
@@ -155,6 +155,23 @@ export default function PwaAppPage() {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', check); };
   }, []);
   const isToday = selectedDate === today;
+
+  // Tema: sigue al teléfono ("auto") o lo que la persona elija. Solo se aplica dentro de la app.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      const dark = prefs.theme === 'oscuro' || (prefs.theme !== 'claro' && mq.matches);
+      document.documentElement.classList.toggle('oscuro', dark);
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0F1A15' : '#14412C');
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => {
+      mq.removeEventListener('change', apply);
+      document.documentElement.classList.remove('oscuro');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#14412C');
+    };
+  }, [prefs.theme]);
 
   // Frase del día
   const dailyEncouragement = useMemo(() => {
@@ -666,7 +683,7 @@ export default function PwaAppPage() {
             <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
               <h1 className="font-marca font-bold text-lg leading-none text-hoja-900 tracking-normal">NetAI</h1>
-              <p className="text-xs text-loza-500 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Bienestar'}</p>
+              <p className="text-xs text-loza-600 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Bienestar'}</p>
             </div>
           </div>
 
@@ -734,7 +751,7 @@ export default function PwaAppPage() {
         {activeTab === 'today' && (
           <div className="space-y-10 animate-fade-in">
             {profile?.skipped && (
-              <section aria-labelledby="titulo-completar" className="rounded-[24px] bg-white border border-loza-200 p-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <section aria-labelledby="titulo-completar" className="rounded-[24px] bg-papel border border-loza-200 p-5 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <div className="flex-1 min-w-[14rem]">
                   <h2 id="titulo-completar" className="font-display text-lg font-bold text-loza-900">Completá tus datos</h2>
                   <p className="text-sm text-loza-600 mt-0.5">Con tu edad, actividad y lo que comés, NetAI adapta tu rango de energía y tus recetas. Lleva 2 minutos.</p>
@@ -751,7 +768,7 @@ export default function PwaAppPage() {
               )}
               <p className="text-loza-600 text-[15px] leading-relaxed max-w-prose">{dailyEncouragement}</p>
 
-              <div className="mt-6 rounded-[28px] bg-white border border-loza-200 p-5 sm:p-7">
+              <div className="mt-6 rounded-[28px] bg-papel border border-loza-200 p-5 sm:p-7">
                 {!showNumbers ? (
                   <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                     <PlateGraphic className="w-40 h-40 sm:w-44 sm:h-44 mx-auto sm:mx-0 shrink-0" />
@@ -831,7 +848,7 @@ export default function PwaAppPage() {
                       {!last && <span aria-hidden="true" className="absolute left-[19px] top-10 bottom-0 w-px bg-loza-200" />}
                       <span
                         aria-hidden="true"
-                        className={`absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center ${items.length ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-500'}`}
+                        className={`absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center ${items.length ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-500'}`}
                       >
                         <cat.Icon className="w-[18px] h-[18px]" />
                       </span>
@@ -857,7 +874,7 @@ export default function PwaAppPage() {
                       {items.length > 0 && (
                         <ul className="mt-3 space-y-2.5">
                           {items.map((meal) => (
-                            <li key={meal.id} className="rounded-2xl bg-white border border-loza-200 p-4">
+                            <li key={meal.id} className="rounded-2xl bg-papel border border-loza-200 p-4">
                               <div className="flex items-start justify-between gap-3">
                                 <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
                                 <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
@@ -921,7 +938,7 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {activeTab === 'week' && (
           <div className="space-y-10 animate-fade-in">
-            <div className="inline-flex p-1 rounded-full bg-white border border-loza-200" role="group" aria-label="Período">
+            <div className="inline-flex p-1 rounded-full bg-papel border border-loza-200" role="group" aria-label="Período">
               {[['semana', 'Semana'], ['mes', 'Mes']].map(([id, label]) => (
                 <button key={id} type="button" aria-pressed={period === id} onClick={() => setPeriod(id)} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${period === id ? 'bg-hoja-600 text-white' : 'text-loza-600 hover:text-loza-900'}`}>
                   {label}
@@ -1071,7 +1088,7 @@ export default function PwaAppPage() {
               {PLATE_METHOD_SECTIONS.map((section) => {
                 const tone = PLATE_TONES[section.id] || PLATE_TONES.vegetables;
                 return (
-                  <div key={section.id} className="bg-white p-5 grid sm:grid-cols-[180px_1fr] gap-x-6 gap-y-1.5">
+                  <div key={section.id} className="bg-papel p-5 grid sm:grid-cols-[180px_1fr] gap-x-6 gap-y-1.5">
                     <dt className="flex items-center gap-2.5">
                       <span aria-hidden="true" className={`w-3 h-3 rounded-full ${tone.dot}`} />
                       <span className="font-bold text-loza-900">{section.name}</span>
@@ -1091,7 +1108,7 @@ export default function PwaAppPage() {
               <p className="text-sm text-loza-600 mt-1 max-w-prose">La IA te propone tres comidas según el momento del día y lo que comés. Se envían tus preferencias de alimentación a Google Gemini, sin tu nombre.</p>
               <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Momento del día para las ideas">
                 {MEAL_CATEGORIES.map((c) => (
-                  <button key={c.id} type="button" aria-pressed={ideas.moment === c.id} onClick={() => setIdeas((prev) => ({ ...prev, moment: c.id, status: prev.status === 'done' ? 'idle' : prev.status, list: [] }))} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${ideas.moment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}>
+                  <button key={c.id} type="button" aria-pressed={ideas.moment === c.id} onClick={() => setIdeas((prev) => ({ ...prev, moment: c.id, status: prev.status === 'done' ? 'idle' : prev.status, list: [] }))} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${ideas.moment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}>
                     {c.label}
                   </button>
                 ))}
@@ -1105,7 +1122,7 @@ export default function PwaAppPage() {
                 {ideas.status === 'done' && (
                   <ul className="mt-4 grid gap-3">
                     {ideas.list.map((idea) => (
-                      <li key={idea.name} className="rounded-2xl bg-white border border-loza-200 p-4 flex flex-wrap items-start gap-x-4 gap-y-2">
+                      <li key={idea.name} className="rounded-2xl bg-papel border border-loza-200 p-4 flex flex-wrap items-start gap-x-4 gap-y-2">
                         <div className="flex-1 min-w-[12rem]">
                           <p className="font-bold text-loza-900">{idea.name}</p>
                           <p className="text-sm text-loza-600 mt-0.5">{idea.description}</p>
@@ -1132,8 +1149,8 @@ export default function PwaAppPage() {
                     aria-pressed={recipeFilter === f}
                     className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
                       recipeFilter === f
-                        ? 'bg-loza-900 text-white'
-                        : 'bg-white text-loza-700 border border-loza-200 hover:border-loza-400'
+                        ? 'bg-loza-900 text-loza-50'
+                        : 'bg-papel text-loza-700 border border-loza-200 hover:border-loza-400'
                     }`}
                   >
                     {f}
@@ -1234,7 +1251,7 @@ export default function PwaAppPage() {
                     <button
                       type="button"
                       onClick={() => setActiveArticleModal(article)}
-                      className="w-full h-full text-left rounded-[22px] bg-white border border-loza-200 p-5 hover:border-hoja-300 transition-colors flex flex-col"
+                      className="w-full h-full text-left rounded-[22px] bg-papel border border-loza-200 p-5 hover:border-hoja-300 transition-colors flex flex-col"
                     >
                       <span className="text-sm text-loza-500">{article.category}, {article.readTime}</span>
                       <span className="font-display text-lg font-bold text-loza-900 leading-snug mt-1">{article.title}</span>
@@ -1260,6 +1277,8 @@ export default function PwaAppPage() {
             onExport={handleExport}
             onExportCsv={handleExportCsv}
             onSchedule={() => { setSettingsOpen(false); setScheduleOpen(true); }}
+            theme={prefs.theme}
+            onTheme={(theme) => setPrefs((prev) => ({ ...prev, theme }))}
             onImport={handleImport}
             onDeleteAll={handleDeleteAll}
             onLogout={handleLogout}
@@ -1288,7 +1307,7 @@ export default function PwaAppPage() {
                   type="time"
                   value={prefs.schedule[c.id] || ''}
                   onChange={(e) => setPrefs((prev) => ({ ...prev, schedule: { ...prev.schedule, [c.id]: e.target.value } }))}
-                  className="px-3 py-2 rounded-xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
+                  className="px-3 py-2 rounded-xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500"
                 />
               </div>
             ))}
@@ -1327,7 +1346,7 @@ export default function PwaAppPage() {
           >
             <div>
               <label htmlFor="peso-hoy" className="block text-sm font-bold text-loza-800 mb-1.5">Peso (kg)</label>
-              <input id="peso-hoy" type="number" inputMode="decimal" step="0.1" min="30" max="300" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+              <input id="peso-hoy" type="number" inputMode="decimal" step="0.1" min="30" max="300" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500" />
               <p className="text-sm text-loza-500 mt-1.5">Pesate a la misma hora, idealmente en ayunas. El peso varía de un día a otro: lo que importa es el promedio semanal.</p>
             </div>
             <div className="flex justify-end gap-2">
@@ -1341,7 +1360,7 @@ export default function PwaAppPage() {
       {/* Aviso breve, con opción de deshacer */}
       <div aria-live="polite" className="fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 pointer-events-none">
         {toast && (
-          <div className="pointer-events-auto flex items-center gap-4 max-w-md w-full sm:w-auto rounded-2xl bg-loza-900 text-white pl-4 pr-2 py-2.5 shadow-card animate-slide-up">
+          <div className="pointer-events-auto flex items-center gap-4 max-w-md w-full sm:w-auto rounded-2xl bg-loza-900 text-loza-50 pl-4 pr-2 py-2.5 shadow-card animate-slide-up">
             <p className="text-sm flex-1">{toast.text}</p>
             {toast.undo && (
               <button
@@ -1425,7 +1444,7 @@ export default function PwaAppPage() {
                     key={f.name}
                     type="button"
                     onClick={() => applyPreset(f)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
                   >
                     <Star className="w-3.5 h-3.5 shrink-0" fill="currentColor" aria-hidden="true" />
                     {f.name}
@@ -1444,7 +1463,7 @@ export default function PwaAppPage() {
                     key={f.name}
                     type="button"
                     onClick={() => applyPreset(f)}
-                    className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                    className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
                   >
                     {f.name}
                   </button>
@@ -1463,7 +1482,7 @@ export default function PwaAppPage() {
                 placeholder="Por ejemplo: ensalada de garbanzos con vegetales asados"
                 value={newMealForm.name}
                 onChange={(e) => setNewMealForm({ ...newMealForm, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
+                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
             </div>
 
@@ -1478,7 +1497,7 @@ export default function PwaAppPage() {
                   max="1800"
                   value={newMealForm.energy}
                   onChange={(e) => setNewMealForm({ ...newMealForm, energy: e.target.value })}
-                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
+                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500"
                 />
                 <p className="text-sm text-loza-500 mt-1.5">Una estimación alcanza. No hace falta pesar nada.</p>
               </div>
@@ -1495,17 +1514,17 @@ export default function PwaAppPage() {
                   max="300"
                   value={newMealForm.protein}
                   onChange={(e) => setNewMealForm({ ...newMealForm, protein: e.target.value })}
-                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
+                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500"
                 />
                 <p className="text-sm text-loza-500 mt-1.5">Opcional. Por ejemplo: 100 g de pollo tienen unos 25 g de proteínas.</p>
                 <div className="mt-3 grid grid-cols-2 gap-3 max-w-xs">
                   <div>
                     <label htmlFor="meal-carbs" className="block text-sm font-bold text-loza-800 mb-1.5">Carbohidratos (g)</label>
-                    <input id="meal-carbs" type="number" inputMode="numeric" min="0" max="500" value={newMealForm.carbs} onChange={(e) => setNewMealForm({ ...newMealForm, carbs: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+                    <input id="meal-carbs" type="number" inputMode="numeric" min="0" max="500" value={newMealForm.carbs} onChange={(e) => setNewMealForm({ ...newMealForm, carbs: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500" />
                   </div>
                   <div>
                     <label htmlFor="meal-fat" className="block text-sm font-bold text-loza-800 mb-1.5">Grasas (g)</label>
-                    <input id="meal-fat" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.fat} onChange={(e) => setNewMealForm({ ...newMealForm, fat: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500" />
+                    <input id="meal-fat" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.fat} onChange={(e) => setNewMealForm({ ...newMealForm, fat: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500" />
                   </div>
                 </div>
               </div>
@@ -1534,7 +1553,7 @@ export default function PwaAppPage() {
                 placeholder="¿Disfrutaste los sabores? ¿Comiste con calma?"
                 value={newMealForm.notes}
                 onChange={(e) => setNewMealForm({ ...newMealForm, notes: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
+                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
             </div>
 
@@ -1600,7 +1619,7 @@ export default function PwaAppPage() {
                   role="radio"
                   aria-checked={recipeMoment === c.id}
                   onClick={() => setRecipeMoment(c.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${recipeMoment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${recipeMoment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
                 >
                   {c.label}
                 </button>
@@ -1736,7 +1755,7 @@ function EnergyRange({ total, range, floor = MINIMUM_SAFE_ENERGY_FLOOR }) {
 function WaterGlass({ filled, className = '' }) {
   return (
     <svg viewBox="0 0 32 40" className={className} aria-hidden="true">
-      <path d="M5 4 H27 L24 36 H8 Z" fill={filled ? '#D8E8F3' : '#FFFFFF'} stroke={filled ? '#3478A8' : '#C3CEC5'} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M5 4 H27 L24 36 H8 Z" fill={filled ? 'rgb(var(--agua-100))' : 'rgb(var(--papel))'} stroke={filled ? '#3478A8' : 'rgb(var(--loza-300))'} strokeWidth="2" strokeLinejoin="round" />
       {filled && <path d="M6.6 14 H25.4 L23.6 34.2 H8.4 Z" fill="#3478A8" />}
     </svg>
   );
@@ -1807,7 +1826,7 @@ function Sheet({ children, onClose, labelledBy }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-      <div className="absolute inset-0 bg-loza-950/45 animate-fade-in" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
@@ -1835,7 +1854,7 @@ function CloseButton({ onClick }) {
 }
 
 // Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
-function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv, onSchedule, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
+function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv, onSchedule, theme, onTheme, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
   const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
   const fileRef = useRef(null);
   const row = 'w-full flex items-center gap-3 py-3.5 text-left text-[15px] text-loza-800 hover:text-loza-900';
@@ -1873,6 +1892,17 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv
         </button>
         )}
 
+        <div className="py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-bold text-[15px] text-loza-800" id="tema-label">Apariencia</p>
+          <div className="inline-flex p-1 rounded-full bg-loza-100" role="radiogroup" aria-labelledby="tema-label">
+            {[['auto', 'Automática'], ['claro', 'Clara'], ['oscuro', 'Oscura']].map(([id, label]) => (
+              <button key={id} type="button" role="radio" aria-checked={theme === id} onClick={() => onTheme(id)} className={`px-3.5 py-1.5 rounded-full text-sm font-bold transition-colors ${theme === id ? 'bg-hoja-600 text-white' : 'text-loza-600 hover:text-loza-900'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button type="button" onClick={onSchedule} className={row}>
           <Bell className="w-5 h-5 text-loza-500 shrink-0" aria-hidden="true" />
           <span>
@@ -1885,7 +1915,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv
           <p className="font-bold text-[15px] text-loza-800">Copia de seguridad</p>
           <p className="text-sm text-loza-500 mt-0.5">Tus registros y tus datos están solo en este teléfono. Descargá una copia para no perderlos o para pasarlos a otro dispositivo.</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={onExport} disabled={!hasData} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-loza-900 text-white text-sm font-bold disabled:opacity-40">
+            <button type="button" onClick={onExport} disabled={!hasData} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-loza-900 text-loza-50 text-sm font-bold disabled:opacity-40">
               <Download className="w-4 h-4" aria-hidden="true" /> Descargar copia
             </button>
             <button type="button" onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-loza-300 text-loza-800 text-sm font-bold hover:border-loza-500">
@@ -1910,7 +1940,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv
               <p className="font-bold text-remolacha-900">¿Borrar todos tus datos?</p>
               <p className="text-sm text-remolacha-800 mt-1">Se borran tus registros y tus datos personales de este teléfono, y no se pueden recuperar salvo que tengas una copia.</p>
               <div className="mt-3 flex gap-2">
-                <button type="button" onClick={onDeleteAll} className="px-4 py-2.5 rounded-full bg-remolacha-700 text-white text-sm font-bold">Sí, borrar todo</button>
+                <button type="button" onClick={onDeleteAll} className="px-4 py-2.5 rounded-full bg-remolacha-600 text-white text-sm font-bold">Sí, borrar todo</button>
                 <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-remolacha-900 hover:bg-remolacha-100">Cancelar</button>
               </div>
             </div>
@@ -1930,7 +1960,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv
           {confirm === 'logout' ? (
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-[15px] text-loza-800 w-full">¿Cerrar la sesión en este teléfono? Tus registros no se borran.</p>
-              <button type="button" onClick={onLogout} className="px-4 py-2.5 rounded-full bg-loza-900 text-white text-sm font-bold">Cerrar sesión</button>
+              <button type="button" onClick={onLogout} className="px-4 py-2.5 rounded-full bg-loza-900 text-loza-50 text-sm font-bold">Cerrar sesión</button>
               <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">Cancelar</button>
             </div>
           ) : (
@@ -1989,7 +2019,7 @@ function PhotoPanel({ photo, showNumbers, onStart, onAccept, onDecline }) {
           Para reconocer el plato, la foto se envía a Google Gemini, un servicio de inteligencia artificial. No la guardamos y solo se usa para este análisis. El resultado es una estimación que podés corregir.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={onAccept} className="px-4 py-2.5 rounded-full bg-agua-700 text-white text-sm font-bold">Aceptar y sacar foto</button>
+          <button type="button" onClick={onAccept} className="px-4 py-2.5 rounded-full bg-agua-600 text-white text-sm font-bold">Aceptar y sacar foto</button>
           <button type="button" onClick={onDecline} className="px-4 py-2.5 rounded-full text-sm font-bold text-agua-900 hover:bg-agua-100">Ahora no</button>
         </div>
       </div>
@@ -2077,9 +2107,9 @@ function WeightSection({ plan, profile, trend, entries, onAdd }) {
       ) : (
         <>
           <dl className="mt-4 grid grid-cols-3 gap-3 tabular">
-            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Último</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.latest)} kg</dd></div>
-            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Promedio 7 días</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.weekAvg)} kg</dd></div>
-            <div className="rounded-2xl bg-white border border-loza-200 p-3"><dt className="text-xs text-loza-500">Cambio semanal</dt><dd className="font-display text-xl font-bold text-loza-900">{trend.weeklyChange == null ? '—' : `${trend.weeklyChange > 0 ? '+' : ''}${fmt1(trend.weeklyChange)} kg`}</dd></div>
+            <div className="rounded-2xl bg-papel border border-loza-200 p-3"><dt className="text-xs text-loza-500">Último</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.latest)} kg</dd></div>
+            <div className="rounded-2xl bg-papel border border-loza-200 p-3"><dt className="text-xs text-loza-500">Promedio 7 días</dt><dd className="font-display text-xl font-bold text-loza-900">{fmt1(trend.weekAvg)} kg</dd></div>
+            <div className="rounded-2xl bg-papel border border-loza-200 p-3"><dt className="text-xs text-loza-500">Cambio semanal</dt><dd className="font-display text-xl font-bold text-loza-900">{trend.weeklyChange == null ? '—' : `${trend.weeklyChange > 0 ? '+' : ''}${fmt1(trend.weeklyChange)} kg`}</dd></div>
           </dl>
           {pace && (
             <p className={`mt-3 rounded-2xl p-4 text-[15px] ${pace.tone === 'alerta' ? 'bg-remolacha-50 text-remolacha-900' : pace.tone === 'bien' ? 'bg-hoja-50 text-hoja-900' : 'bg-loza-100 text-loza-800'}`}>{pace.text}</p>
