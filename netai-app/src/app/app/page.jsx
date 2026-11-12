@@ -29,6 +29,9 @@ import {
   Dumbbell,
   Camera,
   Loader2,
+  Star,
+  Bell,
+  FileDown,
 } from 'lucide-react';
 import {
   MINIMUM_SAFE_ENERGY_FLOOR,
@@ -56,6 +59,10 @@ const MEAL_CATEGORIES = [
 const APP_VERSION = '1.4.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
+const PREFS_KEY = 'netai_prefs_v1';
+const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };
+const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false });
+const sameName = (a, b) => (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
 function emptyDay() {
@@ -80,6 +87,17 @@ function suggestedMoment() {
   if (h < 16) return 'almuerzo';
   if (h < 20) return 'merienda';
   return 'cena';
+}
+
+function downloadFile(content, filename, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function getTodayString() {
@@ -111,13 +129,29 @@ export default function PwaAppPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recipeFilter, setRecipeFilter] = useState('Todos');
   const [toast, setToast] = useState(null); // { text, undo? }
+  const [prefs, setPrefs] = useState(emptyPrefs); // favoritas, horarios y recordatorios
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const remindedRef = useRef('');
 
-  const emptyForm = { name: '', energy: '400', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const emptyForm = { name: '', energy: '', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
   const [photo, setPhoto] = useState({ status: 'idle' }); // idle | consent | loading | done | error
   const photoInputRef = useRef(null);
   const [newMealForm, setNewMealForm] = useState(emptyForm);
 
-  const today = getTodayString();
+  // "Hoy" se actualiza si la app queda abierta al pasar la medianoche
+  const [today, setToday] = useState(getTodayString());
+  useEffect(() => {
+    const check = () => {
+      const now = getTodayString();
+      setToday((prev) => {
+        if (prev !== now) setSelectedDate((sel) => (sel === prev ? now : sel));
+        return now;
+      });
+    };
+    const id = setInterval(check, 60000);
+    document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', check); };
+  }, []);
   const isToday = selectedDate === today;
 
   // Frase del día
@@ -131,6 +165,8 @@ export default function PwaAppPage() {
     try {
       const savedData = localStorage.getItem(STORAGE_KEY);
       if (savedData) setLogsByDate(JSON.parse(savedData));
+      const savedPrefs = localStorage.getItem(PREFS_KEY);
+      if (savedPrefs) { const pr = JSON.parse(savedPrefs); setPrefs({ ...emptyPrefs(), ...pr, schedule: { ...DEFAULT_SCHEDULE, ...(pr.schedule || {}) } }); }
       const savedIntuitive = localStorage.getItem(INTUITIVE_KEY);
       if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
       const savedWeights = localStorage.getItem(WEIGHT_LOG_KEY);
@@ -151,10 +187,11 @@ export default function PwaAppPage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logsByDate));
       localStorage.setItem(INTUITIVE_KEY, String(intuitiveMode));
       localStorage.setItem(WEIGHT_LOG_KEY, JSON.stringify(weightLog));
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
     } catch (e) {
       console.warn('Error guardando en localStorage', e);
     }
-  }, [logsByDate, intuitiveMode, weightLog, isLoaded]);
+  }, [logsByDate, intuitiveMode, weightLog, prefs, isLoaded]);
 
   // El aviso se va solo a los 6 segundos
   useEffect(() => {
@@ -312,13 +349,85 @@ export default function PwaAppPage() {
     }
   };
 
+  // Favoritas: comidas guardadas a mano para registrarlas con un toque
+  const isFavorite = (name) => prefs.favorites.some((f) => sameName(f.name, name));
+  const toggleFavorite = (meal) => {
+    const was = isFavorite(meal.name);
+    setPrefs((prev) => ({
+      ...prev,
+      favorites: was
+        ? prev.favorites.filter((f) => !sameName(f.name, meal.name))
+        : [...prev.favorites, { name: meal.name.trim(), energy: meal.energy ?? null, protein: meal.protein ?? null, carbs: meal.carbs ?? null, fat: meal.fat ?? null }].slice(-30),
+    }));
+    setToast({ text: was ? 'La quitaste de tus favoritas.' : 'Guardada en tus favoritas.' });
+  };
+  const applyPreset = (f) => setNewMealForm((prev) => ({
+    ...prev,
+    name: f.name,
+    energy: f.energy != null ? String(f.energy) : '',
+    protein: f.protein != null ? String(f.protein) : '',
+    carbs: f.carbs != null ? String(f.carbs) : '',
+    fat: f.fat != null ? String(f.fat) : '',
+  }));
+
+  // Recordatorios: a la hora de cada comida, si todavía no la registraste. Funcionan con la app abierta.
+  useEffect(() => {
+    if (!isLoaded || !prefs.reminders) return;
+    const tick = () => {
+      const now = new Date();
+      const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const day = getTodayString();
+      const cat = MEAL_CATEGORIES.find((c) => prefs.schedule[c.id] === hhmm);
+      if (!cat) return;
+      const key = `${day}-${cat.id}`;
+      if (remindedRef.current === key) return;
+      remindedRef.current = key;
+      if (((logsByDate[day] || emptyDay()).meals[cat.id] || []).length > 0) return;
+      const text = `Es la hora de tu ${cat.label.toLowerCase()}. Cuando comas, registralo con calma.`;
+      setToast({ text });
+      try {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.visibilityState !== 'visible') {
+          navigator.serviceWorker?.ready.then((reg) => reg.showNotification('NetAI', { body: text, icon: '/icons/icon-192.png', tag: key }));
+        }
+      } catch (e) { /* sin notificaciones del sistema */ }
+    };
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, [isLoaded, prefs.reminders, prefs.schedule, logsByDate]);
+
+  const setReminders = async (on) => {
+    if (on && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try { await Notification.requestPermission(); } catch (e) { /* el aviso dentro de la app sigue funcionando */ }
+    }
+    setPrefs((prev) => ({ ...prev, reminders: on }));
+  };
+
+  // Historial en una planilla (CSV) para abrir en Excel o Google Sheets
+  const handleExportCsv = () => {
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = [['Fecha', 'Momento', 'Comida', 'Energía (kcal)', 'Proteínas (g)', 'Carbohidratos (g)', 'Grasas (g)', 'Hambre antes', 'Saciedad después', 'Notas', 'Vasos de agua del día']];
+    Object.keys(logsByDate).sort().forEach((date) => {
+      const day = logsByDate[date];
+      let any = false;
+      MEAL_CATEGORIES.forEach((c) => (day.meals?.[c.id] || []).forEach((m) => {
+        any = true;
+        rows.push([date, c.label, m.name, m.energy, m.protein, m.carbs, m.fat, m.satietyBefore, m.satietyAfter, m.notes, day.waterGlasses || 0]);
+      }));
+      if (!any && day.waterGlasses) rows.push([date, '', '', '', '', '', '', '', '', '', day.waterGlasses]);
+    });
+    const csv = '\ufeff' + rows.map((r) => r.map(esc).join(';')).join('\r\n');
+    downloadFile(csv, `netai-historial-${today}.csv`, 'text/csv;charset=utf-8');
+    setToast({ text: 'Descargaste tu historial.' });
+  };
+
   const handleAddMealSubmit = (e) => {
     e.preventDefault();
     if (!newMealForm.name.trim()) return;
     const entry = {
       id: editingMealId || 'meal-' + Date.now(),
       name: newMealForm.name.trim(),
-      energy: parseInt(newMealForm.energy, 10) || 350,
+      energy: newMealForm.energy === '' || !(parseInt(newMealForm.energy, 10) >= 0) ? null : parseInt(newMealForm.energy, 10),
       ...(newMealForm.protein !== '' && Number(newMealForm.protein) >= 0 ? { protein: Math.round(Number(newMealForm.protein)) } : {}),
       ...(newMealForm.carbs !== '' && Number(newMealForm.carbs) >= 0 ? { carbs: Math.round(Number(newMealForm.carbs)) } : {}),
       ...(newMealForm.fat !== '' && Number(newMealForm.fat) >= 0 ? { fat: Math.round(Number(newMealForm.fat)) } : {}),
@@ -408,16 +517,8 @@ export default function PwaAppPage() {
 
   // Copia de seguridad: los registros viven solo en este teléfono
   const handleExport = () => {
-    const payload = { app: 'NetAI', version: 3, exportedAt: new Date().toISOString(), intuitiveMode, profile, weightLog, logsByDate };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `netai-registros-${today}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const payload = { app: 'NetAI', version: 3, exportedAt: new Date().toISOString(), intuitiveMode, profile, weightLog, prefs, logsByDate };
+    downloadFile(JSON.stringify(payload, null, 2), `netai-registros-${today}.json`, 'application/json');
     setToast({ text: 'Descargaste la copia de tus registros.' });
   };
 
@@ -427,6 +528,7 @@ export default function PwaAppPage() {
       if (!data || data.app !== 'NetAI' || typeof data.logsByDate !== 'object') throw new Error('formato');
       setLogsByDate((prev) => ({ ...prev, ...data.logsByDate }));
       if (Array.isArray(data.weightLog)) setWeightLog(data.weightLog);
+      if (data.prefs && typeof data.prefs === 'object') setPrefs({ ...emptyPrefs(), ...data.prefs, schedule: { ...DEFAULT_SCHEDULE, ...(data.prefs.schedule || {}) } });
       if (data.profile && typeof data.profile === 'object') {
         const restored = { ...emptyProfile(), ...data.profile };
         saveProfile(restored);
@@ -442,6 +544,7 @@ export default function PwaAppPage() {
   const handleDeleteAll = () => {
     setLogsByDate({});
     setWeightLog([]);
+    setPrefs(emptyPrefs());
     setProfile(null);
     try { localStorage.removeItem(PROFILE_KEY); } catch (e) { /* sin almacenamiento */ }
     setSettingsOpen(false);
@@ -491,7 +594,7 @@ export default function PwaAppPage() {
           <div className="flex items-center gap-2.5 min-w-0">
             <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
-              <p className="font-marca font-bold text-lg leading-none text-hoja-900">NetAI</p>
+              <h1 className="font-marca font-bold text-lg leading-none text-hoja-900 tracking-normal">NetAI</h1>
               <p className="text-xs text-loza-500 leading-tight mt-0.5">{sportOn ? 'Modo Sport' : 'Bienestar'}</p>
             </div>
           </div>
@@ -565,7 +668,7 @@ export default function PwaAppPage() {
                   <h2 id="titulo-completar" className="font-display text-lg font-bold text-loza-900">Completá tus datos</h2>
                   <p className="text-sm text-loza-600 mt-0.5">Con tu edad, actividad y lo que comés, NetAI adapta tu rango de energía y tus recetas. Lleva 2 minutos.</p>
                 </div>
-                <button type="button" onClick={() => setOnboarding('editar')} className="px-5 py-2.5 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">
+                <button type="button" onClick={() => setOnboarding('editar')} className="px-5 py-2.5 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold">
                   Completar
                 </button>
               </section>
@@ -634,7 +737,7 @@ export default function PwaAppPage() {
                       className="group flex flex-col items-center gap-1 rounded-xl py-1 hover:bg-agua-50 transition-colors"
                     >
                       <WaterGlass filled={filled} className="w-7 h-9 sm:w-8 sm:h-10" />
-                      <span className={`text-[11px] tabular ${filled ? 'text-agua-700 font-bold' : 'text-loza-400'}`}>{index + 1}</span>
+                      <span className={`text-[11px] tabular ${filled ? 'text-agua-700 font-bold' : 'text-loza-500'}`}>{index + 1}</span>
                     </button>
                   );
                 })}
@@ -664,7 +767,10 @@ export default function PwaAppPage() {
 
                       <div className="flex items-start justify-between gap-3 min-h-10">
                         <div className="pt-0.5 min-w-0">
-                          <h3 className="font-display text-lg font-bold text-loza-900 leading-tight">{cat.label}</h3>
+                          <h3 className="font-display text-lg font-bold text-loza-900 leading-tight">
+                            {cat.label}
+                            {prefs.schedule[cat.id] && <span className="ml-2 font-sans text-sm font-normal text-loza-500 tabular">{prefs.schedule[cat.id]}</span>}
+                          </h3>
                           <p className="text-sm text-loza-500">{cat.hint}</p>
                         </div>
                         <button
@@ -685,14 +791,24 @@ export default function PwaAppPage() {
                                 <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
                                 <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
                                   {showNumbers && (
-                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy} kcal</span>
+                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy != null ? `${meal.energy} kcal` : 'sin estimar'}</span>
                                   )}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleFavorite(meal)}
+                                    aria-pressed={isFavorite(meal.name)}
+                                    aria-label={isFavorite(meal.name) ? `Quitar ${meal.name} de favoritas` : `Guardar ${meal.name} en favoritas`}
+                                    title="Favorita"
+                                    className={`p-1.5 rounded-lg hover:bg-trigo-50 transition-colors ${isFavorite(meal.name) ? 'text-trigo-600' : 'text-loza-500 hover:text-trigo-700'}`}
+                                  >
+                                    <Star className="w-4 h-4" fill={isFavorite(meal.name) ? 'currentColor' : 'none'} />
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => openEditMeal(cat.id, meal)}
                                     aria-label={`Editar ${meal.name}`}
                                     title="Editar registro"
-                                    className="p-1.5 rounded-lg text-loza-400 hover:text-loza-800 hover:bg-loza-100 transition-colors"
+                                    className="p-1.5 rounded-lg text-loza-500 hover:text-loza-800 hover:bg-loza-100 transition-colors"
                                   >
                                     <Pencil className="w-4 h-4" />
                                   </button>
@@ -701,7 +817,7 @@ export default function PwaAppPage() {
                                     onClick={() => handleDeleteMeal(cat.id, meal.id)}
                                     aria-label={`Eliminar ${meal.name}`}
                                     title="Eliminar registro"
-                                    className="p-1.5 rounded-lg text-loza-400 hover:text-remolacha-700 hover:bg-remolacha-50 transition-colors"
+                                    className="p-1.5 rounded-lg text-loza-500 hover:text-remolacha-700 hover:bg-remolacha-50 transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -755,7 +871,7 @@ export default function PwaAppPage() {
                       className="w-full flex flex-col items-center gap-1.5 rounded-2xl py-2 hover:bg-loza-100 transition-colors"
                     >
                       <span className="text-xs text-loza-500 capitalize">{formatWeekday(d.date).slice(0, 3)}</span>
-                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold tabular ${d.cared ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-400'} ${d.date === today ? 'ring-2 ring-offset-2 ring-offset-loza-50 ring-hoja-300' : ''}`}>
+                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold tabular ${d.cared ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-500'} ${d.date === today ? 'ring-2 ring-offset-2 ring-offset-loza-50 ring-hoja-300' : ''}`}>
                         {Number(d.date.slice(8))}
                       </span>
                     </button>
@@ -883,7 +999,7 @@ export default function PwaAppPage() {
                       <button
                         type="button"
                         onClick={() => handleAddRecipeToDay(recipe, suggestedMoment())}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Sumar a {MEAL_CATEGORIES.find((c) => c.id === suggestedMoment())?.label.toLowerCase()}
@@ -983,6 +1099,8 @@ export default function PwaAppPage() {
             intuitiveMode={intuitiveMode}
             onToggleIntuitive={() => setIntuitiveMode(!intuitiveMode)}
             onExport={handleExport}
+            onExportCsv={handleExportCsv}
+            onSchedule={() => { setSettingsOpen(false); setScheduleOpen(true); }}
             onImport={handleImport}
             onDeleteAll={handleDeleteAll}
             onLogout={handleLogout}
@@ -992,6 +1110,42 @@ export default function PwaAppPage() {
             sportOn={sportOn}
             hasData={Object.keys(logsByDate).length > 0 || !!profile?.completedAt}
           />
+        </Sheet>
+      )}
+
+      {scheduleOpen && (
+        <Sheet onClose={() => setScheduleOpen(false)} labelledBy="titulo-horarios">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="titulo-horarios" className="font-display text-xl font-bold text-loza-900">Horarios y recordatorios</h2>
+            <CloseButton onClick={() => setScheduleOpen(false)} />
+          </div>
+          <p className="mt-2 text-sm text-loza-600">Poné la hora en que solés comer. Dejá vacío lo que no uses.</p>
+          <div className="mt-4 divide-y divide-loza-200 border-y border-loza-200">
+            {MEAL_CATEGORIES.map((c) => (
+              <div key={c.id} className="py-3 flex items-center justify-between gap-4">
+                <label htmlFor={`hora-${c.id}`} className="font-bold text-[15px] text-loza-800">{c.label}</label>
+                <input
+                  id={`hora-${c.id}`}
+                  type="time"
+                  value={prefs.schedule[c.id] || ''}
+                  onChange={(e) => setPrefs((prev) => ({ ...prev, schedule: { ...prev.schedule, [c.id]: e.target.value } }))}
+                  className="px-3 py-2 rounded-xl border border-loza-300 bg-white text-[15px] tabular focus:outline-none focus:border-hoja-500"
+                />
+              </div>
+            ))}
+          </div>
+          <button type="button" role="switch" aria-checked={prefs.reminders} onClick={() => setReminders(!prefs.reminders)} className="mt-4 w-full flex items-center justify-between gap-3 text-left">
+            <span>
+              <span className="block font-bold text-[15px] text-loza-800">Recordarme a esa hora</span>
+              <span className="block text-sm text-loza-500">Te avisamos si todavía no registraste esa comida. Funciona mientras NetAI está abierta en el teléfono.</span>
+            </span>
+            <span aria-hidden="true" className={`relative w-10 h-6 rounded-full shrink-0 transition-colors ${prefs.reminders ? 'bg-hoja-600' : 'bg-loza-300'}`}>
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${prefs.reminders ? 'translate-x-4' : ''}`} />
+            </span>
+          </button>
+          <div className="mt-6 text-right">
+            <button type="button" onClick={() => { setScheduleOpen(false); setToast({ text: 'Guardamos tus horarios.' }); }} className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold">Listo</button>
+          </div>
         </Sheet>
       )}
 
@@ -1019,7 +1173,7 @@ export default function PwaAppPage() {
             </div>
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setWeightSheet(false)} className="px-5 py-3 rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">Cancelar</button>
-              <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">Guardar</button>
+              <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold">Guardar</button>
             </div>
           </form>
         </Sheet>
@@ -1103,15 +1257,34 @@ export default function PwaAppPage() {
             onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; handlePhotoFile(f); }}
           />
 
-          {!editingMealId && photo.status !== 'done' && frequentMeals.length > 0 && (
+          {!editingMealId && photo.status !== 'done' && prefs.favorites.length > 0 && (
             <div className="mt-4">
-              <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
+              <p className="text-sm font-bold text-loza-800">Tus favoritas</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {frequentMeals.map((f) => (
+                {prefs.favorites.map((f) => (
                   <button
                     key={f.name}
                     type="button"
-                    onClick={() => setNewMealForm({ ...newMealForm, name: f.name, energy: String(f.energy ?? newMealForm.energy) })}
+                    onClick={() => applyPreset(f)}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                  >
+                    <Star className="w-3.5 h-3.5 shrink-0" fill="currentColor" aria-hidden="true" />
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!editingMealId && photo.status !== 'done' && frequentMeals.filter((f) => !isFavorite(f.name)).length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {frequentMeals.filter((f) => !isFavorite(f.name)).map((f) => (
+                  <button
+                    key={f.name}
+                    type="button"
+                    onClick={() => applyPreset(f)}
                     className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-white border border-loza-200 text-loza-700 hover:border-loza-400'}`}
                   >
                     {f.name}
@@ -1131,7 +1304,7 @@ export default function PwaAppPage() {
                 placeholder="Por ejemplo: ensalada de garbanzos con vegetales asados"
                 value={newMealForm.name}
                 onChange={(e) => setNewMealForm({ ...newMealForm, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-400 focus:outline-none focus:border-hoja-500"
+                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
             </div>
 
@@ -1202,7 +1375,7 @@ export default function PwaAppPage() {
                 placeholder="¿Disfrutaste los sabores? ¿Comiste con calma?"
                 value={newMealForm.notes}
                 onChange={(e) => setNewMealForm({ ...newMealForm, notes: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-400 focus:outline-none focus:border-hoja-500"
+                className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-white text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
             </div>
 
@@ -1214,7 +1387,7 @@ export default function PwaAppPage() {
               >
                 Cancelar
               </button>
-              <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold">
+              <button type="submit" className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold">
                 {editingMealId ? 'Guardar cambios' : 'Guardar'}
               </button>
             </div>
@@ -1287,7 +1460,7 @@ export default function PwaAppPage() {
             <button
               type="button"
               onClick={() => handleAddRecipeToDay(activeRecipeModal, recipeMoment)}
-              className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold"
+              className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold"
             >
               Sumar a {MEAL_CATEGORIES.find((c) => c.id === recipeMoment)?.label.toLowerCase()}
             </button>
@@ -1324,7 +1497,7 @@ export default function PwaAppPage() {
             <button
               type="button"
               onClick={() => setActiveArticleModal(null)}
-              className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-700 text-white text-sm font-bold"
+              className="px-6 py-3 rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold"
             >
               Listo
             </button>
@@ -1503,7 +1676,7 @@ function CloseButton({ onClick }) {
 }
 
 // Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
-function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
+function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv, onSchedule, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
   const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
   const fileRef = useRef(null);
   const row = 'w-full flex items-center gap-3 py-3.5 text-left text-[15px] text-loza-800 hover:text-loza-900';
@@ -1541,6 +1714,14 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
         </button>
         )}
 
+        <button type="button" onClick={onSchedule} className={row}>
+          <Bell className="w-5 h-5 text-loza-500 shrink-0" aria-hidden="true" />
+          <span>
+            <span className="block font-bold">Horarios y recordatorios</span>
+            <span className="block text-sm text-loza-500">A qué hora comés y si querés que te avisemos.</span>
+          </span>
+        </button>
+
         <div className="py-3.5">
           <p className="font-bold text-[15px] text-loza-800">Copia de seguridad</p>
           <p className="text-sm text-loza-500 mt-0.5">Tus registros y tus datos están solo en este teléfono. Descargá una copia para no perderlos o para pasarlos a otro dispositivo.</p>
@@ -1550,6 +1731,9 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
             </button>
             <button type="button" onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-loza-300 text-loza-800 text-sm font-bold hover:border-loza-500">
               <Upload className="w-4 h-4" aria-hidden="true" /> Restaurar copia
+            </button>
+            <button type="button" onClick={onExportCsv} disabled={!hasData} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-loza-300 text-loza-800 text-sm font-bold hover:border-loza-500 disabled:opacity-40">
+              <FileDown className="w-4 h-4" aria-hidden="true" /> Historial en planilla
             </button>
             <input
               ref={fileRef}
@@ -1597,7 +1781,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onImport, o
           )}
         </div>
       </div>
-      <p className="mt-4 text-xs text-loza-400">NetAI, versión {APP_VERSION}</p>
+      <p className="mt-4 text-xs text-loza-500">NetAI, versión {APP_VERSION}</p>
     </div>
   );
 }
