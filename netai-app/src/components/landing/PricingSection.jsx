@@ -15,7 +15,7 @@ const PLANS = [
     features: [
       'Registro manual ilimitado de comidas',
       'Modo Intuitivo y Método del Plato',
-      'Biblioteca de alimentos frecuentes y favoritos',
+      'Comidas frecuentes y favoritas',
       'Horarios de comidas personalizables',
     ],
   },
@@ -53,7 +53,7 @@ const PLANS = [
 
 export default function PricingSection() {
   return (
-    <section id="precios" className="py-20 md:py-28 bg-white border-t border-loza-200">
+    <section id="precios" className="py-20 md:py-24 bg-white border-t border-loza-200 scroll-mt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mb-12">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-loza-900 tracking-tight">Planes</h2>
@@ -97,18 +97,18 @@ export default function PricingSection() {
               </ul>
 
               <Link
-                href="/login"
+                href="/#solicitar"
                 className={`mt-8 inline-flex items-center justify-center px-6 py-3.5 rounded-full font-bold transition-colors ${
-                  p.featured ? 'bg-white text-hoja-900 hover:bg-hoja-50' : 'bg-loza-900 text-white hover:bg-loza-800'
+                  p.featured ? 'bg-white text-hoja-900 hover:bg-hoja-50' : 'bg-hoja-600 text-white hover:bg-hoja-500'
                 }`}
               >
-                {p.price === 'US$0' ? 'Empezar gratis' : `Elegir ${p.name}`}
+                Pedir acceso
               </Link>
             </article>
           ))}
         </div>
 
-        <p className="mt-8 text-loza-600">Pagá con tarjeta, Mercado Pago, transferencia o USDT.</p>
+        <p className="mt-8 text-loza-600 max-w-3xl">Durante la beta cerrada no se cobra y todas las funciones están habilitadas. Los planes empiezan con el lanzamiento público, con pago por tarjeta, Mercado Pago, transferencia o USDT.</p>
       </div>
     </section>
   );
