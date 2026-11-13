@@ -50,7 +50,7 @@ Durante la beta no se cobra y todas las funciones están habilitadas. La app no 
    5. *Deploy*. Después, en *Settings → Domains*, conectar tu dominio.
 2. **Probar la foto con la clave real:** registrar una comida con "Sacar foto del plato" y pedir "Ideas para hoy". Es la única parte que no se pudo probar contra Google.
 3. **Activar las solicitudes:** enviar una solicitud de prueba desde la web. FormSubmit manda un correo de activación; al confirmarlo te da un código alternativo. Conviene usar ese código en lugar del correo en `netai-web/lib/manifest.js` (`requestEndpoint`) y en `NEXT_PUBLIC_REQUEST_ENDPOINT`, para que la dirección no quede a la vista.
-4. **Publicar la web de presentación** (`netai-web/`) en Hostinger. En `netai-web/lib/manifest.js` poner la dirección de la app (`apps.netai.url`).
+4. **Publicar la web de presentación** en Hostinger: completar `netai-web/lib/manifest.js` y subir el contenido de la carpeta a `public_html` (el archivo `netai-web-hostinger.zip` de la raíz del repo trae la versión actual lista para subir y descomprimir). En `netai-web/lib/manifest.js` poner la dirección de la app (`apps.netai.url`).
 5. **Probar en teléfonos reales:** abrir el dominio en Android (Chrome) y en iPhone (Safari), instalar la app y usarla un día completo, con tema claro y oscuro.
 6. **Compartir el enlace** y revisar que la vista previa (imagen y texto) se vea bien en WhatsApp.
 
