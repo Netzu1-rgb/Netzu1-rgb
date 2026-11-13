@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { geminiGuard, geminiJson, clamp, fail } from '@/lib/gemini';
+import { geminiGuard, geminiJson, clamp, fail, tooLarge } from '@/lib/gemini';
 
 // Sugerencias de comidas con Google Gemini, según el momento del día y las preferencias de la persona.
 // No se envía el nombre ni el peso: solo alimentación, alergias, modo y, en Sport, cuánto falta del plan.
@@ -32,6 +32,7 @@ const SCHEMA = {
 };
 
 export async function POST(request) {
+  if (tooLarge(request, 20_000)) return fail('El pedido es demasiado grande.', 413);
   const guard = await geminiGuard(request, 'Las sugerencias con IA');
   if (guard.error) return guard.error;
 

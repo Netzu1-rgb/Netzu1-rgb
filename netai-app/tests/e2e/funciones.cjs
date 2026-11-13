@@ -35,7 +35,7 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   // receta con momento
   await p.click('nav[aria-label=Secciones] button:nth-child(3)'); await p.waitForTimeout(300);
   await p.click('button:has-text("Ver receta")'); await p.waitForTimeout(300);
-  await p.click('[role=radio]:has-text("Cena")'); await p.click('button:has-text("Sumar a cena")'); await p.waitForTimeout(400);
+  await p.click('[role=radio]:has-text("Cena")'); await p.click('[role=dialog] button:has-text("Sumar a cena")'); await p.waitForTimeout(400);
   ok(await p.isVisible('text=Sumaste la receta a cena.'), 'receta: se suma al momento elegido');
   // semana
   await p.click('nav[aria-label=Secciones] button:nth-child(2)'); await p.waitForTimeout(400);

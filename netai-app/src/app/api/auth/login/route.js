@@ -10,9 +10,13 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/auth';
+import { sameOrigin, tooLarge } from '@/lib/gemini';
 
 export async function POST(request) {
   try {
+    if (!sameOrigin(request) || tooLarge(request, 2000)) {
+      return NextResponse.json({ success: false, message: 'Pedido no permitido.' }, { status: 403 });
+    }
     const body = await request.json().catch(() => ({}));
     const { password } = body;
 

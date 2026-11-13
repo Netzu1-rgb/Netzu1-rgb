@@ -9,17 +9,33 @@ const API_BASE = process.env.GEMINI_API_BASE || 'https://generativelanguage.goog
 const MODELS = (process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite,gemini-2.5-flash').split(',').map((m) => m.trim()).filter(Boolean);
 let working = 0;
 
-// Límite simple por conexión (por instancia del servidor). El tope real de gasto se configura en Google Cloud.
+// Límites de uso (por instancia del servidor). El tope real de gasto se configura en Google Cloud.
+// - Por sesión: cada persona tiene su propio cupo, aunque comparta la red (wifi de un club, datos móviles).
+// - Por conexión: un tope más alto, para que nadie lo esquive abriendo sesiones nuevas.
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = Number(process.env.PHOTO_ANALYSIS_PER_HOUR || 30);
+const MAX_PER_IP = MAX_PER_WINDOW * 10;
+const MAX_KEYS = 20000;
 const hits = new Map();
-function rateLimited(ip) {
+function overLimit(key, max) {
   const now = Date.now();
-  const list = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const list = (hits.get(key) || []).filter((t) => now - t < WINDOW_MS);
   list.push(now);
-  hits.set(ip, list);
-  return list.length > MAX_PER_WINDOW;
+  hits.delete(key); // se vuelve a insertar al final: las claves más viejas quedan primeras
+  hits.set(key, list);
+  if (hits.size > MAX_KEYS) hits.delete(hits.keys().next().value);
+  return list.length > max;
 }
+
+/** Los pedidos que cambian algo tienen que venir de la propia app, no de otro sitio */
+export function sameOrigin(request) {
+  const origin = request.headers.get('origin');
+  if (!origin) return request.headers.get('sec-fetch-site') !== 'cross-site';
+  try { return new URL(origin).host === (request.headers.get('x-forwarded-host') || request.headers.get('host')); } catch (e) { return false; }
+}
+
+/** true si el cuerpo declarado supera el máximo (se corta antes de leerlo) */
+export const tooLarge = (request, maxBytes) => Number(request.headers.get('content-length') || 0) > maxBytes;
 
 const fail = (message, status) => NextResponse.json({ message }, { status });
 
@@ -27,11 +43,12 @@ const fail = (message, status) => NextResponse.json({ message }, { status });
  * Comprueba sesión, clave y límite de uso. Devuelve { apiKey } o { error: respuesta }.
  */
 export async function geminiGuard(request, what = 'El análisis por foto') {
+  if (!sameOrigin(request)) return { error: fail('Pedido no permitido.', 403) };
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!(await verifySessionToken(token))) return { error: fail('Tu sesión venció. Volvé a entrar a la app.', 401) };
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return { error: fail(`${what} todavía no está activado.`, 503) };
-  if (rateLimited(clientIp(request))) return { error: fail('Llegaste al máximo de pedidos por hora. Probá más tarde.', 429) };
+  if (overLimit(`s:${token.slice(-32)}`, MAX_PER_WINDOW) || overLimit(`ip:${clientIp(request)}`, MAX_PER_IP)) return { error: fail('Llegaste al máximo de pedidos por hora. Probá más tarde.', 429) };
   return { apiKey };
 }
 

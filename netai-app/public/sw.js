@@ -1,9 +1,9 @@
 // NetAI: modo sin conexión.
 // - Archivos con nombre único (/_next/static): primero la copia guardada, porque nunca cambian.
-// - Páginas y demás: primero la red; si no hay conexión, la última copia guardada.
+// - Páginas y demás: primero la red; si no hay conexión, o la red tarda más de 3 segundos, la última copia guardada.
 // - Las rutas /api nunca se guardan.
 
-const CACHE = 'netai-cache-v3';
+const CACHE = 'netai-cache-v4';
 const PRECACHE = [
   '/manifest.webmanifest',
   '/icons/icon-192.png',
@@ -42,22 +42,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const fromCache = async () => {
+    const hit = await caches.match(req, { ignoreSearch: req.mode === 'navigate' });
+    if (hit) return hit;
+    return req.mode === 'navigate' ? caches.match('/app') : undefined;
+  };
+  const fromNetwork = fetch(req).then((res) => {
+    if (storable(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+    return res;
+  });
+  // Con mala señal no se espera indefinidamente: a los 3 segundos se muestra la copia guardada, si existe,
+  // y la respuesta de la red igual actualiza la copia para la próxima vez.
+  const slow = new Promise((resolve) => setTimeout(resolve, 3000)).then(fromCache);
+  const late = slow.then((hit) => hit || fromNetwork);
+  late.catch(() => {});
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (storable(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
-        return res;
-      })
-      .catch(async () => {
-        const hit = await caches.match(req, { ignoreSearch: req.mode === 'navigate' });
-        if (hit) return hit;
-        if (req.mode === 'navigate') {
-          const app = await caches.match('/app');
-          if (app) return app;
-        }
-        return new Response('Sin conexión', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-      })
+    Promise.race([fromNetwork, late])
+      .catch(async () => (await fromCache()) || new Response('Sin conexión', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }))
   );
+  event.waitUntil(fromNetwork.catch(() => {}));
 });
 
 // Al tocar un recordatorio, abre la app

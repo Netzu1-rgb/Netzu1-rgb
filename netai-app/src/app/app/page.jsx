@@ -201,18 +201,36 @@ export default function PwaAppPage() {
     setIsLoaded(true);
   }, []);
 
-  // Guardar en localStorage
+  // Guardar en localStorage. Los registros pueden ser grandes (meses de comidas): se escriben un instante
+  // después del último cambio para que cada toque responda al momento, y siempre antes de salir de la app.
+  const pendingSave = useRef(null);
+  useEffect(() => {
+    if (!isLoaded) return undefined;
+    const write = () => {
+      pendingSave.current = null;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(logsByDate)); } catch (e) { console.warn('Error guardando en localStorage', e); }
+    };
+    pendingSave.current = write;
+    const id = setTimeout(write, 250);
+    return () => clearTimeout(id);
+  }, [logsByDate, isLoaded]);
+  useEffect(() => {
+    const flush = () => pendingSave.current?.();
+    const onHide = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => { flush(); window.removeEventListener('pagehide', flush); document.removeEventListener('visibilitychange', onHide); };
+  }, []);
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(logsByDate));
       localStorage.setItem(INTUITIVE_KEY, String(intuitiveMode));
       localStorage.setItem(WEIGHT_LOG_KEY, JSON.stringify(weightLog));
       localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
     } catch (e) {
       console.warn('Error guardando en localStorage', e);
     }
-  }, [logsByDate, intuitiveMode, weightLog, prefs, isLoaded]);
+  }, [intuitiveMode, weightLog, prefs, isLoaded]);
 
   // El aviso se va solo a los 6 segundos
   useEffect(() => {

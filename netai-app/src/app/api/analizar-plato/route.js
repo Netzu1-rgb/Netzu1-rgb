@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { geminiGuard, geminiJson, clamp, fail } from '@/lib/gemini';
+import { geminiGuard, geminiJson, clamp, fail, tooLarge } from '@/lib/gemini';
 
 // Análisis de platos por foto con Google Gemini. La foto se procesa y no se guarda.
 
@@ -44,6 +44,7 @@ const SCHEMA = {
 };
 
 export async function POST(request) {
+  if (tooLarge(request, 6_000_000)) return fail('La foto es demasiado grande. Probá con otra.', 413);
   const guard = await geminiGuard(request, 'El análisis por foto');
   if (guard.error) return guard.error;
 

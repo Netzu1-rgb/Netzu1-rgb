@@ -24,6 +24,8 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), payment=()' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
   // En desarrollo Next.js necesita evaluar código, así que la política solo se aplica en producción
   ...(isProd ? [{ key: 'Content-Security-Policy', value: csp }] : []),
@@ -50,6 +52,8 @@ const nextConfig = {
         ],
       },
       { source: '/(.*)', headers: securityHeaders },
+      // Las respuestas de la API (sesión, análisis) nunca se guardan en cachés intermedios
+      { source: '/api/(.*)', headers: [{ key: 'Cache-Control', value: 'no-store' }] },
     ];
   },
 };
