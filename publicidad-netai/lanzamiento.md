@@ -24,7 +24,7 @@ Lista para publicar NetAI, en orden. Primero la beta cerrada en la web; después
 
 1. Una persona completa el formulario de la web o de la página de inicio.
 2. La solicitud te llega por correo (FormSubmit).
-3. Le respondés con el enlace de la app y un código de acceso. Podés usar un código por persona o por grupo.
+3. Le respondés con el enlace de la app y un código de acceso (plantilla en `respuesta-a-solicitudes.md`). Podés usar un código por persona o por grupo.
 4. Para dar de baja a alguien, quitás su código de `APP_ACCESS_CODES` en Vercel y volvés a publicar: sus sesiones se cierran.
 
 Durante la beta no se cobra y todas las funciones están habilitadas. La app no tiene cuentas ni pagos; eso se decide antes del lanzamiento público (ver `estado-de-la-app.md`).
@@ -65,7 +65,7 @@ Antes de cada publicación: `npm test` y `npm run test:e2e` en `netai-app`.
 | Riesgo principal | Bajo, si la web funciona bien | Apple rechaza apps que son solo una web envuelta: hay que sumar funciones nativas (notificaciones, Apple Salud) |
 | Cobros digitales | Facturación de Google Play | Compras dentro de la app de Apple (obligatorio para suscripciones) |
 
-Material listo: 12 capturas de 1080 × 1920 en `publicidad-netai/tiendas/`, logo en `publicidad-netai/marca/` y textos en `ficha-tiendas.md`. Falta, para Google Play, una imagen destacada de 1024 × 500.
+Material listo: 12 capturas de 1080 × 1920 en `publicidad-netai/tiendas/`, logo en `publicidad-netai/marca/` textos en `ficha-tiendas.md` e imagen destacada de 1024 × 500 para Google Play en `publicidad-netai/tiendas/imagen-destacada-1024x500.png`.
 
 Las tiendas piden que quien revisa pueda entrar: hay que darles un código de acceso de prueba, o abrir el acceso con cuentas antes de presentar.
 

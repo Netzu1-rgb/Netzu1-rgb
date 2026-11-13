@@ -15,6 +15,7 @@ Documentación para crear la publicidad de **NetAI** (plataforma de bienestar y 
 - [`instalar-rea.md`](instalar-rea.md): cómo instalar REA como herramienta de Claude Code y reglas de uso para analizar apps de gimnasio.
 - [`lanzamiento.md`](lanzamiento.md): lista para lanzar NetAI en internet: qué está hecho, qué falta y en qué orden (web primero, tiendas después).
 - [`ficha-tiendas.md`](ficha-tiendas.md): textos para las fichas de Google Play y App Store, y qué declarar sobre los datos.
+- [`respuesta-a-solicitudes.md`](respuesta-a-solicitudes.md): plantilla de correo para dar acceso a quien lo pide en la beta.
 - [`estado-de-la-app.md`](estado-de-la-app.md): qué tiene la app hoy y qué le falta, en código y en diseño.
 
 El repo ya incluye `youtube-shorts/`, una automatización de Shorts diarios. Se puede reutilizar su pipeline (`render.js`, `voz.js`, `upload.js`) para los vídeos de NetAI.
