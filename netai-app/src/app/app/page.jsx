@@ -46,6 +46,7 @@ import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
 import { prepareImage } from '@/lib/photo';
+import { sanitizeLogs, sanitizeWeights, parseJson, isObject } from '@/lib/storage';
 import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
 const MEAL_CATEGORIES = [
@@ -56,7 +57,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.5.1';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -182,14 +183,15 @@ export default function PwaAppPage() {
   // Cargar de localStorage. La primera vez empieza vacío, sin datos de ejemplo.
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem(STORAGE_KEY);
-      if (savedData) setLogsByDate(JSON.parse(savedData));
-      const savedPrefs = localStorage.getItem(PREFS_KEY);
-      if (savedPrefs) { const pr = JSON.parse(savedPrefs); setPrefs({ ...emptyPrefs(), ...pr, schedule: { ...DEFAULT_SCHEDULE, ...(pr.schedule || {}) } }); }
+      // Cada dato se lee por separado: si uno está dañado, los demás igual se cargan
+      const savedData = parseJson(localStorage.getItem(STORAGE_KEY));
+      if (savedData) setLogsByDate(sanitizeLogs(savedData));
+      const pr = parseJson(localStorage.getItem(PREFS_KEY));
+      if (isObject(pr)) setPrefs({ ...emptyPrefs(), ...pr, favorites: Array.isArray(pr.favorites) ? pr.favorites.filter((f) => isObject(f) && typeof f.name === 'string') : [], schedule: { ...DEFAULT_SCHEDULE, ...(isObject(pr.schedule) ? pr.schedule : {}) } });
       const savedIntuitive = localStorage.getItem(INTUITIVE_KEY);
       if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
-      const savedWeights = localStorage.getItem(WEIGHT_LOG_KEY);
-      if (savedWeights) setWeightLog(JSON.parse(savedWeights));
+      const savedWeights = parseJson(localStorage.getItem(WEIGHT_LOG_KEY));
+      if (savedWeights) setWeightLog(sanitizeWeights(savedWeights));
       const savedProfile = loadProfile();
       setProfile(savedProfile);
       if (!savedProfile) setOnboarding('inicial');
@@ -613,11 +615,11 @@ export default function PwaAppPage() {
   const handleImport = async (file) => {
     try {
       const data = JSON.parse(await file.text());
-      if (!data || data.app !== 'NetAI' || typeof data.logsByDate !== 'object') throw new Error('formato');
-      setLogsByDate((prev) => ({ ...prev, ...data.logsByDate }));
-      if (Array.isArray(data.weightLog)) setWeightLog(data.weightLog);
-      if (data.prefs && typeof data.prefs === 'object') setPrefs({ ...emptyPrefs(), ...data.prefs, schedule: { ...DEFAULT_SCHEDULE, ...(data.prefs.schedule || {}) } });
-      if (data.profile && typeof data.profile === 'object') {
+      if (!isObject(data) || data.app !== 'NetAI' || !isObject(data.logsByDate)) throw new Error('formato');
+      setLogsByDate((prev) => ({ ...prev, ...sanitizeLogs(data.logsByDate) }));
+      if (Array.isArray(data.weightLog)) setWeightLog(sanitizeWeights(data.weightLog));
+      if (isObject(data.prefs)) setPrefs({ ...emptyPrefs(), ...data.prefs, favorites: Array.isArray(data.prefs.favorites) ? data.prefs.favorites.filter((f) => isObject(f) && typeof f.name === 'string') : [], schedule: { ...DEFAULT_SCHEDULE, ...(isObject(data.prefs.schedule) ? data.prefs.schedule : {}) } });
+      if (isObject(data.profile)) {
         const restored = { ...emptyProfile(), ...data.profile };
         saveProfile(restored);
         setProfile(restored);
@@ -693,7 +695,7 @@ export default function PwaAppPage() {
               role="switch"
               aria-checked={intuitiveMode}
               onClick={() => setIntuitiveMode(!intuitiveMode)}
-              className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-bold text-loza-800 hover:bg-loza-100 transition-colors"
+              className="flex items-center gap-2 pl-3 pr-1.5 min-h-[44px] rounded-full text-sm font-bold text-loza-800 hover:bg-loza-100 transition-colors"
             >
               <span>Modo Intuitivo</span>
               <span
@@ -711,20 +713,20 @@ export default function PwaAppPage() {
               onClick={() => { setToast(null); setSettingsOpen(true); }}
               aria-label="Ajustes"
               title="Ajustes"
-              className="p-2.5 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
+              className="p-3 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
             >
               <Settings2 className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Selector de día */}
-        <div className="max-w-3xl mx-auto px-2 sm:px-4 pb-2 flex items-center justify-between">
+        {/* Selector de día: solo en las pestañas que dependen de la fecha */}
+        {(activeTab === 'today' || activeTab === 'week') && <div className="max-w-3xl mx-auto px-1 sm:px-3 pb-1 flex items-center justify-between">
           <button
             type="button"
             onClick={() => handleDayOffset(-1)}
             aria-label="Día anterior"
-            className="p-2 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
+            className="p-3 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -737,11 +739,11 @@ export default function PwaAppPage() {
             onClick={() => handleDayOffset(1)}
             aria-label="Día siguiente"
             disabled={isToday}
-            className="p-2 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            className="p-3 rounded-full text-loza-600 hover:text-loza-900 hover:bg-loza-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
-        </div>
+        </div>}
       </header>
 
       <main className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-6 flex-1">
@@ -812,7 +814,7 @@ export default function PwaAppPage() {
                   ? `Según tu peso y tu entrenamiento, unos ${waterTarget} vasos de 250 ml. Los días que entrenás, sumá agua durante la sesión.`
                   : 'Las guías alimentarias argentinas sugieren unos 2 litros al día.'} Tocá un vaso para marcarlo.
               </p>
-              <div className="mt-4 grid grid-cols-8 gap-1.5 sm:gap-3 max-w-md">
+              <div className="mt-4 grid grid-cols-8 gap-0 sm:gap-3 max-w-md">
                 {Array.from({ length: waterTarget }, (_, i) => i).map((index) => {
                   const filled = water > index;
                   return (
@@ -864,7 +866,7 @@ export default function PwaAppPage() {
                         <button
                           type="button"
                           onClick={() => openNewMeal(cat.id)}
-                          className="shrink-0 inline-flex items-center gap-1.5 pl-2.5 pr-3.5 py-2 rounded-full text-sm font-bold text-hoja-700 hover:bg-hoja-50 border border-hoja-200 transition-colors"
+                          className="shrink-0 inline-flex items-center gap-1.5 pl-2.5 pr-3.5 min-h-[44px] rounded-full text-sm font-bold text-hoja-700 hover:bg-hoja-50 border border-hoja-200 transition-colors"
                         >
                           <Plus className="w-4 h-4" />
                           Registrar
@@ -875,11 +877,11 @@ export default function PwaAppPage() {
                         <ul className="mt-3 space-y-2.5">
                           {items.map((meal) => (
                             <li key={meal.id} className="rounded-2xl bg-papel border border-loza-200 p-4">
-                              <div className="flex items-start justify-between gap-3">
-                                <p className="font-bold text-[15px] text-loza-900 leading-snug min-w-0">{meal.name}</p>
-                                <div className="flex items-center gap-1 shrink-0 -mr-1.5 -mt-1">
+                              <div>
+                                <p className="font-bold text-[15px] text-loza-900 leading-snug">{meal.name}</p>
+                                <div className="flex items-center justify-end -mr-2.5 -mb-1">
                                   {showNumbers && (
-                                    <span className="text-sm text-loza-600 tabular whitespace-nowrap px-1">{meal.energy != null ? `${meal.energy} kcal` : 'sin estimar'}</span>
+                                    <span className="mr-auto text-sm text-loza-600 tabular whitespace-nowrap">{meal.energy != null ? `${meal.energy} kcal` : 'sin estimar'}</span>
                                   )}
                                   <button
                                     type="button"
@@ -887,7 +889,7 @@ export default function PwaAppPage() {
                                     aria-pressed={isFavorite(meal.name)}
                                     aria-label={isFavorite(meal.name) ? `Quitar ${meal.name} de favoritas` : `Guardar ${meal.name} en favoritas`}
                                     title="Favorita"
-                                    className={`p-1.5 rounded-lg hover:bg-trigo-50 transition-colors ${isFavorite(meal.name) ? 'text-trigo-600' : 'text-loza-500 hover:text-trigo-700'}`}
+                                    className={`w-11 h-11 grid place-items-center rounded-xl hover:bg-trigo-50 transition-colors ${isFavorite(meal.name) ? 'text-trigo-600' : 'text-loza-500 hover:text-trigo-700'}`}
                                   >
                                     <Star className="w-4 h-4" fill={isFavorite(meal.name) ? 'currentColor' : 'none'} />
                                   </button>
@@ -896,7 +898,7 @@ export default function PwaAppPage() {
                                     onClick={() => openEditMeal(cat.id, meal)}
                                     aria-label={`Editar ${meal.name}`}
                                     title="Editar registro"
-                                    className="p-1.5 rounded-lg text-loza-500 hover:text-loza-800 hover:bg-loza-100 transition-colors"
+                                    className="w-11 h-11 grid place-items-center rounded-xl text-loza-500 hover:text-loza-800 hover:bg-loza-100 transition-colors"
                                   >
                                     <Pencil className="w-4 h-4" />
                                   </button>
@@ -905,7 +907,7 @@ export default function PwaAppPage() {
                                     onClick={() => handleDeleteMeal(cat.id, meal.id)}
                                     aria-label={`Eliminar ${meal.name}`}
                                     title="Eliminar registro"
-                                    className="p-1.5 rounded-lg text-loza-500 hover:text-remolacha-700 hover:bg-remolacha-50 transition-colors"
+                                    className="w-11 h-11 grid place-items-center rounded-xl text-loza-500 hover:text-remolacha-700 hover:bg-remolacha-50 transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -1479,7 +1481,7 @@ export default function PwaAppPage() {
                 id="meal-name"
                 type="text"
                 required
-                placeholder="Por ejemplo: ensalada de garbanzos con vegetales asados"
+                placeholder="Por ejemplo: guiso de lentejas"
                 value={newMealForm.name}
                 onChange={(e) => setNewMealForm({ ...newMealForm, name: e.target.value })}
                 className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
@@ -1557,7 +1559,7 @@ export default function PwaAppPage() {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <div className="sticky bottom-0 -mx-5 sm:-mx-7 px-5 sm:px-7 py-3 bg-loza-50 border-t border-loza-200 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={closeMealSheet}
@@ -1796,7 +1798,7 @@ function ScalePicker({ id, label, value, onChange }) {
               aria-checked={on}
               aria-label={`${l.level}, ${l.label}`}
               onClick={() => onChange(l.level)}
-              className={`h-10 rounded-xl text-sm font-bold tabular transition-colors ${
+              className={`h-11 rounded-xl text-sm font-bold tabular transition-colors ${
                 on ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-700 hover:bg-loza-200'
               }`}
             >
@@ -1812,26 +1814,64 @@ function ScalePicker({ id, label, value, onChange }) {
   );
 }
 
+// Cuántas hojas hay abiertas: sirve para que el botón Atrás del teléfono cierre la hoja en lugar de salir de la app
+let openSheets = 0;
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 function Sheet({ children, onClose, labelledBy }) {
+  const panel = useRef(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const el = panel.current;
+    const opener = document.activeElement;
+    el.focus({ preventScroll: true });
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') { close.current(); return; }
+      if (e.key !== 'Tab') return;
+      // El foco del teclado no sale de la hoja mientras está abierta
+      const items = [...el.querySelectorAll(FOCUSABLE)].filter((n) => n.getClientRects().length > 0);
+      if (!items.length) { e.preventDefault(); return; }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (!el.contains(active) || active === el) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+    };
     document.addEventListener('keydown', onKey);
+
+    let closedByBack = false;
+    openSheets += 1;
+    if (!window.history.state?.netaiSheet) window.history.pushState({ ...(window.history.state || {}), netaiSheet: true }, '');
+    const onPop = () => { closedByBack = true; close.current(); };
+    window.addEventListener('popstate', onPop);
+
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('popstate', onPop);
       document.body.style.overflow = prev;
+      openSheets -= 1;
+      // Si se cerró con un botón (y no se abrió otra hoja enseguida), se quita la entrada que se sumó al historial
+      queueMicrotask(() => { if (!closedByBack && openSheets === 0 && window.history.state?.netaiSheet) window.history.back(); });
+      if (opener && document.contains(opener)) opener.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-hidden="true" />
       <div
+        ref={panel}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-loza-50 rounded-t-[28px] sm:rounded-[28px] shadow-sheet px-5 pt-5 pb-8 sm:p-7 animate-slide-up safe-bottom"
+        className="relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto bg-loza-50 rounded-t-[28px] sm:rounded-[28px] shadow-sheet px-5 pt-5 pb-8 sm:p-7 animate-slide-up safe-bottom focus:outline-none"
       >
         <span aria-hidden="true" className="sm:hidden block mx-auto -mt-1 mb-4 w-10 h-1 rounded-full bg-loza-300" />
         {children}

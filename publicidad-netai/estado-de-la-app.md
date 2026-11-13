@@ -1,6 +1,28 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.5.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.5.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.5.1: revisión de diseño y de fallas
+
+Revisión pantalla por pantalla, con capturas y pruebas en navegador.
+
+**Fallas corregidas**
+- El botón Atrás del teléfono, con una hoja abierta (registrar, ajustes, receta), sacaba de la app. Ahora cierra la hoja.
+- El foco del teclado y de los lectores de pantalla quedaba detrás de la hoja abierta. Ahora entra en la hoja, no sale mientras está abierta y vuelve al botón que la abrió.
+- Un dato dañado en el teléfono, o una copia de seguridad con otro formato, podía impedir que la app cargara. Ahora cada dato se lee por separado y se limpia.
+- En teléfonos con barra de navegador, la hoja podía quedar más alta que la pantalla visible.
+
+**Diseño**
+- Tarjeta de comida: el nombre usa todo el ancho (antes se partía en cuatro renglones al lado de los íconos) y las acciones van en su propia fila.
+- Botones de favorita, editar, eliminar, día anterior y siguiente, ajustes, "Registrar" y la escala de hambre: ahora miden 44 px, el mínimo cómodo para el dedo (antes, 28 a 38 px).
+- Al registrar una comida, "Cancelar" y "Guardar" quedan siempre visibles abajo, sin tener que bajar hasta el final.
+- El selector de día ya no aparece en Inspiración ni en Aprender, donde no hacía nada.
+
+**Pendiente de diseño (no se tocó)**
+- Recetas sin fotos.
+- En escritorio la app es una columna angosta: funciona, pero no aprovecha la pantalla.
+- En la pestaña Mes, los encabezados de la tabla se parten en dos renglones en teléfonos angostos.
+- Con el Modo Sport y 14 vasos de agua, los vasos ocupan dos filas.
 
 ## Versión 1.5.0: preparación del lanzamiento
 
@@ -26,7 +48,7 @@ Revisión del 12 de noviembre de 2026 (versión 1.5.0). Vista previa: https://cl
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (16 pruebas de los cálculos y del acceso) y `npm run test:e2e` (90 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (104 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
