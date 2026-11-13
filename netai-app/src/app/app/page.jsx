@@ -57,7 +57,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -1128,7 +1128,7 @@ export default function PwaAppPage() {
 
             <section aria-labelledby="titulo-ideas">
               <h2 id="titulo-ideas" className="font-display text-xl font-bold text-loza-900">Ideas para hoy</h2>
-              <p className="text-sm text-loza-600 mt-1 max-w-prose">La IA te propone tres comidas según el momento del día y lo que comés. Se envían tus preferencias de alimentación a Google Gemini, sin tu nombre.</p>
+              <p className="text-sm text-loza-600 mt-1 max-w-prose">La IA te propone tres comidas según el momento del día y lo que comés. Se envían tus preferencias de alimentación a Claude, de Anthropic, sin tu nombre.</p>
               <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Momento del día para las ideas">
                 {MEAL_CATEGORIES.map((c) => (
                   <button key={c.id} type="button" aria-pressed={ideas.moment === c.id} onClick={() => setIdeas((prev) => ({ ...prev, moment: c.id, status: prev.status === 'done' ? 'idle' : prev.status, list: [] }))} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${ideas.moment === c.id ? 'bg-loza-900 text-loza-50' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}>
@@ -2077,7 +2077,7 @@ function PhotoPanel({ photo, showNumbers, onStart, onAccept, onDecline }) {
       <div className="mt-4 rounded-2xl bg-agua-50 p-4 text-agua-900">
         <p className="font-bold">Antes de tu primera foto</p>
         <p className="text-sm mt-1 leading-relaxed">
-          Para reconocer el plato, la foto se envía a Google Gemini, un servicio de inteligencia artificial. No la guardamos y solo se usa para este análisis. El resultado es una estimación que podés corregir.
+          Para reconocer el plato, la foto se envía a Claude, un servicio de inteligencia artificial de Anthropic. No la guardamos y solo se usa para este análisis. El resultado es una estimación que podés corregir.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={onAccept} className="px-4 py-2.5 rounded-full bg-agua-600 text-white text-sm font-bold">Aceptar y sacar foto</button>

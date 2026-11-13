@@ -1,6 +1,15 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.6.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.7.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.7.0: el escaneo de fotos pasa a Claude
+
+- La foto del plato y las "Ideas para hoy" ahora usan Claude, de Anthropic (modelo `claude-haiku-5-5`, el más económico). Se quitó el código de Google Gemini.
+- La variable del servidor es `ANTHROPIC_API_KEY` (antes `GEMINI_API_KEY`). Pasos en `conectar-ia.md`.
+- Se actualizaron el aviso de permiso de la foto, la política de privacidad y los textos para las tiendas, que nombran a quién se envía la foto.
+- Probado con un servidor que imita a Claude; falta la primera prueba con una clave real.
+
+Las notas de versiones anteriores que mencionan Gemini describen cómo era la app en ese momento.
 
 ## Versión 1.6.0: velocidad, seguridad, uso simultáneo y escritorio
 
@@ -135,7 +144,7 @@ Probado en el navegador en modo producción: 19 comprobaciones de estas funcione
 ### Solo vos podés hacerlo
 1. **Datos legales:** responsable, correo de contacto, ciudad y país, en `netai-app/src/components/legal/LegalPage.jsx`. Hoy las páginas de privacidad y términos los muestran como pendientes. Conviene que un abogado revise los textos.
 2. **Publicar en Vercel** y cargar las variables (pasos en `lanzamiento.md`).
-3. **Clave de Gemini** de pago con tope de gasto. La conexión se probó con un servidor que imita a Gemini; falta la primera prueba con la clave real.
+3. **Clave de Anthropic** con saldo y límite de gasto. La conexión se probó con un servidor que imita a Claude; falta la primera prueba con la clave real.
 4. **Activar FormSubmit:** la primera solicitud dispara un correo de activación que hay que confirmar.
 5. **Revisión profesional:** que un nutricionista matriculado revise los valores del Modo Sport y los artículos de Aprender.
 6. **Dominio** y, más adelante, cuentas de desarrollador de Google Play y App Store.
@@ -146,6 +155,6 @@ Probado en el navegador en modo producción: 19 comprobaciones de estas funcione
 
 ### Límites conocidos
 - **Recordatorios:** suenan mientras la app está abierta o en segundo plano reciente. Para que lleguen con la app cerrada hacen falta notificaciones desde un servidor (o la app empaquetada para las tiendas).
-- **Límite de pedidos a la IA y bloqueo por intentos fallidos:** se cuentan en la memoria de cada servidor. En Vercel frenan abusos simples; el tope real de gasto se pone en Google Cloud.
+- **Límite de pedidos a la IA y bloqueo por intentos fallidos:** se cuentan en la memoria de cada servidor. En Vercel frenan abusos simples; el tope real de gasto se pone en la consola de Anthropic.
 - **Recetas sin fotos.**
 - **NetAI Fit:** solo existe en la web como "en desarrollo".

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { geminiGuard, geminiJson, clamp, fail, tooLarge } from '@/lib/gemini';
+import { z } from 'zod';
+import { aiGuard, aiJson, clamp, fail, tooLarge } from '@/lib/ia';
 
-// Sugerencias de comidas con Google Gemini, según el momento del día y las preferencias de la persona.
+// Sugerencias de comidas con Claude (Anthropic), según el momento del día y las preferencias de la persona.
 // No se envía el nombre ni el peso: solo alimentación, alergias, modo y, en Sport, cuánto falta del plan.
 
 export const runtime = 'nodejs';
@@ -9,31 +10,20 @@ export const runtime = 'nodejs';
 const MOMENTS = ['desayuno', 'almuerzo', 'merienda', 'cena', 'colacion'];
 const text = (v, max) => String(v || '').replace(/[\r\n]+/g, ' ').slice(0, max);
 
-const SCHEMA = {
-  type: 'OBJECT',
-  properties: {
-    sugerencias: {
-      type: 'ARRAY',
-      items: {
-        type: 'OBJECT',
-        properties: {
-          nombre: { type: 'STRING' },
-          descripcion: { type: 'STRING' },
-          kcal: { type: 'NUMBER' },
-          proteinas_g: { type: 'NUMBER' },
-          carbohidratos_g: { type: 'NUMBER' },
-          grasas_g: { type: 'NUMBER' },
-        },
-        required: ['nombre', 'descripcion', 'kcal', 'proteinas_g', 'carbohidratos_g', 'grasas_g'],
-      },
-    },
-  },
-  required: ['sugerencias'],
-};
+const SCHEMA = z.object({
+  sugerencias: z.array(z.object({
+    nombre: z.string(),
+    descripcion: z.string(),
+    kcal: z.number(),
+    proteinas_g: z.number(),
+    carbohidratos_g: z.number(),
+    grasas_g: z.number(),
+  })),
+});
 
 export async function POST(request) {
   if (tooLarge(request, 20_000)) return fail('El pedido es demasiado grande.', 413);
-  const guard = await geminiGuard(request, 'Las sugerencias con IA');
+  const guard = await aiGuard(request, 'Las sugerencias con IA');
   if (guard.error) return guard.error;
 
   const body = await request.json().catch(() => ({}));
@@ -58,7 +48,7 @@ export async function POST(request) {
 
   let parsed;
   try {
-    parsed = await geminiJson({ apiKey: guard.apiKey, parts: [{ text: prompt }], schema: SCHEMA, maxOutputTokens: 900, temperature: 0.8 });
+    parsed = await aiJson({ content: [{ type: 'text', text: prompt }], schema: SCHEMA });
   } catch (e) {
     return fail('No pudimos traer sugerencias en este momento. Probá de nuevo.', 502);
   }

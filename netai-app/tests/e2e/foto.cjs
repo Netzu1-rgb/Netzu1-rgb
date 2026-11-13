@@ -15,7 +15,7 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(300);
   await p.getByRole('button', { name: 'Registrar' }).nth(1).click(); await p.waitForTimeout(200);
   await p.click('button:has-text("Sacar foto del plato")');
-  ok(await p.isVisible('text=la foto se envía a Google Gemini'), 'primera vez: pide permiso y explica a dónde va la foto');
+  ok(await p.isVisible('text=la foto se envía a Claude'), 'primera vez: pide permiso y explica a dónde va la foto');
   const [chooser] = await Promise.all([p.waitForEvent('filechooser'), p.click('button:has-text("Aceptar y sacar foto")')]);
   await chooser.setFiles(FIX + '/plato.jpg');
   await p.waitForSelector('text=Milanesa con puré y ensalada', { timeout: 15000 });

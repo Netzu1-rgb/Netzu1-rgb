@@ -49,8 +49,8 @@ Base para "Seguridad de los datos" (Google Play) y "Etiquetas de privacidad" (Ap
 |---|---|---|
 | Perfil (nombre, edad, sexo, altura, peso, actividad, alimentación) | En el teléfono | No |
 | Registros de comidas, agua, hambre, saciedad y peso | En el teléfono | No |
-| Foto del plato | No se guarda | Se envía a Google (Gemini) para analizarla, con permiso previo |
-| Pedido de sugerencias (momento del día, alimentación, alergias) | No se guarda | Se envía a Google (Gemini), sin el nombre |
+| Foto del plato | No se guarda | Se envía a Anthropic (Claude) para analizarla, con permiso previo |
+| Pedido de sugerencias (momento del día, alimentación, alergias) | No se guarda | Se envía a Anthropic (Claude), sin el nombre |
 | Solicitud de acceso (nombre, correo, WhatsApp opcional) | Llega por correo al responsable | Pasa por FormSubmit |
 
 La app no tiene publicidad ni rastreadores.

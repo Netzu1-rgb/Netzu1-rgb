@@ -10,7 +10,7 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/auth';
-import { sameOrigin, tooLarge } from '@/lib/gemini';
+import { sameOrigin, tooLarge } from '@/lib/ia';
 
 export async function POST(request) {
   try {

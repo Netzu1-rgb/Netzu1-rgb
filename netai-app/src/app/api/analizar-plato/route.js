@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { geminiGuard, geminiJson, clamp, fail, tooLarge } from '@/lib/gemini';
+import { z } from 'zod';
+import { aiGuard, aiJson, clamp, fail, tooLarge } from '@/lib/ia';
 
-// Análisis de platos por foto con Google Gemini. La foto se procesa y no se guarda.
+// Análisis de platos por foto con Claude (Anthropic). La foto se procesa y no se guarda.
 
 export const runtime = 'nodejs';
 
@@ -15,37 +16,25 @@ const PROMPT = `Sos un asistente de nutrición de la app NetAI (Argentina). Anal
 - Usá nombres de comidas como se dicen en Argentina.
 - No hagas juicios ("bueno", "malo", "demasiado") ni consejos para bajar de peso.
 - Si la foto no muestra comida, respondé esComida = false y dejá los números en 0.
-- Si no estás seguro de la porción o de algún ingrediente, usá confianza "baja" y explicalo en "nota" en una frase.`;
+- Si no estás seguro de la porción o de algún ingrediente, usá confianza "baja" y explicalo en "nota" en una frase. Si no hay nada que aclarar, dejá "nota" vacía.`;
 
-const SCHEMA = {
-  type: 'OBJECT',
-  properties: {
-    esComida: { type: 'BOOLEAN' },
-    nombre: { type: 'STRING' },
-    porcion: { type: 'STRING' },
-    alimentos: { type: 'ARRAY', items: { type: 'STRING' } },
-    kcal: { type: 'NUMBER' },
-    proteinas_g: { type: 'NUMBER' },
-    carbohidratos_g: { type: 'NUMBER' },
-    grasas_g: { type: 'NUMBER' },
-    plato: {
-      type: 'OBJECT',
-      properties: {
-        vegetales: { type: 'NUMBER' },
-        proteinas: { type: 'NUMBER' },
-        cereales: { type: 'NUMBER' },
-      },
-      required: ['vegetales', 'proteinas', 'cereales'],
-    },
-    confianza: { type: 'STRING', enum: ['alta', 'media', 'baja'] },
-    nota: { type: 'STRING' },
-  },
-  required: ['esComida', 'nombre', 'porcion', 'alimentos', 'kcal', 'proteinas_g', 'carbohidratos_g', 'grasas_g', 'plato', 'confianza'],
-};
+const SCHEMA = z.object({
+  esComida: z.boolean(),
+  nombre: z.string(),
+  porcion: z.string(),
+  alimentos: z.array(z.string()),
+  kcal: z.number(),
+  proteinas_g: z.number(),
+  carbohidratos_g: z.number(),
+  grasas_g: z.number(),
+  plato: z.object({ vegetales: z.number(), proteinas: z.number(), cereales: z.number() }),
+  confianza: z.enum(['alta', 'media', 'baja']),
+  nota: z.string(),
+});
 
 export async function POST(request) {
   if (tooLarge(request, 6_000_000)) return fail('La foto es demasiado grande. Probá con otra.', 413);
-  const guard = await geminiGuard(request, 'El análisis por foto');
+  const guard = await aiGuard(request, 'El análisis por foto');
   if (guard.error) return guard.error;
 
   const body = await request.json().catch(() => null);
@@ -56,7 +45,10 @@ export async function POST(request) {
 
   let parsed;
   try {
-    parsed = await geminiJson({ apiKey: guard.apiKey, parts: [{ inlineData: { mimeType, data: image } }, { text: PROMPT }], schema: SCHEMA });
+    parsed = await aiJson({
+      content: [{ type: 'image', source: { type: 'base64', media_type: mimeType, data: image } }, { type: 'text', text: PROMPT }],
+      schema: SCHEMA,
+    });
   } catch (e) {
     return fail('No pudimos analizar la foto en este momento. Probá de nuevo o registrá a mano.', 502);
   }

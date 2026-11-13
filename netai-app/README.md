@@ -13,7 +13,7 @@ Tiene dos modos:
 |---|---|
 | Recorrido inicial | Datos personales y físicos, modo, actividad u objetivos deportivos, alimentación y forma de ver la app |
 | Mi día | Registro de comidas con horarios propios, agua, hambre y saciedad, favoritas y frecuentes, editar y deshacer |
-| Foto del plato | La cámara envía la foto a Google Gemini y vuelve con kcal, proteínas, carbohidratos y grasas para revisar antes de guardar |
+| Foto del plato | La cámara envía la foto a Claude (Anthropic) y vuelve con kcal, proteínas, carbohidratos y grasas para revisar antes de guardar |
 | Semana y Mes | Días registrados, agua, hambre y saciedad; comparación de los últimos 30 días con los anteriores e informe descargable; en Sport, peso y ritmo |
 | Inspiración | Método del Plato, "Ideas para hoy" (sugerencias con IA) y recetas filtradas por alimentación |
 | Aprender | Artículos breves de alimentación consciente |
@@ -41,9 +41,9 @@ Están explicadas en `.env.example`. En Vercel se cargan en *Project Settings �
 |---|---|---|
 | `APP_ACCESS_CODES` | Códigos de acceso separados por coma. Un código por persona o grupo; quitar uno cierra sus sesiones | Sí, en producción |
 | `SESSION_SECRET` | Clave que firma las sesiones, de 32 caracteres o más (`openssl rand -base64 32`) | Sí, en producción |
-| `GEMINI_API_KEY` | Foto del plato y sugerencias de comidas. Sin la clave, la app pide registrar a mano | No |
-| `GEMINI_MODEL` | Modelos de Gemini en orden de preferencia, separados por coma. Por defecto `gemini-2.5-flash-lite` (el más barato) y, si Google lo retira, `gemini-2.5-flash` | No |
-| `PHOTO_ANALYSIS_PER_HOUR` | Máximo de pedidos a la IA por hora y por conexión (por defecto 30) | No |
+| `ANTHROPIC_API_KEY` | Foto del plato y sugerencias de comidas. Sin la clave, la app pide registrar a mano | No |
+| `CLAUDE_MODEL` | Modelo de Claude. Por defecto `claude-haiku-5-5`, el más económico | No |
+| `PHOTO_ANALYSIS_PER_HOUR` | Máximo de pedidos a la IA por hora y por sesión (por defecto 30) | No |
 | `NEXT_PUBLIC_SITE_URL` | Dirección pública, para la vista previa al compartir | Recomendada |
 | `NEXT_PUBLIC_REQUEST_ENDPOINT` | Adónde llegan las solicitudes de acceso (FormSubmit). Sin ella, el formulario no se muestra | No |
 
@@ -57,7 +57,7 @@ npm run test:e2e    # compila la app y la recorre en un navegador (unos minutos)
 npm run test:e2e -- foto   # solo los archivos cuyo nombre contiene "foto"
 ```
 
-Las pruebas de navegador usan Playwright y un Gemini simulado, así que no gastan cuota ni necesitan clave. La primera vez hay que instalar el navegador con `npx playwright install chromium`. Incluyen una revisión de accesibilidad (axe) en tema claro y oscuro, una de seguridad y una de carga con 150 personas a la vez (`USERS=300 npm run test:e2e -- carga` para cambiar la cantidad). GitHub las corre en cada cambio (`.github/workflows/netai-app.yml`).
+Las pruebas de navegador usan Playwright y un Claude simulado, así que no gastan cuota ni necesitan clave. La primera vez hay que instalar el navegador con `npx playwright install chromium`. Incluyen una revisión de accesibilidad (axe) en tema claro y oscuro, una de seguridad y una de carga con 150 personas a la vez (`USERS=300 npm run test:e2e -- carga` para cambiar la cantidad). GitHub las corre en cada cambio (`.github/workflows/netai-app.yml`).
 
 ## Publicar
 
@@ -72,7 +72,7 @@ Paso a paso en [`../publicidad-netai/lanzamiento.md`](../publicidad-netai/lanzam
 | `src/components/onboarding/Onboarding.jsx` | Recorrido inicial |
 | `src/lib/profile.js`, `src/lib/ethicalNutrition.js` | Cálculos de energía, plan del Modo Sport y límites de seguridad |
 | `src/lib/auth.js`, `src/proxy.js`, `src/app/api/auth/` | Códigos de acceso, sesiones y protección de `/app` |
-| `src/lib/gemini.js`, `src/app/api/analizar-plato/`, `src/app/api/sugerir-comidas/` | Conexión con Gemini |
+| `src/lib/ia.js`, `src/app/api/analizar-plato/`, `src/app/api/sugerir-comidas/` | Conexión con Claude (Anthropic) |
 | `src/app/privacidad/`, `src/app/terminos/`, `src/components/legal/LegalPage.jsx` | Textos legales (faltan los datos del responsable) |
 | `public/sw.js`, `public/manifest.webmanifest`, `public/icons/` | Instalación y uso sin conexión |
 | `tailwind.config.js`, `src/app/globals.css` | Colores (claro y oscuro) y tipografías |
@@ -81,7 +81,7 @@ Paso a paso en [`../publicidad-netai/lanzamiento.md`](../publicidad-netai/lanzam
 ## Datos y privacidad
 
 - Los registros, el perfil y las preferencias se guardan en el teléfono (`localStorage`). No hay cuentas ni base de datos.
-- La foto del plato se reduce en el teléfono, pasa por el servidor hacia Google Gemini y no se guarda. La app pide permiso la primera vez.
+- La foto del plato se reduce en el teléfono, pasa por el servidor hacia Claude (Anthropic) y no se guarda. La app pide permiso la primera vez.
 - El pedido de sugerencias envía el momento del día, el tipo de alimentación y las alergias, sin el nombre.
 - Los valores que devuelve la IA son estimaciones: la persona los revisa antes de guardar.
 

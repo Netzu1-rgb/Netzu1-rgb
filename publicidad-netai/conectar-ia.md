@@ -1,16 +1,25 @@
-# Plan para conectar NetAI a Google Gemini Flash
+# Conectar NetAI a una IA para escanear la foto
 
-> **Actualización (versión 1.4.0): ya está implementado.** La ruta `netai-app/src/app/api/analizar-plato/route.js` llama a Gemini (modelo `gemini-2.5-flash`, configurable con `GEMINI_MODEL`) con la foto reducida en el teléfono y pide una respuesta en JSON con nombre, porción, kcal, proteínas, carbohidratos, grasas y proporciones del plato. Solo responde a quien entró a la app, tiene un límite de fotos por hora y no guarda la foto. Para activarlo falta cargar `GEMINI_API_KEY` en Vercel. Lo que sigue (cuentas, cuotas por plan y cobros) continúa pendiente.
+> **Estado (versión 1.7.0): la app usa Claude, de Anthropic.** El código que conectaba con Google Gemini se quitó. Lo que sigue más abajo, desde "Hallazgo original", es el plan anterior y se conserva solo como referencia: las partes sobre Gemini y sobre la simulación ya no aplican. Siguen pendientes las cuentas, las cuotas por plan y los cobros.
 
-Documento de planificación. No incluye código de la app.
+## Cómo quedó
 
-> **Estado de la información.** No pude abrir la documentación oficial de Google desde la sesión donde escribí esto (`ai.google.dev` no estaba permitido en la red). Lo que sigue sale de mi conocimiento general. Todo lo que figura en "Por confirmar" hay que comprobarlo en la documentación oficial antes de construir.
+- **Modelo:** `claude-haiku-5-5`, el más económico de Claude que lee imágenes. Se puede cambiar con la variable `CLAUDE_MODEL`.
+- **Precio:** US$0,10 por millón de tokens de entrada y US$0,50 de salida. Una foto ronda los US$0,0003 (unas 3.000 fotos por dólar); es una estimación, el número exacto se ve en la consola de Anthropic después de las primeras fotos.
+- **Dónde está:** `netai-app/src/lib/ia.js` (conexión), `src/app/api/analizar-plato/` (foto) y `src/app/api/sugerir-comidas/` ("Ideas para hoy"). Usa el SDK oficial `@anthropic-ai/sdk` y pide la respuesta con un esquema fijo, así siempre llegan los mismos campos.
+- **Ajustes de costo:** esfuerzo de razonamiento bajo y la foto reducida a 1.024 px en el teléfono antes de enviarla.
+- **Límites:** 30 pedidos por hora por sesión y un tope por conexión (`PHOTO_ANALYSIS_PER_HOUR`). El tope real de gasto se pone en la consola de Anthropic.
+- **Privacidad:** la app pide permiso antes de la primera foto, la foto no se guarda y las sugerencias no llevan el nombre.
 
-> **Actualización (versión 1.5.0):** se sumó `api/sugerir-comidas` ("Ideas para hoy"), que usa la misma clave. Lo que sigue es el plan original; las partes sobre la simulación ya no aplican. Sigue pendiente lo de cuentas, cuotas por plan y cobros.
+## Para vincularlo
 
-> **Modelo más barato (12 de noviembre de 2026):** la app usa por defecto `gemini-2.5-flash-lite` para la foto del plato y las sugerencias. Según comparadores de precios (no pude abrir la página oficial de Google desde esta sesión), cuesta cerca de US$0,10 por millón de tokens de entrada y US$0,40 de salida: una foto sale alrededor de US$0,0003, o sea unas 3.000 fotos por dólar. Confirmá el precio en la página oficial de Gemini antes de fijar los planes. Si Google retira ese modelo, la app pasa sola a `gemini-2.5-flash`. Se puede cambiar la lista con `GEMINI_MODEL`.
->
-> **Para vincularlo:** 1) crear la clave en Google AI Studio (aistudio.google.com, "Get API key"); 2) cargarla en Vercel como `GEMINI_API_KEY` (Project Settings, Environment Variables); 3) volver a publicar. La clave nunca va en el código ni en el chat.
+1. Crear una cuenta en console.anthropic.com, cargar saldo y crear una clave en "API keys".
+2. En la misma consola, poner un límite de gasto mensual.
+3. En Vercel (Project Settings, Environment Variables), agregar `ANTHROPIC_API_KEY` con la clave.
+4. Volver a publicar la app (Deployments, Redeploy).
+5. Probar: "Registrar", "Sacar foto del plato".
+
+La clave nunca va en el código ni en el chat. La conexión se probó con un servidor que imita a Claude; falta la primera prueba con una clave real.
 
 ## Hallazgo original: el análisis de fotos era una simulación
 En `src/components/FoodScannerModal.jsx` (proyecto NetAI), la función `analyzeMeal` espera un par de segundos con `setTimeout` y devuelve valores fijos. Con texto busca palabras ("pollo", "pizza") y devuelve calorías prefijadas, y la "confianza" del 95 % o 98 % está escrita a mano. No hay ninguna llamada a una IA.

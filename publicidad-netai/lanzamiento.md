@@ -11,7 +11,7 @@ Lista para publicar NetAI, en orden. Primero la beta cerrada en la web; después
 | Cabeceras de seguridad, páginas de error, `robots` y `sitemap` | `netai-app/next.config.js`, `src/app/` |
 | Página de inicio con planes y formulario para pedir acceso | `netai-app/src/app/page.jsx` |
 | Recorrido inicial, modo Bienestar y Modo Sport | `src/components/onboarding/`, `src/lib/profile.js` |
-| Foto del plato e "Ideas para hoy" con Gemini (falta la clave) | `src/app/api/` |
+| Foto del plato e "Ideas para hoy" con Claude (falta la clave) | `src/app/api/` |
 | Favoritas, horarios, recordatorios, vista de Mes, informe y exportación | `src/app/app/page.jsx` |
 | Tema oscuro, uso sin conexión, íconos, capturas y accesos directos | `public/sw.js`, `public/manifest.webmanifest` |
 | Imagen para compartir en WhatsApp y redes (1200 × 630) | `netai-app/public/og.png` |
@@ -33,7 +33,7 @@ Durante la beta no se cobra y todas las funciones están habilitadas. La app no 
 
 ### Lo que necesito de vos
 - [ ] **Datos legales:** nombre o razón social del responsable, correo de contacto, ciudad y país. Se completan en `netai-app/src/components/legal/LegalPage.jsx`. Conviene que un abogado revise los textos.
-- [ ] **Clave de Gemini** (Google AI Studio), en el nivel de pago y con un tope de gasto en Google Cloud.
+- [ ] **Clave de Anthropic** (console.anthropic.com), con saldo cargado y un límite de gasto mensual. Pasos en `conectar-ia.md`.
 - [ ] **Dominio.** Por ejemplo, un `.com.ar` en NIC Argentina o un `.com` en cualquier registrador.
 
 ### Pasos
@@ -44,11 +44,11 @@ Durante la beta no se cobra y todas las funciones están habilitadas. La app no 
    4. En *Environment Variables* cargar:
       - `APP_ACCESS_CODES`: los códigos, separados por coma. Que sean largos y difíciles de adivinar.
       - `SESSION_SECRET`: generala con `openssl rand -base64 32`.
-      - `GEMINI_API_KEY`: la clave de Gemini.
+      - `ANTHROPIC_API_KEY`: la clave de Anthropic.
       - `NEXT_PUBLIC_SITE_URL`: tu dominio, por ejemplo `https://netai.com.ar`.
       - `NEXT_PUBLIC_REQUEST_ENDPOINT`: la dirección de FormSubmit (ver paso 3).
    5. *Deploy*. Después, en *Settings → Domains*, conectar tu dominio.
-2. **Probar la foto con la clave real:** registrar una comida con "Sacar foto del plato" y pedir "Ideas para hoy". Es la única parte que no se pudo probar contra Google.
+2. **Probar la foto con la clave real:** registrar una comida con "Sacar foto del plato" y pedir "Ideas para hoy". Es la única parte que no se pudo probar contra el servicio real.
 3. **Activar las solicitudes:** enviar una solicitud de prueba desde la web. FormSubmit manda un correo de activación; al confirmarlo te da un código alternativo. Conviene usar ese código en lugar del correo en `netai-web/lib/manifest.js` (`requestEndpoint`) y en `NEXT_PUBLIC_REQUEST_ENDPOINT`, para que la dirección no quede a la vista.
 4. **Publicar la web de presentación** en Hostinger: completar `netai-web/lib/manifest.js` y subir el contenido de la carpeta a `public_html` (el archivo `netai-web-hostinger.zip` de la raíz del repo trae la versión actual lista para subir y descomprimir). En `netai-web/lib/manifest.js` poner la dirección de la app (`apps.netai.url`).
 5. **Probar en teléfonos reales:** abrir el dominio en Android (Chrome) y en iPhone (Safari), instalar la app y usarla un día completo, con tema claro y oscuro.

@@ -11,7 +11,7 @@ Documentación para crear la publicidad de **NetAI** (plataforma de bienestar y 
 - [`../netai-web/`](../netai-web/README.md): la web estática con las dos apps para instalar.
 - [`../netai-app/`](../netai-app/README.md): el código de la app NetAI (Next.js), con el rediseño.
 - [`prompt-claude-code.md`](prompt-claude-code.md): prompt listo para pegar en una sesión nueva de Claude Code con todo este contexto.
-- [`conectar-gemini.md`](conectar-gemini.md): plan para conectar NetAI a Google Gemini Flash (análisis de fotos real, cuotas, privacidad y costos).
+- [`conectar-ia.md`](conectar-ia.md): cómo está conectada la app a Claude (Anthropic) para escanear la foto del plato, y cómo cargar la clave.
 - [`instalar-rea.md`](instalar-rea.md): cómo instalar REA como herramienta de Claude Code y reglas de uso para analizar apps de gimnasio.
 - [`lanzamiento.md`](lanzamiento.md): lista para lanzar NetAI en internet: qué está hecho, qué falta y en qué orden (web primero, tiendas después).
 - [`ficha-tiendas.md`](ficha-tiendas.md): textos para las fichas de Google Play y App Store, y qué declarar sobre los datos.

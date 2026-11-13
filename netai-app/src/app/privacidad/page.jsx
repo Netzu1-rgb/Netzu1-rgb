@@ -65,7 +65,7 @@ export default function PrivacidadPage() {
           </li>
           <li>
             <strong className="text-loza-900">Análisis de platos por foto:</strong> si sacás una foto de tu comida, la foto
-            (reducida) se envía a Google Gemini, un servicio de inteligencia artificial de Google, para reconocer el plato y
+            (reducida) se envía a Claude, un servicio de inteligencia artificial de Anthropic, para reconocer el plato y
             estimar calorías, proteínas, carbohidratos y grasas. Nosotros no guardamos la foto: solo se usa para ese
             análisis. Antes de la primera foto te pedimos permiso; si no lo das, podés seguir registrando a mano.
           </li>

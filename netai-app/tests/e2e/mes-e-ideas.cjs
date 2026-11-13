@@ -30,7 +30,7 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   ok((await p.locator('button:has-text("Sumar")').count()) >= 3, 'muestra tres ideas');
   await p.locator('li:has-text("Guiso de lentejas") button:has-text("Sumar")').click(); await p.waitForTimeout(300);
   ok(await p.isVisible('text=Sumaste la sugerencia a cena.') && (await p.textContent('main')).includes('Guiso de lentejas'), 'suma la idea al momento elegido');
-  const log = fs.readFileSync(process.env.GEMINI_LOG, 'utf8');
+  const log = fs.readFileSync(process.env.AI_LOG, 'utf8');
   ok(log.includes('vegetariana') && log.includes('maní') && log.includes('cena') && !log.includes('Ana'), 'el pedido lleva alimentación y alergias, sin el nombre');
   ok(errs.length === 0, 'sin errores ' + errs.join('|'));
   await b.close();
