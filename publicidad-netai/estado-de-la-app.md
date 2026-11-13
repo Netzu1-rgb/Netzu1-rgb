@@ -1,6 +1,30 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.5.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.6.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.6.0: velocidad, seguridad, uso simultáneo y escritorio
+
+**Velocidad** (medida en un teléfono lento simulado, con un año de registros)
+- La app pesa unos 280 KB al cargar y cada acción responde en menos de 130 ms.
+- Los registros se guardan un instante después del último cambio y siempre al salir: marcar un vaso de agua pasó de 104 a 56 ms.
+- Con mala señal, a los 3 segundos se muestra la copia guardada en lugar de esperar a la red.
+
+**Seguridad**
+- Los pedidos que llegan desde otros sitios se rechazan, aunque lleven la sesión.
+- Fotos o pedidos demasiado grandes se cortan antes de procesarlos.
+- Las respuestas de la API no se guardan en cachés intermedios; se sumaron cabeceras de aislamiento.
+- Prueba nueva con 23 comprobaciones: sesiones inventadas o alteradas, bloqueo por intentos, cabeceras, cookie y abuso de la API.
+- Pendiente conocido: la política de contenido todavía permite scripts en línea, que Next.js necesita para páginas estáticas. Endurecerla obliga a generar cada página en el servidor y la hace más lenta.
+
+**Varias personas a la vez**
+- La app no guarda datos de usuarios en el servidor: cada teléfono tiene los suyos, así que no hay cruces entre personas.
+- El cupo de IA ahora es por sesión (30 por hora) además de un tope por conexión: quienes comparten wifi no se bloquean entre sí.
+- Prueba nueva de carga: 150 personas ingresando, abriendo la app, analizando una foto y pidiendo ideas al mismo tiempo, sin errores. Se hizo en un solo servidor de prueba y con Gemini simulado; en Vercel la capacidad real depende del plan y del cupo de Google.
+
+**Diseño**
+- Escritorio y tablet horizontal: Mi día en dos columnas (resumen y agua a la izquierda, siempre a la vista; comidas a la derecha) y recetas en dos columnas.
+- Modo Sport: los 14 vasos de agua van en dos filas parejas de 7.
+- Mes: los encabezados de la tabla ya no se parten.
 
 ## Versión 1.5.1: revisión de diseño y de fallas
 
@@ -20,9 +44,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Pendiente de diseño (no se tocó)**
 - Recetas sin fotos.
-- En escritorio la app es una columna angosta: funciona, pero no aprovecha la pantalla.
-- En la pestaña Mes, los encabezados de la tabla se parten en dos renglones en teléfonos angostos.
-- Con el Modo Sport y 14 vasos de agua, los vasos ocupan dos filas.
+- Las pestañas Semana y Aprender siguen en una sola columna en escritorio.
 
 ## Versión 1.5.0: preparación del lanzamiento
 
@@ -48,7 +70,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (104 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (131 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

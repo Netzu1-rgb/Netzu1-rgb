@@ -57,7 +57,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.6.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -698,7 +698,7 @@ export default function PwaAppPage() {
       {/* ENCABEZADO */}
       {/* ============================================================== */}
       <header className="sticky top-0 z-30 glass-surface border-x-0 border-t-0 safe-top">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between gap-3">
+        <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <LogoMark className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
@@ -739,7 +739,7 @@ export default function PwaAppPage() {
         </div>
 
         {/* Selector de día: solo en las pestañas que dependen de la fecha */}
-        {(activeTab === 'today' || activeTab === 'week') && <div className="max-w-3xl mx-auto px-1 sm:px-3 pb-1 flex items-center justify-between">
+        {(activeTab === 'today' || activeTab === 'week') && <div className="max-w-3xl lg:max-w-5xl mx-auto px-1 sm:px-3 pb-1 flex items-center justify-between">
           <button
             type="button"
             onClick={() => handleDayOffset(-1)}
@@ -764,14 +764,15 @@ export default function PwaAppPage() {
         </div>}
       </header>
 
-      <main className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-6 flex-1">
+      <main className="max-w-3xl lg:max-w-5xl mx-auto w-full px-4 sm:px-6 pt-6 lg:pt-10 flex-1">
         {/* ------------------------------------------------------------ */}
         {/* MI DÍA */}
         {/* ------------------------------------------------------------ */}
         {activeTab === 'today' && (
-          <div className="space-y-10 animate-fade-in">
+          // En pantallas anchas: resumen del día a la izquierda (queda a la vista) y comidas a la derecha
+          <div className="space-y-10 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-x-14 lg:gap-y-10 lg:items-start animate-fade-in">
             {profile?.skipped && (
-              <section aria-labelledby="titulo-completar" className="rounded-[24px] bg-papel border border-loza-200 p-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <section aria-labelledby="titulo-completar" className="lg:col-span-2 rounded-[24px] bg-papel border border-loza-200 p-5 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <div className="flex-1 min-w-[14rem]">
                   <h2 id="titulo-completar" className="font-display text-lg font-bold text-loza-900">Completá tus datos</h2>
                   <p className="text-sm text-loza-600 mt-0.5">Con tu edad, actividad y lo que comés, NetAI adapta tu rango de energía y tus recetas. Lleva 2 minutos.</p>
@@ -782,6 +783,7 @@ export default function PwaAppPage() {
               </section>
             )}
 
+            <div className="space-y-10 lg:sticky lg:top-32">
             <section aria-labelledby="titulo-dia">
               {profile?.name?.trim() && (
                 <p className="font-display text-2xl font-bold text-loza-900 mb-1.5">Hola, {profile.name.trim()}</p>
@@ -832,7 +834,7 @@ export default function PwaAppPage() {
                   ? `Según tu peso y tu entrenamiento, unos ${waterTarget} vasos de 250 ml. Los días que entrenás, sumá agua durante la sesión.`
                   : 'Las guías alimentarias argentinas sugieren unos 2 litros al día.'} Tocá un vaso para marcarlo.
               </p>
-              <div className="mt-4 grid grid-cols-8 gap-0 sm:gap-3 max-w-md">
+              <div className={`mt-4 grid ${waterTarget > 8 ? 'grid-cols-7' : 'grid-cols-8'} gap-0 gap-y-2 sm:gap-3 max-w-md`}>
                 {Array.from({ length: waterTarget }, (_, i) => i).map((index) => {
                   const filled = water > index;
                   return (
@@ -851,6 +853,7 @@ export default function PwaAppPage() {
                 })}
               </div>
             </section>
+            </div>
 
             {/* Comidas del día: es una secuencia real, de la mañana a la noche */}
             <section aria-labelledby="titulo-comidas">
@@ -979,8 +982,8 @@ export default function PwaAppPage() {
                         <thead>
                           <tr className="text-left text-sm text-loza-500 border-b border-loza-300">
                             <th scope="col" className="py-2 pr-3 font-normal">Hábito</th>
-                            <th scope="col" className="py-2 px-3 font-normal text-right">Últimos 30 días</th>
-                            <th scope="col" className="py-2 pl-3 font-normal text-right">30 anteriores</th>
+                            <th scope="col" className="py-2 px-3 font-normal text-right whitespace-nowrap">Últimos 30 días</th>
+                            <th scope="col" className="py-2 pl-3 font-normal text-right whitespace-nowrap">30 anteriores</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-loza-200">
@@ -1178,9 +1181,9 @@ export default function PwaAppPage() {
                 ))}
               </div>
 
-              <ul className="mt-5 divide-y divide-loza-200 border-y border-loza-200">
+              <ul className="mt-5 border-t border-loza-200 lg:grid lg:grid-cols-2 lg:gap-x-14">
                 {filteredRecipes.map((recipe) => (
-                  <li key={recipe.id} className="py-5 grid sm:grid-cols-[1fr_auto] gap-3 sm:gap-6 sm:items-center">
+                  <li key={recipe.id} className="py-5 border-b border-loza-200 grid sm:grid-cols-[1fr_auto] gap-3 sm:gap-6 sm:items-center">
                     <div className="min-w-0">
                       <p className="text-sm text-loza-500 flex items-center gap-1.5">
                         <span>{recipe.category}</span>

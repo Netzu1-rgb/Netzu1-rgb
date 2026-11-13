@@ -57,7 +57,7 @@ npm run test:e2e    # compila la app y la recorre en un navegador (unos minutos)
 npm run test:e2e -- foto   # solo los archivos cuyo nombre contiene "foto"
 ```
 
-Las pruebas de navegador usan Playwright y un Gemini simulado, así que no gastan cuota ni necesitan clave. La primera vez hay que instalar el navegador con `npx playwright install chromium`. Incluyen una revisión de accesibilidad (axe) en tema claro y oscuro. GitHub las corre en cada cambio (`.github/workflows/netai-app.yml`).
+Las pruebas de navegador usan Playwright y un Gemini simulado, así que no gastan cuota ni necesitan clave. La primera vez hay que instalar el navegador con `npx playwright install chromium`. Incluyen una revisión de accesibilidad (axe) en tema claro y oscuro, una de seguridad y una de carga con 150 personas a la vez (`USERS=300 npm run test:e2e -- carga` para cambiar la cantidad). GitHub las corre en cada cambio (`.github/workflows/netai-app.yml`).
 
 ## Publicar
 
