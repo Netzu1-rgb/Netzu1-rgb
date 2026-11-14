@@ -51,7 +51,7 @@ Para estudiar las apps de gimnasio:
 - **REA solo** sobre webs públicas o software que estés autorizado a examinar, y respetando sus términos de uso.
 - **Nunca** copiar código, textos, imágenes ni la estructura exacta de otra app. El resultado debe ser una lista de funciones y un aprendizaje, no una réplica.
 - Usar tu propia cuenta y no tocar datos de otras personas.
-- Guardar las conclusiones en la plantilla de competidores (`competidores-gym.md`, pendiente de crear).
+- Guardar las conclusiones con la plantilla de `competidores-gym.md`, que también lista qué apps estudiar y con qué método.
 
 ## Pedirle a Claude Code que lo use
 Una vez instalado, por ejemplo:
