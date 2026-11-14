@@ -29,7 +29,7 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   const moment = MOMENTS.includes(body?.moment) ? body.moment : 'almuerzo';
   const diet = Array.isArray(body?.diet) ? body.diet.slice(0, 6).map((d) => text(d, 30)) : [];
-  const allergies = text(body?.allergies, 120);
+  const allergies = text(body?.allergies, 300);
   const sport = body?.sport && typeof body.sport === 'object' ? body.sport : null;
 
   const prompt = [

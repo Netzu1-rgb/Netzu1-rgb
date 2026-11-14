@@ -29,12 +29,41 @@ export const GOALS = [
   { id: 'saber', label: 'Aprender sobre alimentación' },
 ];
 
+// Tipo de alimentación: se elige una sola. "De todo" es no tener ninguna de las otras dos en `diet`.
+export const DIET_TYPES = [
+  { id: '', label: 'De todo' },
+  { id: 'vegetariana', label: 'Vegetariana', hint: 'sin carne ni pescado' },
+  { id: 'vegana', label: 'Vegana', hint: 'nada de origen animal' },
+];
+
+// Alimentos que la persona no come (por salud, gusto o creencias). Se pueden marcar varios.
+// `hiddenFor`: no se ofrece cuando el tipo de alimentación ya lo excluye.
+export const AVOID_OPTIONS = [
+  { id: 'sin-tacc', label: 'Gluten (sin TACC)', field: 'diet' },
+  { id: 'sin-lactosa', label: 'Lactosa', field: 'diet', hiddenFor: ['vegana'] },
+  { id: 'carne roja', label: 'Carne roja', hiddenFor: ['vegetariana', 'vegana'] },
+  { id: 'cerdo', label: 'Cerdo', hiddenFor: ['vegetariana', 'vegana'] },
+  { id: 'pollo', label: 'Pollo', hiddenFor: ['vegetariana', 'vegana'] },
+  { id: 'pescado', label: 'Pescado', hiddenFor: ['vegetariana', 'vegana'] },
+  { id: 'mariscos', label: 'Mariscos', hiddenFor: ['vegetariana', 'vegana'] },
+  { id: 'huevo', label: 'Huevo', hiddenFor: ['vegana'] },
+  { id: 'frutos secos', label: 'Frutos secos' },
+  { id: 'soja', label: 'Soja' },
+];
+
+// Etiquetas para mostrar lo guardado en `diet`
 export const DIET_OPTIONS = [
   { id: 'vegetariana', label: 'Vegetariana' },
   { id: 'vegana', label: 'Vegana' },
-  { id: 'sin-tacc', label: 'Sin TACC (celiaquía)' },
+  { id: 'sin-tacc', label: 'Sin gluten (sin TACC)' },
   { id: 'sin-lactosa', label: 'Sin lactosa' },
 ];
+
+/** Texto con todo lo que la persona no come: lo marcado más lo que escribió */
+export function avoidedFoods(profile) {
+  const marked = Array.isArray(profile?.avoid) ? profile.avoid.filter((x) => typeof x === 'string') : [];
+  return [...marked, String(profile?.allergies || '').trim()].filter(Boolean).join(', ');
+}
 
 export const TCA_OPTIONS = [
   { id: 'no', label: 'No' },
@@ -52,8 +81,9 @@ export function emptyProfile() {
     weightKg: '',
     activity: '',
     goals: [],
-    diet: [],
-    allergies: '',
+    diet: [], // tipo de alimentación y exclusiones que filtran recetas: vegetariana, vegana, sin-tacc, sin-lactosa
+    avoid: [], // otros alimentos que no come
+    allergies: '', // texto libre: otros alimentos o alergias
     tca: '',
     viewMode: 'rangos', // 'rangos' | 'intuitivo'
     mode: 'bienestar', // 'bienestar' | 'sport'

@@ -8,6 +8,9 @@ import {
   ACTIVITY_LEVELS,
   GOALS,
   DIET_OPTIONS,
+  DIET_TYPES,
+  AVOID_OPTIONS,
+  avoidedFoods,
   TCA_OPTIONS,
   emptyProfile,
   energyRangeFor,
@@ -33,7 +36,16 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   const [touched, setTouched] = useState(false);
 
   const set = (patch) => setP((prev) => ({ ...prev, ...patch }));
-  const toggleIn = (key, id) => set({ [key]: p[key].includes(id) ? p[key].filter((x) => x !== id) : [...p[key], id] });
+  const toggleIn = (key, id) => { const list = p[key] || []; set({ [key]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] }); };
+  // Tipo de alimentación: una sola opción. Al elegir vegetariana o vegana se quitan las exclusiones que ya quedan cubiertas.
+  const dietType = p.diet.includes('vegana') ? 'vegana' : p.diet.includes('vegetariana') ? 'vegetariana' : '';
+  const setDietType = (id) => {
+    const covered = AVOID_OPTIONS.filter((o) => (o.hiddenFor || []).includes(id)).map((o) => o.id);
+    set({
+      diet: [...p.diet.filter((x) => x !== 'vegetariana' && x !== 'vegana' && !covered.includes(x)), ...(id ? [id] : [])],
+      avoid: (p.avoid || []).filter((x) => !covered.includes(x)),
+    });
+  };
 
   const minor = p.age !== '' && Number(p.age) < 18;
   const sport = p.mode === 'sport' && !minor;
@@ -229,13 +241,28 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
           )}
 
           {step === 'alimentacion' && (
-            <Step title="Tu alimentación" intro="Para sugerirte recetas que te sirvan.">
-              <div className="flex flex-wrap gap-2">
-                {DIET_OPTIONS.map((d) => (
-                  <Pill key={d.id} selected={p.diet.includes(d.id)} onClick={() => toggleIn('diet', d.id)}>{d.label}</Pill>
-                ))}
-              </div>
-              <Field id="ob-alergias" label="Alergias o alimentos que evitás" hint="Opcional. Por ejemplo: maní, mariscos.">
+            <Step title="Tu alimentación" intro="Contanos qué comés y qué no, para que las recetas y las ideas te sirvan. Podés dejarlo como está.">
+              <fieldset>
+                <legend className="text-sm font-bold text-loza-800">¿Qué comés?</legend>
+                <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="¿Qué comés?">
+                  {DIET_TYPES.map((d) => (
+                    <Pill key={d.id || 'todo'} role="radio" selected={dietType === d.id} onClick={() => setDietType(d.id)}>
+                      {d.label}{d.hint && <span className="font-normal opacity-80"> · {d.hint}</span>}
+                    </Pill>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend className="text-sm font-bold text-loza-800">¿Hay alimentos que no comés?</legend>
+                <p className="mt-0.5 text-sm text-loza-600">Marcá los que no consumís, por salud, gusto o creencias.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {AVOID_OPTIONS.filter((o) => !(o.hiddenFor || []).includes(dietType)).map((o) => {
+                    const key = o.field === 'diet' ? 'diet' : 'avoid';
+                    return <Pill key={o.id} selected={(p[key] || []).includes(o.id)} onClick={() => toggleIn(key, o.id)}>{o.label}</Pill>;
+                  })}
+                </div>
+              </fieldset>
+              <Field id="ob-alergias" label="Otros alimentos que no comés o alergias" hint="Opcional. Por ejemplo: maní, kiwi.">
                 <input id="ob-alergias" type="text" value={p.allergies} onChange={(e) => set({ allergies: e.target.value })} className={inputCls} />
               </Field>
             </Step>
@@ -312,7 +339,8 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
                     <Row label="Objetivos" value={p.goals.length ? GOALS.filter((g) => p.goals.includes(g.id)).map((g) => g.label).join(', ') : 'Sin completar'} />
                   </>
                 )}
-                <Row label="Alimentación" value={[...DIET_OPTIONS.filter((d) => p.diet.includes(d.id)).map((d) => d.label), p.allergies.trim()].filter(Boolean).join(', ') || 'Sin restricciones'} />
+                <Row label="Alimentación" value={DIET_OPTIONS.filter((d) => p.diet.includes(d.id)).map((d) => d.label).join(', ') || 'De todo'} />
+                {avoidedFoods(p) && <Row label="No comés" value={avoidedFoods(p)} />}
                 {!sport && <Row label="Vista" value={hidesNumbers(p) || p.viewMode === 'intuitivo' ? 'Modo Intuitivo' : 'Rango de energía'} />}
               </dl>
               <p className="text-sm text-loza-500">Podés cambiar todo desde Ajustes, en “Tus datos”.</p>

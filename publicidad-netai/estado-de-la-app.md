@@ -1,6 +1,16 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.7.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.7.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.7.1: paso "Tu alimentación" más claro
+
+El paso mostraba cuatro etiquetas (vegetariana, vegana, sin TACC, sin lactosa) como si todas las personas fueran alguna de ellas. Ahora tiene dos preguntas:
+
+- **¿Qué comés?** Una sola opción: "De todo" (la que viene marcada), vegetariana o vegana, cada una con su aclaración.
+- **¿Hay alimentos que no comés?** Varias opciones: gluten, lactosa, carne roja, cerdo, pollo, pescado, mariscos, huevo, frutos secos y soja. Si elegís vegetariana o vegana, no se ofrecen los que ya quedan cubiertos.
+- El campo libre queda para otros alimentos o alergias.
+
+El resumen muestra por separado cómo comés y lo que no comés, y las "Ideas para hoy" reciben la lista completa de lo que no comés.
 
 ## Versión 1.7.0: el escaneo de fotos pasa a Claude
 
@@ -79,7 +89,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (131 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (134 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

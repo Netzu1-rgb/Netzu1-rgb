@@ -23,8 +23,14 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   await p.fill('#ob-peso', '80'); await next(p);
   await p.click('[role=radio]:has-text("Moderado")'); await next(p);
   await p.click('button:has-text("Comer con más calma")'); await p.click('button:has-text("Acompañar mi entrenamiento")'); await next(p);
-  await p.click('button:has-text("Vegetariana")'); await p.fill('#ob-alergias', 'maní'); await next(p);
+  ok((await p.getAttribute('[role=radio]:has-text("De todo")', 'aria-checked')) === 'true' && await p.isVisible('button:has-text("Carne roja")'), 'alimentación: empieza en "De todo" y pregunta qué no comés');
+  await p.click('button:has-text("Cerdo")');
+  await p.click('button:has-text("Vegetariana")'); await p.click('button:has-text("Frutos secos")'); await p.fill('#ob-alergias', 'maní');
+  ok((await p.locator('button:has-text("Carne roja")').count()) === 0 && await p.isVisible('button:has-text("Huevo")'), 'al elegir vegetariana no ofrece las carnes');
+  await next(p);
   await p.click('[role=radio]:has-text("No")'); await next(p);
+  const resumen = await p.textContent('main');
+  ok(resumen.includes('No comés') && resumen.includes('frutos secos, maní') && !resumen.includes('cerdo'), 'el resumen separa cómo comés de lo que no comés');
   const rango = await p.textContent('main p.font-display.tabular');
   ok(rango.includes('2.500 a 2.900'), 'calcula el rango personal: ' + rango);
   await p.click('footer button:has-text("Ir a mi día")'); await p.waitForTimeout(400);

@@ -47,7 +47,7 @@ import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
 import { prepareImage } from '@/lib/photo';
 import { sanitizeLogs, sanitizeWeights, parseJson, isObject } from '@/lib/storage';
-import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
+import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, avoidedFoods, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
 const MEAL_CATEGORIES = [
   { id: 'desayuno', label: 'Desayuno', Icon: Sunrise, hint: 'Empezá el día con energía amable' },
@@ -57,7 +57,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -491,7 +491,7 @@ export default function PwaAppPage() {
       const res = await fetch('/api/sugerir-comidas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ moment, diet: profile?.diet || [], allergies: profile?.allergies || '', sport }),
+        body: JSON.stringify({ moment, diet: profile?.diet || [], allergies: avoidedFoods(profile), sport }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || 'No pudimos traer sugerencias.');
