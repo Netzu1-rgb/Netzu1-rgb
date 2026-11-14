@@ -39,9 +39,13 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   await p.fill('#ob-peso', '80'); await next(p);
   await p.click('[role=radio]:has-text("Moderado")'); await next(p);
   await p.click('button:has-text("Comer con más calma")'); await p.click('button:has-text("Acompañar mi entrenamiento")'); await next(p);
-  ok((await p.getAttribute('[role=radio]:has-text("De todo")', 'aria-checked')) === 'true' && await p.isVisible('button:has-text("Carne roja")'), 'alimentación: empieza en "De todo" y pregunta qué no comés');
+  ok((await p.getAttribute('[role=radio]:has-text("De todo")', 'aria-checked')) === 'true' && (await p.locator('button:has-text("Carne roja")').count()) === 0 && await p.isVisible('text=Te vamos a sugerir platos de todo tipo.'), 'alimentación: empieza en "De todo", corta, con la lista de exclusiones cerrada');
+  await p.click('button:has-text("¿Hay algo que no comés?")');
+  ok(await p.isVisible('button:has-text("Carne roja")'), 'la lista de alimentos que no comés se abre al tocar');
   await p.click('button:has-text("Cerdo")');
-  await p.click('button:has-text("Vegetariana")'); await p.click('button:has-text("Frutos secos")'); await p.fill('#ob-alergias', 'maní');
+  ok(await p.isVisible('text=Te vamos a sugerir platos de todo tipo, sin cerdo.'), 'la frase se actualiza con lo que marcás');
+  await p.click('[role=radio]:has-text("Vegetariana")'); await p.click('button:has-text("Frutos secos")'); await p.fill('#ob-alergias', 'maní');
+  ok(await p.isVisible('text=Te vamos a sugerir platos vegetarianos, sin frutos secos ni maní.'), 'y con el tipo de alimentación');
   ok((await p.locator('button:has-text("Carne roja")').count()) === 0 && await p.isVisible('button:has-text("Huevo")'), 'al elegir vegetariana no ofrece las carnes');
   await next(p);
   ok(await p.isVisible('h1:has-text("Listo")') && !(await p.textContent('body')).includes('trastorno de la conducta alimentaria'), 'el recorrido inicial termina en el resumen, sin el paso de vista');

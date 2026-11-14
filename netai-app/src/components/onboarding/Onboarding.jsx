@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { X, Minus, Plus, Dumbbell, Leaf, Lock, SkipForward, Sparkles } from 'lucide-react';
+import { X, Minus, Plus, Dumbbell, Leaf, Lock, SkipForward, Sparkles, Utensils, Salad, Sprout, ChevronDown } from 'lucide-react';
 import { PlateGraphic } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import {
@@ -37,6 +37,8 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   const [p, setP] = useState(() => ({ ...emptyProfile(), ...(initial || {}), ...(!initial || initial.skipped ? { mode: 'sport' } : {}) }));
   const [stepIndex, setStepIndex] = useState(mode === 'editar' ? 1 : 0);
   const [touched, setTouched] = useState(false);
+  // La lista de alimentos que no come arranca cerrada, salvo que ya haya algo cargado
+  const [showAvoid, setShowAvoid] = useState(() => Boolean(initial && ((initial.avoid || []).length || String(initial.allergies || '').trim() || (initial.diet || []).some((d) => String(d).startsWith('sin-')))));
 
   const set = (patch) => setP((prev) => ({ ...prev, ...patch }));
   const toggleIn = (key, id) => { const list = p[key] || []; set({ [key]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] }); };
@@ -86,6 +88,20 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
     setStepIndex((i) => Math.min(i + 1, steps.length - 1));
   };
   const back = () => { setTouched(false); setStepIndex((i) => Math.max(i - 1, mode === 'editar' ? 1 : 0)); };
+
+  // Alimentos que no come, para el contador y la frase de resumen
+  const avoidList = [
+    ...AVOID_OPTIONS.filter((o) => o.field === 'diet' && p.diet.includes(o.id)).map((o) => o.label.replace(' (sin TACC)', '').toLowerCase()),
+    ...(p.avoid || []),
+    ...String(p.allergies || '').split(',').map((x) => x.trim()).filter(Boolean),
+  ];
+  const avoidCount = avoidList.length;
+  const avoidOpen = showAvoid;
+  const joinList = (list) => (list.length > 1 ? `${list.slice(0, -1).join(', ')} ni ${list[list.length - 1]}` : list[0]);
+  const dietSentence = `Te vamos a sugerir platos ${dietType === 'vegana' ? 'veganos' : dietType === 'vegetariana' ? 'vegetarianos' : 'de todo tipo'}${avoidCount ? `, sin ${joinList(avoidList)}` : ''}.`;
+  // Deportes: se pueden elegir varios. El primero queda como principal.
+  const sports = Array.isArray(p.sportTypes) ? p.sportTypes : (p.sportType ? [p.sportType] : []);
+  const toggleSport = (id) => { const list = sports.includes(id) ? sports.filter((x) => x !== id) : [...sports, id]; set({ sportTypes: list, sportType: list[0] || '' }); };
 
   // Lo que la persona ya respondió, en pocas palabras. En Bienestar el peso y la altura no se muestran.
   const chips = [
@@ -196,7 +212,13 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
 
           {step === 'deporte' && (
             <Step title="Tu entrenamiento">
-              <Choice label="¿Qué hacés?" options={SPORT_TYPES} value={p.sportType} onChange={(v) => set({ sportType: v })} />
+              <fieldset>
+                <legend className="text-[15px] font-bold text-loza-800">¿Qué deportes hacés?</legend>
+                <p className="text-sm text-loza-600 mt-0.5">Podés elegir varios.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {SPORT_TYPES.map((t) => <Pill key={t.id} selected={sports.includes(t.id)} onClick={() => toggleSport(t.id)}>{t.label}</Pill>)}
+                </div>
+              </fieldset>
               <fieldset>
                 <legend className="text-[15px] font-bold text-loza-800">¿Cuántos días por semana?</legend>
                 <div className="mt-2 grid grid-cols-8 gap-1.5" role="radiogroup" aria-label="Días de entrenamiento por semana">
@@ -263,30 +285,41 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
           )}
 
           {step === 'alimentacion' && (
-            <Step title="Tu alimentación" intro="Para que las recetas y las ideas te sirvan.">
-              <fieldset>
-                <legend className="text-sm font-bold text-loza-800">¿Qué comés?</legend>
-                <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="¿Qué comés?">
-                  {DIET_TYPES.map((d) => (
-                    <Pill key={d.id || 'todo'} role="radio" selected={dietType === d.id} onClick={() => setDietType(d.id)}>
-                      {d.label}{d.hint && <span className="font-normal opacity-80"> · {d.hint}</span>}
-                    </Pill>
-                  ))}
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend className="text-sm font-bold text-loza-800">¿Hay alimentos que no comés?</legend>
-                <p className="mt-0.5 text-sm text-loza-600">Marcá los que no consumís.</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {AVOID_OPTIONS.filter((o) => !(o.hiddenFor || []).includes(dietType)).map((o) => {
-                    const key = o.field === 'diet' ? 'diet' : 'avoid';
-                    return <Pill key={o.id} selected={(p[key] || []).includes(o.id)} onClick={() => toggleIn(key, o.id)}>{o.label}</Pill>;
-                  })}
-                </div>
-              </fieldset>
-              <Field id="ob-alergias" label="Otros alimentos que no comés o alergias" hint="Opcional. Por ejemplo: maní, kiwi.">
-                <input id="ob-alergias" type="text" value={p.allergies} onChange={(e) => set({ allergies: e.target.value })} className={inputCls} />
-              </Field>
+            <Step title="¿Qué comés?">
+              <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="¿Qué comés?">
+                {DIET_TYPES.map((d) => {
+                  const on = dietType === d.id;
+                  const Icon = d.id === 'vegana' ? Sprout : d.id === 'vegetariana' ? Salad : Utensils;
+                  return (
+                    <button key={d.id || 'todo'} type="button" role="radio" aria-checked={on} onClick={() => setDietType(d.id)}
+                      className={`flex flex-col items-center text-center rounded-[20px] px-2 py-4 border transition-colors ${on ? 'border-hoja-600 bg-hoja-50 ring-1 ring-hoja-600' : 'border-loza-300 bg-papel hover:border-loza-500'}`}>
+                      <span className={`grid place-items-center w-12 h-12 rounded-full ${on ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-700'}`}><Icon className="w-6 h-6" aria-hidden="true" /></span>
+                      <span className="mt-2 block font-bold text-[15px] text-loza-900">{d.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="rounded-2xl bg-hoja-50 text-hoja-900 p-4 text-[15px] leading-relaxed" aria-live="polite">{dietSentence}</p>
+
+              <div>
+                <button type="button" aria-expanded={avoidOpen} aria-controls="ob-no-como" onClick={() => setShowAvoid(!avoidOpen)}
+                  className="w-full flex items-center justify-between gap-3 min-h-[48px] px-4 rounded-2xl border border-loza-300 bg-papel text-[15px] font-bold text-loza-800 hover:border-loza-500">
+                  <span>¿Hay algo que no comés?{avoidCount > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-hoja-600 text-white text-sm tabular">{avoidCount}</span>}</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${avoidOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+                {avoidOpen && (
+                  <div id="ob-no-como" className="mt-3 space-y-3 animate-fade-in">
+                    <div className="flex flex-wrap gap-2">
+                      {AVOID_OPTIONS.filter((o) => !(o.hiddenFor || []).includes(dietType)).map((o) => {
+                        const key = o.field === 'diet' ? 'diet' : 'avoid';
+                        return <Pill key={o.id} selected={(p[key] || []).includes(o.id)} onClick={() => toggleIn(key, o.id)}>{o.label}</Pill>;
+                      })}
+                    </div>
+                    <input id="ob-alergias" type="text" aria-label="Otro alimento que no comés o alergia" placeholder="Otro: maní, kiwi…" value={p.allergies} onChange={(e) => set({ allergies: e.target.value })} className={`${inputCls} placeholder:text-loza-500`} />
+                  </div>
+                )}
+              </div>
             </Step>
           )}
 
@@ -352,6 +385,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
                 {sport ? (
                   <>
                     <Row label="Modo" value="Sport" />
+                    {sports.length > 0 && <Row label={sports.length > 1 ? 'Deportes' : 'Deporte'} value={SPORT_TYPES.filter((t) => sports.includes(t.id)).map((t) => t.label).join(', ')} />}
                     <Row label="Entrenamiento" value={p.trainingDays ? `${p.trainingDays} días por semana${p.sessionMinutes ? `, ${p.sessionMinutes} min` : ''}` : 'Sin completar'} />
                     <Row label="Objetivo" value={[SPORT_GOALS.find((g) => g.id === p.sportGoal)?.label, p.targetWeightKg ? `${p.targetWeightKg} kg` : ''].filter(Boolean).join(', ') || 'Sin completar'} />
                   </>

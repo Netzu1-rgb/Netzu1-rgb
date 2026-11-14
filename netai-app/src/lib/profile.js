@@ -88,7 +88,8 @@ export function emptyProfile() {
     viewMode: 'rangos', // 'rangos' | 'intuitivo'
     mode: 'bienestar', // 'bienestar' | 'sport'
     sportGoal: '',
-    sportType: '',
+    sportType: '', // deporte principal (el primero de la lista)
+    sportTypes: [], // todos los deportes que hace
     trainingDays: '',
     sessionMinutes: '',
     targetWeightKg: '',
