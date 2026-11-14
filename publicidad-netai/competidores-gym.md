@@ -113,6 +113,13 @@ Lo que se dejó afuera a propósito: rankings, comparaciones con otras personas 
 
 ## Fuentes
 
+- [El método 4-2-1 en TikTok (REP Fitness)](https://repfitness.com/blogs/training/4-2-1-workout)
+- [El método 3-2-1 (Tom's Guide)](https://www.tomsguide.com/news/ive-been-doing-the-tiktok-3-2-1-method-workout-heres-what-you-should-know)
+- [Tendencias de contenido de fitness, con la caminata 12-3-30 (Athletech News)](https://athletechnews.com/longevity-fitness-going-viral-amid-wellness-content-boom/)
+- [Bro split y PPL de un influencer (Generation Iron)](https://generationiron.com/tristyn-lee-workout-routine/)
+- [Fuerza para deportes de media y larga distancia, metaanálisis (PubMed)](https://pubmed.ncbi.nlm.nih.gov/28459360/)
+- [Estrategias de fuerza para mejorar la resistencia (Mid Sweden University)](https://www.miun.se/en/Research/research-centers/swsrc/news/2020-5/strength-training-strategies-to-improve-endurance-performance)
+
 - [Workout Guide en GitHub](https://github.com/bryllim/workout-guide)
 - [Open Exercises en GitHub](https://github.com/badboysm890/open-exercises-app)
 - [openGym en GitHub](https://github.com/DuarteSantos8/openGym/tree/main)

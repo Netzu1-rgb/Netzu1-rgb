@@ -24,10 +24,49 @@ export const ROUTINES = [
     items: [x('goblet-squat', 3, 10), x('dumbbell-bench-press', 3, 10), x('seated-row', 3, 10), x('romanian-deadlift', 3, 10), t('plank', 3, 30)] },
   { id: 'gym-completo-b', goals: ['fuerza', 'musculo', 'bajar', 'moverme'], name: 'Cuerpo completo B', goal: 'Fuerza', level: 'Para empezar', place: 'gimnasio', minutes: 45,
     items: [x('leg-press', 3, 12), x('lat-pulldown', 3, 10), x('overhead-press', 3, 8), x('hip-thrust', 3, 10), x('dead-bug', 3, 10)] },
-  { id: 'gym-superior', goals: ['musculo', 'fuerza'], name: 'Tren superior', goal: 'Fuerza', level: 'Intermedio', place: 'gimnasio', minutes: 50,
+  { id: 'gym-superior', program: 'torso-pierna', goals: ['musculo', 'fuerza'], name: 'Torso', goal: 'Fuerza', level: 'Intermedio', place: 'gimnasio', minutes: 50,
     items: [x('bench-press', 3, 8), x('one-arm-dumbbell-row', 3, 10), x('lateral-raise', 3, 12), x('bicep-curl', 3, 12), x('tricep-pushdown', 3, 12)] },
-  { id: 'gym-inferior', goals: ['musculo', 'fuerza'], name: 'Tren inferior', goal: 'Fuerza', level: 'Intermedio', place: 'gimnasio', minutes: 50,
+  { id: 'gym-inferior', program: 'torso-pierna', goals: ['musculo', 'fuerza'], name: 'Pierna', goal: 'Fuerza', level: 'Intermedio', place: 'gimnasio', minutes: 50,
     items: [x('squat', 3, 8), x('romanian-deadlift', 3, 10), x('leg-press', 3, 12), x('hip-thrust', 3, 10), x('calf-raise', 3, 15)] },
+
+  // ---- Programas conocidos para ganar masa muscular (gimnasio). Se hacen en orden y se repiten.
+  { id: 'ppl-empuje', program: 'ppl', goals: ['musculo'], name: 'PPL · Empuje', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 60,
+    items: [x('bench-press', 4, 8), x('overhead-press', 3, 8), x('incline-dumbbell-press', 3, 10), x('lateral-raise', 3, 12), x('tricep-pushdown', 3, 12), x('skull-crusher', 3, 10)] },
+  { id: 'ppl-tiron', program: 'ppl', goals: ['musculo'], name: 'PPL · Tirón', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 60,
+    items: [x('barbell-row', 4, 8), x('lat-pulldown', 3, 10), x('seated-row', 3, 10), x('face-pull', 3, 15), x('bicep-curl', 3, 12), x('hammer-curl', 3, 12)] },
+  { id: 'ppl-piernas', program: 'ppl', goals: ['musculo'], name: 'PPL · Piernas', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 60,
+    items: [x('squat', 4, 8), x('romanian-deadlift', 3, 10), x('leg-press', 3, 12), x('leg-curl', 3, 12), x('leg-extension', 3, 12), x('standing-calf-raise', 4, 12)] },
+  { id: 'arnold-pecho-espalda', program: 'arnold', goals: ['musculo'], name: 'Arnold · Pecho y espalda', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 70,
+    items: [x('bench-press', 4, 8), x('incline-dumbbell-press', 3, 10), x('dumbbell-fly', 3, 12), x('chin-up', 4, 8), x('barbell-row', 4, 8), x('lat-pulldown', 3, 10)] },
+  { id: 'arnold-hombros-brazos', program: 'arnold', goals: ['musculo'], name: 'Arnold · Hombros y brazos', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 70,
+    items: [x('overhead-press', 4, 8), x('lateral-raise', 3, 12), x('rear-delt-fly', 3, 12), x('bicep-curl', 3, 10), x('hammer-curl', 3, 10), x('skull-crusher', 3, 10), x('tricep-pushdown', 3, 12)] },
+  { id: 'arnold-piernas', program: 'arnold', goals: ['musculo'], name: 'Arnold · Piernas y abdomen', goal: 'Ganar músculo', level: 'Intermedio', place: 'gimnasio', minutes: 70,
+    items: [x('squat', 4, 8), x('leg-press', 3, 12), x('leg-extension', 3, 12), x('leg-curl', 3, 12), x('romanian-deadlift', 3, 10), x('standing-calf-raise', 4, 15), x('hanging-leg-raise', 3, 12)] },
+  { id: 'cinco-a', program: '5x5', goals: ['fuerza'], name: '5×5 · Día A', goal: 'Fuerza', level: 'Para empezar', place: 'gimnasio', minutes: 45,
+    items: [x('squat', 5, 5), x('bench-press', 5, 5), x('barbell-row', 5, 5)] },
+  { id: 'cinco-b', program: '5x5', goals: ['fuerza'], name: '5×5 · Día B', goal: 'Fuerza', level: 'Para empezar', place: 'gimnasio', minutes: 45,
+    items: [x('squat', 5, 5), x('overhead-press', 5, 5), x('deadlift', 1, 5)] },
+  { id: 'caminata-12-3-30', program: '12-3-30', goals: ['bajar', 'resistencia', 'moverme'], name: 'Caminata 12-3-30', goal: 'Resistencia', level: 'Para empezar', place: 'gimnasio', minutes: 30,
+    note: 'Cinta con 12 % de pendiente, a unos 4,8 km/h (3 millas por hora), durante 30 minutos.',
+    items: [t('treadmill-incline-walk', 1, 1800)] },
+
+  // ---- Rutinas por deporte: fuerza y acondicionamiento que acompañan lo que la persona ya practica
+  { id: 'deporte-resistencia-casa', sports: ['resistencia'], goals: ['resistencia'], name: 'Fuerza para correr, pedalear o nadar', goal: 'Resistencia', level: 'Para empezar', place: 'casa', minutes: 30,
+    items: [x('forward-lunge', 3, 10), x('glute-bridge', 3, 15), x('calf-raise', 3, 15), x('jump-squat', 3, 8), x('superman', 3, 12), t('side-plank', 3, 30)] },
+  { id: 'deporte-resistencia-gym', sports: ['resistencia'], goals: ['resistencia'], name: 'Fuerza para correr, pedalear o nadar', goal: 'Resistencia', level: 'Para empezar', place: 'gimnasio', minutes: 45,
+    items: [x('bulgarian-split-squat', 3, 8), x('single-leg-romanian-deadlift', 3, 8), x('step-up', 3, 10), x('standing-calf-raise', 3, 12), x('lat-pulldown', 3, 10), t('side-plank', 3, 30)] },
+  { id: 'deporte-equipo-casa', sports: ['equipo'], goals: [], name: 'Fuerza para deportes de equipo', goal: 'Potencia y cambios de dirección', level: 'Intermedio', place: 'casa', minutes: 30,
+    items: [x('jump-squat', 3, 6), x('lateral-lunge', 3, 8), x('skater-hop', 3, 10), x('glute-bridge', 3, 15), x('push-up', 3, 10), t('plank', 3, 40)] },
+  { id: 'deporte-equipo-gym', sports: ['equipo'], goals: [], name: 'Fuerza para deportes de equipo', goal: 'Potencia y cambios de dirección', level: 'Intermedio', place: 'gimnasio', minutes: 50,
+    items: [x('squat', 4, 6), x('romanian-deadlift', 3, 8), x('bulgarian-split-squat', 3, 8), x('jump-squat', 3, 6), x('one-arm-dumbbell-row', 3, 10), t('side-plank', 3, 30)] },
+  { id: 'deporte-combate-casa', sports: ['combate'], goals: [], name: 'Acondicionamiento para deportes de combate', goal: 'Resistencia y tronco', level: 'Intermedio', place: 'casa', minutes: 30,
+    items: [t('jump-rope', 3, 60), x('push-up', 3, 12), x('burpee', 3, 8), x('russian-twist', 3, 20), t('mountain-climber', 3, 30), t('plank', 3, 40)] },
+  { id: 'deporte-combate-gym', sports: ['combate'], goals: [], name: 'Acondicionamiento para deportes de combate', goal: 'Resistencia y tronco', level: 'Intermedio', place: 'gimnasio', minutes: 45,
+    items: [x('kettlebell-swing', 3, 12), x('pull-up', 3, 6), x('dip', 3, 8), t('farmer-carry', 3, 40), t('battle-ropes', 3, 30), x('hanging-leg-raise', 3, 10)] },
+  { id: 'deporte-funcional-casa', sports: ['mixto'], goals: [], name: 'Circuito funcional', goal: 'Todo el cuerpo', level: 'Intermedio', place: 'casa', minutes: 25,
+    items: [x('burpee', 3, 10), x('jump-squat', 3, 10), x('push-up', 3, 12), t('mountain-climber', 3, 30), x('russian-twist', 3, 20), t('jumping-jack', 3, 40)] },
+  { id: 'deporte-funcional-gym', sports: ['mixto'], goals: [], name: 'Circuito funcional', goal: 'Todo el cuerpo', level: 'Intermedio', place: 'gimnasio', minutes: 40,
+    items: [x('kettlebell-swing', 3, 15), x('goblet-squat', 3, 12), x('pull-up', 3, 6), x('burpee', 3, 10), t('farmer-carry', 3, 40), t('battle-ropes', 3, 30)] },
 ];
 
 export const FIT_PROFILE_KEY = 'netai_fit_profile_v1';
@@ -45,7 +84,22 @@ export const FIT_LEVELS = [
   { id: 'empezar', label: 'Estoy empezando' },
   { id: 'intermedio', label: 'Ya entreno' },
 ];
-export const emptyFitProfile = () => ({ goal: '', place: 'casa', days: '3', level: 'empezar', completedAt: '' });
+// Programas de gimnasio: rutinas que se hacen en orden y se repiten
+export const FIT_PROGRAMS = [
+  { id: 'ppl', label: 'PPL', hint: 'Empuje, tirón y piernas', goals: ['musculo'] },
+  { id: 'arnold', label: 'Arnold split', hint: 'Pecho y espalda, hombros y brazos, piernas', goals: ['musculo'] },
+  { id: 'torso-pierna', label: 'Torso y pierna', hint: 'Dos días que se alternan', goals: ['musculo', 'fuerza'] },
+  { id: '5x5', label: '5×5', hint: 'Tres ejercicios, cinco series de cinco', goals: ['fuerza'] },
+];
+export const programsFor = (goal, place) => (place === 'gimnasio' ? FIT_PROGRAMS.filter((p) => p.goals.includes(goal)) : []);
+// Deportes que la persona practica (los mismos que pregunta NetAI). "fuerza" es el gimnasio en sí: no suma rutina aparte.
+export const FIT_SPORTS = [
+  { id: 'resistencia', label: 'Running, ciclismo o natación' },
+  { id: 'equipo', label: 'Deporte en equipo' },
+  { id: 'combate', label: 'Deporte de combate' },
+  { id: 'mixto', label: 'Funcional o crossfit' },
+];
+export const emptyFitProfile = () => ({ goal: '', place: 'casa', days: '3', level: 'empezar', program: '', sports: [], completedAt: '' });
 
 /** Objetivo y días que ya cargó la persona en NetAI (Modo Sport), para no preguntar dos veces */
 export function fitDefaultsFromNetAI(profile) {
@@ -57,6 +111,7 @@ export function fitDefaultsFromNetAI(profile) {
     ...(goal ? { goal } : {}),
     ...(days >= 1 && days <= 7 ? { days: String(days) } : {}),
     ...(sports.includes('fuerza') ? { place: 'gimnasio', level: 'intermedio' } : {}),
+    ...(sports.some((x) => FIT_SPORTS.some((f) => f.id === x)) ? { sports: sports.filter((x) => FIT_SPORTS.some((f) => f.id === x)) } : {}),
   };
 }
 
@@ -68,17 +123,32 @@ export function sanitizeFitProfile(data) {
     place: data.place === 'gimnasio' ? 'gimnasio' : 'casa',
     days: /^[1-7]$/.test(String(data.days)) ? String(data.days) : base.days,
     level: data.level === 'intermedio' ? 'intermedio' : 'empezar',
+    program: FIT_PROGRAMS.some((p) => p.id === data.program) ? data.program : '',
+    sports: Array.isArray(data.sports) ? data.sports.filter((x) => FIT_SPORTS.some((f) => f.id === x)) : [],
     completedAt: typeof data.completedAt === 'string' ? data.completedAt : '',
   };
 }
 
-/** Rutinas que sirven para el objetivo y el lugar; primero las del nivel de la persona */
+/**
+ * Rutinas para la persona, en el orden en que se van a ir proponiendo:
+ * primero las de los deportes que practica y después las del programa elegido o, si no eligió uno, las del objetivo.
+ */
 export function recommendedRoutines(fit) {
-  const inPlace = ROUTINES.filter((r) => r.place === (fit?.place || 'casa') || (fit?.place === 'gimnasio' && r.id === 'movilidad' && fit?.goal === 'movilidad'));
-  const matching = inPlace.filter((r) => r.goals.includes(fit?.goal));
-  const list = matching.length ? matching : inPlace;
-  const mine = fit?.level === 'intermedio' ? 'Intermedio' : 'Para empezar';
-  return [...list].sort((a, b) => Number(b.level === mine) - Number(a.level === mine));
+  const place = fit?.place || 'casa';
+  const inPlace = ROUTINES.filter((r) => r.place === place);
+  const bySport = inPlace.filter((r) => (r.sports || []).some((x) => (fit?.sports || []).includes(x)));
+  const program = programsFor(fit?.goal, place).some((p) => p.id === fit?.program) ? fit.program : '';
+  let main;
+  if (program) main = inPlace.filter((r) => r.program === program);
+  else {
+    const general = inPlace.filter((r) => !r.sports && !(r.program && FIT_PROGRAMS.some((p) => p.id === r.program)));
+    const matching = general.filter((r) => r.goals.includes(fit?.goal));
+    const mine = fit?.level === 'intermedio' ? 'Intermedio' : 'Para empezar';
+    main = [...(matching.length ? matching : general)].sort((a, b) => Number(b.level === mine) - Number(a.level === mine));
+  }
+  // Si el objetivo es de movilidad en el gimnasio, la rutina de movilidad (que es de casa) también sirve
+  if (fit?.goal === 'movilidad' && place === 'gimnasio') main = [ROUTINES.find((r) => r.id === 'movilidad'), ...main];
+  return [...new Set([...bySport, ...main])];
 }
 
 /** La rutina que toca: rota entre las recomendadas según la última que se hizo */
@@ -130,7 +200,8 @@ export const FEELINGS = [
 export const exerciseBySlug = (slug) => EXERCISES.find((e) => e.slug === slug);
 /** Los ejercicios de gimnasio llevan carga en kilos; los de casa, solo repeticiones o tiempo */
 export const usesWeight = (slug) => exerciseBySlug(slug)?.place === 'gimnasio' && exerciseBySlug(slug)?.equipment !== 'Barra fija';
-export const targetText = (item) => `${item.sets} × ${item.secs ? `${item.secs} s` : item.reps}`;
+const timeText = (secs) => (secs >= 120 && secs % 60 === 0 ? `${secs / 60} min` : `${secs} s`);
+export const targetText = (item) => (item.secs ? (item.sets === 1 ? timeText(item.secs) : `${item.sets} × ${timeText(item.secs)}`) : `${item.sets} × ${item.reps}`);
 
 /** Arma el entrenamiento en curso a partir de una rutina, con la carga de la última vez si existe */
 export function startWorkout(routine, workouts, now = Date.now()) {

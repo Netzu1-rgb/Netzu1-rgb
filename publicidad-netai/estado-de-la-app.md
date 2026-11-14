@@ -1,6 +1,33 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 2.0.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 2.1.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 2.1.0: programas conocidos y rutinas por deporte en NetAI Fit
+
+**Programas para ganar masa muscular (gimnasio)**
+- **PPL:** empuje, tirón y piernas.
+- **Arnold split:** pecho y espalda, hombros y brazos, piernas y abdomen.
+- **Torso y pierna:** dos días que se alternan.
+- **5×5:** dos días con tres ejercicios, pensado para fuerza.
+- **Caminata 12-3-30:** cinta con 12 % de pendiente, a unos 4,8 km/h, 30 minutos.
+
+Al elegir "Ganar músculo" o "Ganar fuerza" en el gimnasio, Fit pregunta qué programa seguir y después va proponiendo sus días en orden.
+
+**Rutinas por deporte.** Fit pregunta qué deporte hace la persona (o lo toma de NetAI) y pone primero la rutina que lo acompaña, en versión casa y gimnasio:
+- Running, ciclismo o natación: fuerza de piernas a un lado por vez, gemelos, saltos y tronco.
+- Deporte en equipo: fuerza de piernas, saltos y cambios de dirección.
+- Deporte de combate: soga, flexiones, burpees, giros y tronco; en gimnasio, pesa rusa, dominadas, fondos y sogas.
+- Funcional o crossfit: circuito de todo el cuerpo.
+
+**Biblioteca.** Pasó de 40 a 68 ejercicios, con sus dibujos.
+
+**De dónde sale cada cosa**
+- Los programas son formatos públicos y muy difundidos; las series y repeticiones son una versión general escrita para NetAI, no la de un autor en particular.
+- De lo que se buscó en redes: la caminata 12-3-30 y los esquemas semanales 3-2-1 y 4-2-1 aparecen como tendencia en 2026; del Arnold split no se encontró cobertura reciente, se agregó porque es un clásico pedido.
+- Para deportes de resistencia hay respaldo de estudios: sumar fuerza mejora la economía de carrera y los saltos ayudan a quienes corren. Para deportes de equipo, combate y funcional no se encontraron guías concretas: esas rutinas son un punto de partida general.
+- Todo sigue pendiente de la revisión de un profesional del ejercicio.
+
+**No se hizo:** los esquemas semanales 3-2-1 y 4-2-1 (combinan fuerza, pilates o cardio y movilidad) no están como plan armado.
 
 ## Versión 2.0.0: NetAI Fit, app de entrenamiento aparte
 
@@ -176,7 +203,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (32 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (173 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (34 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (177 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

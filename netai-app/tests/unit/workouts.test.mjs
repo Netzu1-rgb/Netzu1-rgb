@@ -8,6 +8,7 @@ test('todas las rutinas usan ejercicios de la biblioteca', () => {
     const ex = exerciseBySlug(item.slug);
     assert.ok(ex, `${r.id}: falta ${item.slug}`);
     if (r.place === 'casa') assert.equal(ex.place, 'casa', `${r.id}: ${item.slug} necesita gimnasio`);
+    assert.equal(Boolean(item.secs), ex.kind === 'tiempo', `${r.id}: ${item.slug} va por ${ex.kind}`);
     assert.ok(item.sets >= 1 && (item.reps || item.secs));
   }
 });
@@ -86,7 +87,30 @@ test('el progreso compara la primera carga con la última', () => {
 
 test('toma objetivo y días de NetAI, y descarta perfiles dañados', () => {
   assert.deepEqual(fitDefaultsFromNetAI({ mode: 'sport', sportGoal: 'ganar-musculo', trainingDays: '4', sportTypes: ['fuerza'] }), { goal: 'musculo', days: '4', place: 'gimnasio', level: 'intermedio' });
+  assert.deepEqual(fitDefaultsFromNetAI({ mode: 'sport', sportGoal: 'rendimiento', sportTypes: ['equipo', 'otro'] }).sports, ['equipo']);
   assert.deepEqual(fitDefaultsFromNetAI({ mode: 'bienestar' }), {});
   assert.equal(sanitizeFitProfile('x'), null);
   assert.equal(sanitizeFitProfile({ goal: 'volar', days: '9' }).goal, '');
+});
+
+import { FIT_PROGRAMS, FIT_SPORTS, programsFor } from '../../src/lib/workouts.js';
+
+test('cada programa de gimnasio tiene sus rutinas y se propone solo donde corresponde', () => {
+  for (const p of FIT_PROGRAMS) assert.ok(ROUTINES.filter((r) => r.program === p.id).length >= 2, p.id);
+  assert.deepEqual(programsFor('musculo', 'gimnasio').map((p) => p.id), ['ppl', 'arnold', 'torso-pierna']);
+  assert.deepEqual(programsFor('musculo', 'casa'), []);
+  const ppl = recommendedRoutines({ goal: 'musculo', place: 'gimnasio', program: 'ppl', sports: [] });
+  assert.deepEqual(ppl.map((r) => r.id), ['ppl-empuje', 'ppl-tiron', 'ppl-piernas']);
+  // un programa que no corresponde al objetivo se ignora
+  assert.ok(!recommendedRoutines({ goal: 'bajar', place: 'gimnasio', program: 'ppl', sports: [] }).some((r) => r.program === 'ppl'));
+});
+
+test('quien practica un deporte recibe primero su rutina, en casa y en el gimnasio', () => {
+  for (const sp of FIT_SPORTS) for (const place of ['casa', 'gimnasio']) {
+    const list = recommendedRoutines({ goal: 'musculo', place, program: 'ppl', sports: [sp.id] });
+    assert.ok((list[0].sports || []).includes(sp.id), `${sp.id} en ${place}`);
+    assert.ok(list.length > 1);
+  }
+  // sin deporte elegido no aparecen rutinas por deporte
+  assert.ok(!recommendedRoutines({ goal: 'fuerza', place: 'casa', sports: [] }).some((r) => r.sports));
 });

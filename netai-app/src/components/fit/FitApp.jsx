@@ -6,7 +6,7 @@ import { Info, Pause, Play, Check, Plus, Trash2, ChevronRight, Clock, House, Lis
 import { Sheet, CloseButton } from '@/components/ui/Sheet';
 import { EXERCISES, EXERCISE_PLACES, EXERCISE_ZONES, exerciseFrames } from '@/lib/exercises';
 import {
-  ROUTINES, FEELINGS, FIT_GOALS, FIT_LEVELS, WORKOUTS_KEY, WORKOUT_DRAFT_KEY, FIT_PROFILE_KEY,
+  ROUTINES, FEELINGS, FIT_GOALS, FIT_LEVELS, FIT_PROGRAMS, FIT_SPORTS, programsFor, WORKOUTS_KEY, WORKOUT_DRAFT_KEY, FIT_PROFILE_KEY,
   emptyFitProfile, sanitizeFitProfile, fitDefaultsFromNetAI, recommendedRoutines, nextRoutine, weekDays, exerciseProgress,
   exerciseBySlug, usesWeight, targetText, startWorkout, finishWorkout, lastSets, lastSetsText, sanitizeWorkouts,
 } from '@/lib/workouts';
@@ -121,10 +121,24 @@ export default function FitApp() {
   const trainedToday = workouts.some((w) => w.date === today);
   const goalLabel = FIT_GOALS.find((g) => g.id === fit?.goal)?.label;
   const openExercise = (e) => { setPlaying(true); setOpen(e); };
+  // El resto de las rutinas, agrupadas: programas conocidos, por deporte y generales
+  const routineGroups = useMemo(() => {
+    const rest = ROUTINES.filter((r) => !recommended.includes(r));
+    const programs = rest.filter((r) => r.program);
+    const sports = rest.filter((r) => r.sports);
+    const others = rest.filter((r) => !r.program && !r.sports);
+    return [
+      { title: 'Programas conocidos', hint: 'PPL, Arnold split, 5×5, torso y pierna y la caminata 12-3-30. Son de gimnasio.', items: programs },
+      { title: 'Por deporte', hint: '', items: sports },
+      { title: 'Otras rutinas', hint: '', items: others },
+    ].filter((g) => g.items.length);
+  }, [recommended]);
 
   const saveSetup = () => {
     if (!setup.goal) return;
-    const data = { ...setup, completedAt: fit?.completedAt || new Date().toISOString() };
+    const options = programsFor(setup.goal, setup.place);
+    const program = options.some((o) => o.id === setup.program) ? setup.program : (options[0]?.id || '');
+    const data = { ...setup, program, sports: setup.sports || [], completedAt: fit?.completedAt || new Date().toISOString() };
     try { localStorage.setItem(FIT_PROFILE_KEY, JSON.stringify(data)); } catch (e) { /* sin almacenamiento */ }
     setFit(data); setPlace(data.place); setSetup(null); setTab('hoy');
   };
@@ -188,6 +202,35 @@ export default function FitApp() {
             <legend className="text-[15px] font-bold text-loza-800">¿Dónde entrenás?</legend>
             <div className="mt-2 inline-flex p-1 rounded-full bg-loza-100" role="radiogroup" aria-label="Dónde entrenás">
               {EXERCISE_PLACES.map((pl) => <button key={pl.id} type="button" role="radio" aria-checked={setup.place === pl.id} onClick={() => setSetup({ ...setup, place: pl.id })} className={segment(setup.place === pl.id)}>{pl.label}</button>)}
+            </div>
+          </fieldset>
+
+          {programsFor(setup.goal, setup.place).length > 0 && (
+            <fieldset className="mt-6">
+              <legend className="text-[15px] font-bold text-loza-800">Elegí un programa</legend>
+              <div className="mt-2 grid gap-2" role="radiogroup" aria-label="Programa de entrenamiento">
+                {programsFor(setup.goal, setup.place).map((pr, i, all) => {
+                  const on = all.some((o) => o.id === setup.program) ? setup.program === pr.id : i === 0;
+                  return (
+                    <button key={pr.id} type="button" role="radio" aria-checked={on} onClick={() => setSetup({ ...setup, program: pr.id })}
+                      className={`text-left rounded-2xl px-4 py-3 border transition-colors ${on ? 'border-agua-600 bg-agua-50 ring-1 ring-agua-600' : 'border-loza-300 bg-papel hover:border-loza-500'}`}>
+                      <span className="block font-bold text-[16px] text-loza-900">{pr.label}</span>
+                      <span className="block text-sm text-loza-600">{pr.hint}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
+
+          <fieldset className="mt-6">
+            <legend className="text-[15px] font-bold text-loza-800">¿Hacés algún deporte?</legend>
+            <p className="text-sm text-loza-600 mt-0.5">Opcional. Te sumamos una rutina para acompañarlo.</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {FIT_SPORTS.map((sp) => {
+                const on = (setup.sports || []).includes(sp.id);
+                return <button key={sp.id} type="button" aria-pressed={on} onClick={() => setSetup({ ...setup, sports: on ? setup.sports.filter((x) => x !== sp.id) : [...(setup.sports || []), sp.id] })} className={pill(on)}>{sp.label}</button>;
+              })}
             </div>
           </fieldset>
 
@@ -347,7 +390,7 @@ export default function FitApp() {
       <ExerciseFigure slug={r.items[0].slug} className="w-20 h-20 shrink-0" />
       <span className="min-w-0 flex-1">
         <span className="block font-display text-lg font-bold text-loza-900 leading-tight">{r.name}</span>
-        <span className="mt-1 block text-sm text-loza-600">{r.goal} · {r.level}</span>
+        <span className="mt-1 block text-sm text-loza-600">{r.goal} · {r.place === 'gimnasio' ? 'Gimnasio' : 'En casa'}</span>
         <span className="mt-0.5 flex items-center gap-1.5 text-sm text-loza-600 tabular"><Clock className="w-4 h-4" aria-hidden="true" />{r.minutes} min · {r.items.length} ejercicios</span>
       </span>
       <ChevronRight className="w-5 h-5 text-loza-500 shrink-0" aria-hidden="true" />
@@ -360,7 +403,7 @@ export default function FitApp() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <span className="flex items-center gap-2.5">
             <FitMark className="w-9 h-9" />
-            <span><span className="block font-marca font-bold text-lg text-loza-900 leading-none">NetAI Fit</span>{goalLabel && <span className="block text-xs text-loza-600 mt-0.5">{goalLabel}</span>}</span>
+            <span><span className="block font-marca font-bold text-lg text-loza-900 leading-none">NetAI Fit</span>{goalLabel && <span className="block text-xs text-loza-600 mt-0.5">{goalLabel}{fit?.program ? ` · ${FIT_PROGRAMS.find((x) => x.id === fit.program)?.label}` : ''}</span>}</span>
           </span>
           <div className="flex items-center gap-1">
             <Link href="/app" className="inline-flex items-center gap-1.5 px-3 min-h-[44px] rounded-full text-sm font-bold text-loza-800 hover:bg-loza-100"><Utensils className="w-4 h-4" aria-hidden="true" />Nutrición</Link>
@@ -437,12 +480,13 @@ export default function FitApp() {
               <h2 className="mt-5 font-display text-xl font-bold text-loza-900">Para tu objetivo</h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">{recommended.map((r) => <li key={r.id}><RoutineCard r={r} /></li>)}</ul>
             </section>
-            {ROUTINES.some((r) => !recommended.includes(r)) && (
-              <section aria-labelledby="titulo-otras">
-                <h2 id="titulo-otras" className="font-display text-xl font-bold text-loza-900">Otras rutinas</h2>
-                <ul className="mt-3 grid gap-3 sm:grid-cols-2">{ROUTINES.filter((r) => !recommended.includes(r)).map((r) => <li key={r.id}><RoutineCard r={r} /></li>)}</ul>
+            {routineGroups.map((g) => (
+              <section key={g.title} aria-label={g.title}>
+                <h2 className="font-display text-xl font-bold text-loza-900">{g.title}</h2>
+                {g.hint && <p className="mt-1 text-sm text-loza-600">{g.hint}</p>}
+                <ul className="mt-3 grid gap-3 sm:grid-cols-2">{g.items.map((r) => <li key={r.id}><RoutineCard r={r} /></li>)}</ul>
               </section>
-            )}
+            ))}
             <aside className="flex items-start gap-3 text-sm text-loza-600">
               <Info className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
               <p>Las rutinas son generales y no reemplazan a un profesional del ejercicio. Empezá con poca carga y sumá de a poco.</p>
@@ -610,6 +654,7 @@ export default function FitApp() {
             </div>
             <CloseButton onClick={() => setRoutine(null)} />
           </div>
+          {routine.note && <p className="mt-3 rounded-2xl bg-agua-50 text-agua-900 p-4 text-[15px] leading-relaxed">{routine.note}</p>}
           <ol className="mt-4 divide-y divide-loza-200 border-y border-loza-200">
             {routine.items.map((item) => (
               <li key={item.slug} className="py-2 flex items-center gap-3">
