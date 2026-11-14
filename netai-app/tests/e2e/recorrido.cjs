@@ -17,7 +17,10 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   ok(await p.isVisible('text=Antes de empezar, contanos un poco de vos'), 'la primera vez abre el recorrido');
   await next(p);
   await p.fill('#ob-nombre', 'Juan'); await p.fill('#ob-edad', '35'); await p.click('[role=radio]:has-text("Masculino")');
-  await next(p); await next(p);
+  await next(p);
+  const modos = await p.locator('[role=radiogroup][aria-label="Modo de uso"] [role=radio]').allTextContents();
+  ok(modos[0].startsWith('Modo Sport') && modos[1].startsWith('Bienestar') && (await p.getAttribute('[role=radio]:has-text("Modo Sport")', 'aria-checked')) === 'true', 'el Modo Sport va primero y viene marcado');
+  await p.click('[role=radiogroup][aria-label="Modo de uso"] [role=radio]:has-text("Bienestar")'); await next(p);
   await p.fill('#ob-altura', '180'); await p.fill('#ob-peso', '400');
   await next(p); ok(await p.isVisible('text=Escribí tu peso en kilos'), 'valida un peso fuera de rango');
   await p.fill('#ob-peso', '80'); await next(p);
@@ -45,7 +48,7 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   ok(p.errs.length === 0, 'sin errores (adulto) ' + p.errs.join(' | '));
   // 2. TCA: nunca números
   p = await fresh(b);
-  await next(p); await p.fill('#ob-edad', '28'); await next(p); await next(p); await next(p); await next(p); await next(p); await next(p);
+  await next(p); await p.fill('#ob-edad', '28'); await next(p); await p.click('[role=radio]:has-text("Bienestar")'); await next(p); await next(p); await next(p); await next(p); await next(p);
   await p.click('[role=radio]:has-text("Sí")'); await p.waitForTimeout(150);
   ok(await p.isVisible('text=Activamos el Modo Intuitivo'), 'TCA: activa el Modo Intuitivo');
   await next(p); ok(!(await p.isVisible('text=kcal')), 'TCA: el resumen no muestra calorías');

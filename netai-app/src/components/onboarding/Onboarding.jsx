@@ -31,7 +31,9 @@ const fmt = (n) => Number(n).toLocaleString('es-AR');
 
 // Recorrido para cargar datos personales y físicos. mode="inicial" la primera vez, "editar" desde Ajustes.
 export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip, onClose }) {
-  const [p, setP] = useState(() => ({ ...emptyProfile(), ...(initial || {}) }));
+  // La primera vez, el Modo Sport viene marcado. Quien ya eligió un modo conserva el suyo.
+  // Menores de 18 y personas en tratamiento por un TCA terminan siempre en Bienestar (se resuelve al guardar).
+  const [p, setP] = useState(() => ({ ...emptyProfile(), ...(initial || {}), ...(!initial || initial.skipped ? { mode: 'sport' } : {}) }));
   const [stepIndex, setStepIndex] = useState(mode === 'editar' ? 1 : 0);
   const [touched, setTouched] = useState(false);
 

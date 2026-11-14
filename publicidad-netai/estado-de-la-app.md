@@ -1,6 +1,17 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.7.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.7.2). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.7.2: el Modo Sport va primero y viene marcado
+
+En el paso "¿Cómo querés usar NetAI?" del recorrido inicial, el Modo Sport aparece primero y ya seleccionado; Bienestar queda segundo. Se mantiene igual que antes:
+
+- Quien ya eligió un modo conserva el suyo al editar sus datos.
+- Los menores de 18 no ven ese paso y quedan en Bienestar.
+- Quien indica estar en tratamiento por un trastorno de la conducta alimentaria queda en Bienestar, sin números.
+- "Prefiero completarlo después" deja la app en Bienestar con el rango general.
+
+A tener en cuenta: el Modo Sport exige altura y peso, así que quien avanza sin cambiar el modo tiene que cargarlos.
 
 ## Versión 1.7.1: paso "Tu alimentación" más claro
 
@@ -89,7 +100,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (134 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (135 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
