@@ -28,6 +28,8 @@ async function run(p, label, out) {
     await p.evaluate((pr) => { localStorage.setItem('netai_profile_v1', JSON.stringify(pr)); const d = (n) => { const x = new Date(); x.setDate(x.getDate() - n); return x.toISOString().slice(0, 10); }; localStorage.setItem('netai_weight_log_v1', JSON.stringify([{ date: d(9), kg: 86 }, { date: d(2), kg: 85 }]));
       const t = new Date(); const k = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
       localStorage.setItem('netai_wellness_log_v1', JSON.stringify({ [k]: { waterGlasses: 3, meals: { desayuno: [{ id: 'a', name: 'Tostadas con palta', energy: 350, protein: 12, carbs: 40, fat: 14, satietyBefore: 3, satietyAfter: 7, notes: 'Rico' }], almuerzo: [], merienda: [], cena: [], colacion: [] } } })); }, prof);
+    // El tema oscuro ya no se activa solo: se elige en Ajustes
+    if (scheme === 'dark') await p.evaluate(() => localStorage.setItem('netai_prefs_v1', JSON.stringify({ theme: 'oscuro' })));
     await go('/app'); await run(p, name + '-midia', out);
     await p.getByRole('button', { name: 'Registrar' }).nth(1).click(); await p.waitForTimeout(300); await run(p, name + '-registrar', out);
     await p.keyboard.press('Escape'); await p.waitForTimeout(200);

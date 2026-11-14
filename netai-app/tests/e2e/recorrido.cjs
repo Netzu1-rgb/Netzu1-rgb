@@ -77,5 +77,18 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   await p.click('text=Prefiero completarlo después'); await p.waitForTimeout(300);
   ok(await p.isVisible('#titulo-completar'), 'saltear: queda el recordatorio en Mi día');
   ok((await p.textContent('body')).includes('Rango general: 1.900 a 2.200 kcal'), 'saltear: rango general');
+  // 5. Con el teléfono en modo oscuro: el recorrido y la app empiezan en claro; oscuro se elige en Ajustes
+  const dctx = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
+  const d = await dctx.newPage();
+  await d.request.post(BASE + '/api/auth/login', { data: { password: 'familia-local' } });
+  await d.goto(BASE + '/app', { waitUntil: 'networkidle' }); await d.waitForTimeout(400);
+  const isDark = () => d.evaluate(() => document.documentElement.classList.contains('oscuro'));
+  ok(await d.isVisible('text=Armemos tu plan en 1 minuto') && !(await isDark()), 'teléfono en oscuro: el recorrido se muestra en claro');
+  await d.click('text=Prefiero completarlo después'); await d.waitForTimeout(400);
+  ok(!(await isDark()), 'al entrar, la app sigue en claro');
+  await d.click('button[aria-label="Ajustes"]'); await d.click('[role=radio]:has-text("Oscura")'); await d.waitForTimeout(300);
+  ok(await isDark(), 'el tema oscuro se elige desde Ajustes');
+  await d.reload({ waitUntil: 'networkidle' }); await d.waitForTimeout(400);
+  ok(await isDark(), 'y queda guardado');
   await b.close();
 })();

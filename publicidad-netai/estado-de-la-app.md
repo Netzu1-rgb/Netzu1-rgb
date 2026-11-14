@@ -1,6 +1,12 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.9.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.9.2). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.9.2: el recorrido y la app empiezan en modo claro
+
+- El recorrido inicial se muestra siempre en claro, aunque el teléfono esté en modo oscuro.
+- La app también empieza en claro. El tema oscuro, o que siga al teléfono ("Automática"), se elige en Ajustes, Apariencia.
+- Quien ya usaba la app conserva el tema que tenía guardado.
 
 ## Versión 1.9.1: se quita el paso "¿Cómo querés ver la app?" del recorrido inicial
 
@@ -134,7 +140,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (153 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (157 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

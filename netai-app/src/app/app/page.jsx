@@ -58,12 +58,12 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.9.2';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
 const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };
-const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false, theme: 'auto' }); // theme: 'auto' | 'claro' | 'oscuro'
+const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false, theme: 'claro' }); // theme: 'auto' | 'claro' | 'oscuro'. Empieza en claro; se cambia desde Ajustes
 const sameName = (a, b) => (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
@@ -158,11 +158,12 @@ export default function PwaAppPage() {
   }, []);
   const isToday = selectedDate === today;
 
-  // Tema: sigue al teléfono ("auto") o lo que la persona elija. Solo se aplica dentro de la app.
+  // Tema: claro al empezar; la persona puede elegir oscuro o que siga al teléfono ("auto") desde Ajustes.
+  // Solo se aplica dentro de la app, y el recorrido inicial se muestra siempre en claro.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
-      const dark = prefs.theme === 'oscuro' || (prefs.theme !== 'claro' && mq.matches);
+      const dark = onboarding !== 'inicial' && (prefs.theme === 'oscuro' || (prefs.theme !== 'claro' && mq.matches));
       document.documentElement.classList.toggle('oscuro', dark);
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0F1A15' : '#14412C');
     };
@@ -173,7 +174,7 @@ export default function PwaAppPage() {
       document.documentElement.classList.remove('oscuro');
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#14412C');
     };
-  }, [prefs.theme]);
+  }, [prefs.theme, onboarding]);
 
   // Frase del día
   const dailyEncouragement = useMemo(() => {
