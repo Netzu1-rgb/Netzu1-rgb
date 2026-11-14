@@ -49,7 +49,7 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   await p.click('button:has-text("Borrar todos mis datos")'); await p.waitForTimeout(200);
   ok(await p.isVisible('text=¿Borrar todos tus datos?'), 'borrar todo: pide confirmación');
   await p.click('button:has-text("Sí, borrar todo")'); await p.waitForTimeout(300);
-  ok(await p.isVisible('text=Antes de empezar, contanos un poco de vos'), 'borrar todo: vuelve el recorrido');
+  ok(await p.isVisible('text=Armemos tu plan en 1 minuto'), 'borrar todo: vuelve el recorrido');
   await p.click('text=Prefiero completarlo después'); await p.waitForTimeout(300);
   await p.click('button[aria-label="Ajustes"]'); await p.waitForTimeout(300);
   await p.setInputFiles('input[type=file]', path); await p.waitForTimeout(500);

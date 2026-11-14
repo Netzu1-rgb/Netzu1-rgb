@@ -19,7 +19,7 @@ const body = (p) => p.textContent('body');
   await p.click('[role=radio]:has-text("Modo Sport")'); await p.waitForTimeout(150); await next(p);
   await next(p); ok(await p.isVisible('text=necesitamos tu peso'), 'Sport exige peso y altura');
   await p.fill('#ob-altura', '178'); await p.fill('#ob-peso', '85'); await next(p);
-  await p.click('[role=radio]:has-text("Gimnasio o fuerza")'); await p.fill('#ob-dias', '4'); await p.fill('#ob-minutos', '60'); await next(p);
+  await p.click('[role=radio]:has-text("Gimnasio o fuerza")'); await p.click('[role=radio][aria-label="4 días"]'); await p.click('[role=radio]:has-text("60 min")'); await next(p);
   await next(p); ok(await p.isVisible('text=Elegí un objetivo para seguir'), 'pide elegir objetivo');
   await p.click('[role=radio]:has-text("Bajar de peso")'); await p.fill('#ob-objetivo', '55'); await next(p);
   ok(await p.isVisible('text=queda por debajo de lo saludable'), 'rechaza un peso objetivo no saludable');

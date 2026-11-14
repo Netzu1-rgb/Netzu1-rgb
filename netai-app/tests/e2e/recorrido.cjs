@@ -14,9 +14,15 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   const b = await chromium.launch();
   // 1. Recorrido completo, adulto
   let p = await fresh(b);
-  ok(await p.isVisible('text=Antes de empezar, contanos un poco de vos'), 'la primera vez abre el recorrido');
+  ok(await p.isVisible('text=Armemos tu plan en 1 minuto'), 'la primera vez abre el recorrido');
   await next(p);
-  await p.fill('#ob-nombre', 'Juan'); await p.fill('#ob-edad', '35'); await p.click('[role=radio]:has-text("Masculino")');
+  await p.click('button[aria-label="Sumar a edad"]');
+  ok((await p.inputValue('#ob-edad')) === '30', 'la edad se puede elegir tocando, sin escribir');
+  await p.fill('#ob-nombre', 'Juan'); await p.fill('#ob-edad', '35'); await p.click('button[aria-label="Sumar a edad"]'); await p.click('button[aria-label="Restar a edad"]');
+  await p.locator('input[type=range][aria-label^="Edad"]').fill('35');
+  ok((await p.inputValue('#ob-edad')) === '35' && await p.isVisible('h1:has-text("Hola, Juan")'), 'botones, barra y campo quedan sincronizados, y saluda por el nombre');
+  ok((await p.locator('[aria-label="Lo que ya respondiste"] li').allTextContents()).join('|') === 'Juan|35 años', 'la tira "tu plan" muestra lo que ya respondiste');
+  await p.click('[role=radio]:has-text("Masculino")');
   await next(p);
   const modos = await p.locator('[role=radiogroup][aria-label="Modo de uso"] [role=radio]').allTextContents();
   ok(modos[0].startsWith('Modo Sport') && modos[1].startsWith('Bienestar') && (await p.getAttribute('[role=radio]:has-text("Modo Sport")', 'aria-checked')) === 'true', 'el Modo Sport va primero y viene marcado');

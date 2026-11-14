@@ -1,6 +1,17 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.8.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.9.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.9.0: primeros pasos más cortos e interactivos
+
+- **Bienvenida:** el plato, un título ("Armemos tu plan en 1 minuto") y tres frases cortas con ícono, en lugar de párrafos.
+- **Edad, altura y peso:** se eligen con botones de más y menos o deslizando una barra; también se pueden escribir.
+- **Modo:** dos tarjetas grandes con ícono y una línea cada una.
+- **Entrenamiento:** los días de la semana se tocan (0 a 7) y la duración se elige entre opciones, sin escribir.
+- **Gancho:** el título saluda por el nombre apenas se escribe, y una tira "Tu plan va tomando forma" va sumando lo que la persona respondió. En Bienestar no muestra el peso ni la altura.
+- **Menos texto:** se acortaron las explicaciones de todos los pasos.
+
+Sin cambios: el orden de los pasos, las validaciones, y las reglas para menores de 18 y para quien está en tratamiento por un trastorno alimentario.
 
 ## Versión 1.8.0: primer paso de NetAI Fit, la pestaña Mover
 
@@ -115,7 +126,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (149 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (152 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

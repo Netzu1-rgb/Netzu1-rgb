@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Minus, Plus, Dumbbell, Leaf, Lock, SkipForward, Sparkles } from 'lucide-react';
+import { PlateGraphic } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import {
   SEX_OPTIONS,
@@ -81,6 +82,18 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   };
   const back = () => { setTouched(false); setStepIndex((i) => Math.max(i - 1, mode === 'editar' ? 1 : 0)); };
 
+  // Lo que la persona ya respondió, en pocas palabras. En Bienestar el peso y la altura no se muestran.
+  const chips = [
+    p.name.trim(),
+    p.age && !errors.age ? `${p.age} años` : '',
+    !minor && stepIndex > steps.indexOf('modo') && steps.includes('modo') ? (sport ? 'Modo Sport' : 'Bienestar') : '',
+    !minor && p.heightCm && p.weightKg && !errors.heightCm && !errors.weightKg ? (sport ? `${p.heightCm} cm · ${p.weightKg} kg` : 'Altura y peso') : '',
+    sport && p.trainingDays !== '' && !errors.trainingDays ? `${p.trainingDays} ${String(p.trainingDays) === '1' ? 'día' : 'días'} por semana` : '',
+    sport && p.sportGoal ? SPORT_GOALS.find((g) => g.id === p.sportGoal)?.label : '',
+    !sport && p.activity ? ACTIVITY_LEVELS.find((l) => l.id === p.activity)?.label : '',
+    dietType ? DIET_OPTIONS.find((d) => d.id === dietType)?.label : '',
+  ].filter(Boolean);
+
   const numbered = steps.slice(1); // el paso de bienvenida no cuenta
   const position = numbered.indexOf(step) + 1;
 
@@ -114,51 +127,51 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
         <main className="flex-1 pt-8">
           {step === 'inicio' && (
             <div>
-              <h1 className="font-display text-4xl font-bold text-loza-900 leading-tight">Antes de empezar, contanos un poco de vos</h1>
-              <p className="mt-4 text-[17px] text-loza-600 leading-relaxed">
-                Son unas preguntas cortas para adaptar NetAI a tu vida: tu rango de energía, tus recetas y cómo querés ver la app. Lleva unos 2 minutos.
-              </p>
-              <ul className="mt-6 space-y-3 text-[15px] text-loza-700">
-                <li className="flex gap-3"><Dot />Todo es opcional. Podés saltear lo que no quieras contestar.</li>
-                <li className="flex gap-3"><Dot />Tus datos se guardan solo en este teléfono.</li>
-                <li className="flex gap-3"><Dot />Si sos deportista, podés elegir el Modo Sport para trabajar un objetivo físico.</li>
+              <PlateGraphic decorative className="w-40 h-40 mx-auto animate-fade-in" />
+              <h1 className="mt-6 font-display text-4xl font-bold text-loza-900 leading-tight">Armemos tu plan en 1 minuto</h1>
+              <p className="mt-3 text-[17px] text-loza-600">Respondé tocando y al final ves tu día armado.</p>
+              <ul className="mt-6 grid gap-2.5 text-[15px] font-bold text-loza-800">
+                <li className="flex items-center gap-3"><IconDot><SkipForward className="w-4 h-4" /></IconDot>Todo es opcional</li>
+                <li className="flex items-center gap-3"><IconDot><Lock className="w-4 h-4" /></IconDot>Tus datos quedan en tu teléfono</li>
+                <li className="flex items-center gap-3"><IconDot><Sparkles className="w-4 h-4" /></IconDot>Sin dietas ni culpa</li>
               </ul>
             </div>
           )}
 
           {step === 'vos' && (
-            <Step title="Sobre vos">
-              <Field id="ob-nombre" label="¿Cómo querés que te llamemos?" hint="Opcional.">
-                <input id="ob-nombre" type="text" autoComplete="given-name" value={p.name} onChange={(e) => set({ name: e.target.value })} className={inputCls} />
+            <Step title={p.name.trim() ? `Hola, ${p.name.trim()}` : 'Sobre vos'}>
+              <Field id="ob-nombre" label="Tu nombre">
+                <input id="ob-nombre" type="text" autoComplete="given-name" placeholder="Opcional" value={p.name} onChange={(e) => set({ name: e.target.value })} className={`${inputCls} placeholder:text-loza-500`} />
               </Field>
-              <Field id="ob-edad" label="Edad" hint="En años." error={touched && errors.age}>
-                <input id="ob-edad" type="number" inputMode="numeric" min="13" max="110" value={p.age} onChange={(e) => set({ age: e.target.value })} className={`${inputCls} w-32 tabular`} />
-              </Field>
+              <NumberDial id="ob-edad" label="Edad" unit="años" min={13} max={110} start={30} value={p.age} onChange={(v) => set({ age: v })} error={touched && errors.age} />
               {minor && (
                 <p className="rounded-2xl bg-agua-50 text-agua-900 p-4 text-[15px]">
-                  Como sos menor de 18, no te vamos a pedir peso ni altura. Usá NetAI junto a una persona adulta y, ante cualquier duda, consultá con un pediatra o nutricionista.
+                  Como sos menor de 18, no te pedimos peso ni altura. Usá NetAI junto a una persona adulta.
                 </p>
               )}
-              <Choice
-                label="Sexo"
-                hint="Solo para estimar tu energía diaria, porque el cálculo cambia un poco."
-                options={SEX_OPTIONS}
-                value={p.sex}
-                onChange={(v) => set({ sex: v })}
-              />
+              <Choice label="Sexo" hint="Para estimar tu energía." options={SEX_OPTIONS} value={p.sex} onChange={(v) => set({ sex: v })} />
             </Step>
           )}
 
           {step === 'modo' && (
-            <Step title="¿Cómo querés usar NetAI?" intro="Lo podés cambiar cuando quieras desde Ajustes.">
-              <div className="grid gap-2" role="radiogroup" aria-label="Modo de uso">
-                {APP_MODES.map((m) => (
-                  <OptionCard key={m.id} role="radio" selected={p.mode === m.id} onClick={() => set({ mode: m.id })} title={m.label} hint={m.hint} />
-                ))}
+            <Step title="¿Cómo querés usar NetAI?" intro="Lo cambiás cuando quieras.">
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Modo de uso">
+                {APP_MODES.map((m) => {
+                  const on = p.mode === m.id;
+                  const Icon = m.id === 'sport' ? Dumbbell : Leaf;
+                  return (
+                    <button key={m.id} type="button" role="radio" aria-checked={on} onClick={() => set({ mode: m.id })}
+                      className={`text-left rounded-[24px] p-4 border transition-colors ${on ? 'border-hoja-600 bg-hoja-50 ring-1 ring-hoja-600' : 'border-loza-300 bg-papel hover:border-loza-500'}`}>
+                      <span className={`grid place-items-center w-12 h-12 rounded-full ${on ? 'bg-hoja-600 text-white' : 'bg-loza-100 text-loza-700'}`}><Icon className="w-6 h-6" aria-hidden="true" /></span>
+                      <span className="mt-3 block font-display text-xl font-bold text-loza-900 leading-tight">{m.label}</span>
+                      <span className="mt-1 block text-sm text-loza-600">{m.short}</span>
+                    </button>
+                  );
+                })}
               </div>
               {p.mode === 'sport' && (
                 <p className="rounded-2xl bg-agua-50 text-agua-900 p-4 text-[15px] leading-relaxed">
-                  El Modo Sport usa tu peso y tu entrenamiento para calcular un plan con límites seguros: nunca baja de tu gasto en reposo y apunta a cambios graduales. Si tenés una condición de salud, consultá con un profesional antes de empezar.
+                  Calcula tu plan con límites seguros. Si tenés una condición de salud, consultá antes con un profesional.
                 </p>
               )}
             </Step>
@@ -168,31 +181,33 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
             <Step
               title="Tu cuerpo"
               intro={sport
-                ? 'Con tu altura y tu peso calculamos tu plan y seguimos tu progreso. Solo vos los ves.'
-                : 'Lo usamos solo para estimar tu rango de energía. En el modo Bienestar no lo vas a ver en la app, no calculamos tu IMC y no hay metas de peso. Si preferís no contestar, dejalo en blanco.'}
+                ? 'Para calcular tu plan. Solo vos lo ves.'
+                : 'Para estimar tu energía. No lo vas a ver en la app y podés dejarlo en blanco.'}
             >
-              <div className="grid grid-cols-2 gap-4">
-                <Field id="ob-altura" label="Altura (cm)" error={touched && errors.heightCm}>
-                  <input id="ob-altura" type="number" inputMode="numeric" min="100" max="230" value={p.heightCm} onChange={(e) => set({ heightCm: e.target.value })} className={`${inputCls} tabular`} />
-                </Field>
-                <Field id="ob-peso" label="Peso (kg)" error={touched && errors.weightKg}>
-                  <input id="ob-peso" type="number" inputMode="decimal" min="30" max="300" step="0.1" value={p.weightKg} onChange={(e) => set({ weightKg: e.target.value })} className={`${inputCls} tabular`} />
-                </Field>
-              </div>
+              <NumberDial id="ob-altura" label="Altura" unit="cm" min={100} max={230} start={165} value={p.heightCm} onChange={(v) => set({ heightCm: v })} error={touched && errors.heightCm} />
+              <NumberDial id="ob-peso" label="Peso" unit="kg" min={30} max={300} sliderMax={160} step={0.5} start={70} value={p.weightKg} onChange={(v) => set({ weightKg: v })} error={touched && errors.weightKg} />
             </Step>
           )}
 
           {step === 'deporte' && (
             <Step title="Tu entrenamiento">
-              <Choice label="¿Qué deporte hacés principalmente?" options={SPORT_TYPES} value={p.sportType} onChange={(v) => set({ sportType: v })} />
-              <div className="grid grid-cols-2 gap-4">
-                <Field id="ob-dias" label="Días por semana" error={touched && errors.trainingDays}>
-                  <input id="ob-dias" type="number" inputMode="numeric" min="0" max="7" value={p.trainingDays} onChange={(e) => set({ trainingDays: e.target.value })} className={`${inputCls} tabular`} />
-                </Field>
-                <Field id="ob-minutos" label="Minutos por sesión">
-                  <input id="ob-minutos" type="number" inputMode="numeric" min="0" max="300" step="5" value={p.sessionMinutes} onChange={(e) => set({ sessionMinutes: e.target.value })} className={`${inputCls} tabular`} />
-                </Field>
-              </div>
+              <Choice label="¿Qué hacés?" options={SPORT_TYPES} value={p.sportType} onChange={(v) => set({ sportType: v })} />
+              <fieldset>
+                <legend className="text-[15px] font-bold text-loza-800">¿Cuántos días por semana?</legend>
+                <div className="mt-2 grid grid-cols-8 gap-1.5" role="radiogroup" aria-label="Días de entrenamiento por semana">
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map((d) => {
+                    const on = String(p.trainingDays) === String(d);
+                    return (
+                      <button key={d} type="button" role="radio" aria-checked={on} aria-label={`${d} ${d === 1 ? 'día' : 'días'}`} onClick={() => set({ trainingDays: String(d) })}
+                        className={`h-11 rounded-full text-[15px] font-bold tabular transition-colors ${on ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-300 text-loza-700 hover:border-loza-500'}`}>
+                        {d}
+                      </button>
+                    );
+                  })}
+                </div>
+                {touched && errors.trainingDays && <p role="alert" className="mt-1.5 text-sm text-remolacha-700">{errors.trainingDays}</p>}
+              </fieldset>
+              <Choice label="¿Cuánto dura cada sesión?" options={[30, 45, 60, 90, 120].map((m) => ({ id: String(m), label: `${m} min` }))} value={String(p.sessionMinutes)} onChange={(v) => set({ sessionMinutes: v })} />
             </Step>
           )}
 
@@ -233,7 +248,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
           )}
 
           {step === 'objetivos' && (
-            <Step title="¿Para qué querés usar NetAI?" intro="Podés elegir varias.">
+            <Step title="¿Para qué querés usar NetAI?" intro="Elegí las que quieras.">
               <div className="flex flex-wrap gap-2">
                 {GOALS.map((g) => (
                   <Pill key={g.id} selected={p.goals.includes(g.id)} onClick={() => toggleIn('goals', g.id)}>{g.label}</Pill>
@@ -243,7 +258,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
           )}
 
           {step === 'alimentacion' && (
-            <Step title="Tu alimentación" intro="Contanos qué comés y qué no, para que las recetas y las ideas te sirvan. Podés dejarlo como está.">
+            <Step title="Tu alimentación" intro="Para que las recetas y las ideas te sirvan.">
               <fieldset>
                 <legend className="text-sm font-bold text-loza-800">¿Qué comés?</legend>
                 <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="¿Qué comés?">
@@ -256,7 +271,7 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
               </fieldset>
               <fieldset>
                 <legend className="text-sm font-bold text-loza-800">¿Hay alimentos que no comés?</legend>
-                <p className="mt-0.5 text-sm text-loza-600">Marcá los que no consumís, por salud, gusto o creencias.</p>
+                <p className="mt-0.5 text-sm text-loza-600">Marcá los que no consumís.</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {AVOID_OPTIONS.filter((o) => !(o.hiddenFor || []).includes(dietType)).map((o) => {
                     const key = o.field === 'diet' ? 'diet' : 'avoid';
@@ -350,7 +365,16 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
           )}
         </main>
 
-        <footer className="pt-8 flex items-center gap-3">
+        {chips.length > 0 && step !== 'inicio' && step !== 'resumen' && (
+          <div className="pt-6" aria-live="polite">
+            <p className="text-sm text-loza-600">Tu plan va tomando forma</p>
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Lo que ya respondiste">
+              {chips.map((c) => <li key={c} className="px-3 py-1 rounded-full bg-hoja-100 text-hoja-900 text-sm font-bold animate-fade-in">{c}</li>)}
+            </ul>
+          </div>
+        )}
+
+        <footer className="pt-6 flex items-center gap-3">
           {stepIndex > (mode === 'editar' ? 1 : 0) && (
             <button type="button" onClick={back} className="px-5 py-3.5 rounded-full text-[15px] font-bold text-loza-700 hover:bg-loza-100">
               Atrás
@@ -372,8 +396,37 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
 
 const inputCls = 'w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[16px] text-loza-900 focus:outline-none focus:border-hoja-500';
 
-function Dot() {
-  return <span aria-hidden="true" className="mt-2 w-1.5 h-1.5 rounded-full bg-hoja-500 shrink-0" />;
+function IconDot({ children }) {
+  return <span aria-hidden="true" className="grid place-items-center w-9 h-9 rounded-full bg-hoja-100 text-hoja-800 shrink-0">{children}</span>;
+}
+
+// Número que se puede escribir, sumar o restar con los botones, o deslizar.
+function NumberDial({ id, label, unit, value, onChange, min, max, sliderMax, step = 1, start, error }) {
+  const num = value === '' || value == null ? null : Number(String(value).replace(',', '.'));
+  const valid = num !== null && !Number.isNaN(num);
+  const clamp = (n) => Math.min(max, Math.max(min, n));
+  const bump = (delta) => {
+    const next = valid ? clamp(Math.round((num + delta) / step) * step) : start;
+    onChange(String(Number(next.toFixed(1))));
+  };
+  const roundBtn = 'grid place-items-center w-12 h-12 shrink-0 rounded-full bg-papel border border-loza-300 text-loza-800 hover:border-loza-500 active:bg-loza-100 transition-colors';
+  return (
+    <div>
+      <label htmlFor={id} className="block text-[15px] font-bold text-loza-800">{label}</label>
+      <div className="mt-2 flex items-center gap-3">
+        <button type="button" onClick={() => bump(-step)} aria-label={`Restar a ${label.toLowerCase()}`} className={roundBtn}><Minus className="w-5 h-5" aria-hidden="true" /></button>
+        <div className="flex-1 flex items-baseline justify-center gap-2 rounded-2xl border border-loza-300 bg-papel px-3 py-2 focus-within:border-hoja-500">
+          <input id={id} type="number" inputMode="decimal" min={min} max={max} step={step} placeholder="—" value={value} onChange={(e) => onChange(e.target.value)}
+            className="w-24 bg-transparent text-center font-display text-3xl font-bold text-loza-900 tabular placeholder:text-loza-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+          <span className="text-sm text-loza-600">{unit}</span>
+        </div>
+        <button type="button" onClick={() => bump(step)} aria-label={`Sumar a ${label.toLowerCase()}`} className={roundBtn}><Plus className="w-5 h-5" aria-hidden="true" /></button>
+      </div>
+      <input type="range" aria-label={`${label}: deslizar para elegir`} min={min} max={sliderMax || max} step={step} value={valid ? Math.min(sliderMax || max, clamp(num)) : start} onChange={(e) => onChange(e.target.value)}
+        className="mt-2 w-full h-11 accent-hoja-600 cursor-pointer" />
+      {error && <p role="alert" className="text-sm text-remolacha-700">{error}</p>}
+    </div>
+  );
 }
 
 function Step({ title, intro, children }) {

@@ -162,8 +162,8 @@ export function validateNumbers(profile) {
 // ---------------------------------------------------------------------------
 
 export const APP_MODES = [
-  { id: 'sport', label: 'Modo Sport', hint: 'Para deportistas: objetivo físico, energía, proteínas, carbohidratos, agua y seguimiento de tu peso.' },
-  { id: 'bienestar', label: 'Bienestar', hint: 'Comer con calma, sin metas de peso. Rangos flexibles o Modo Intuitivo.' },
+  { id: 'sport', label: 'Modo Sport', short: 'Objetivo físico, macros y peso.', hint: 'Para deportistas: objetivo físico, energía, proteínas, carbohidratos, agua y seguimiento de tu peso.' },
+  { id: 'bienestar', label: 'Bienestar', short: 'Comer con calma, sin metas de peso.', hint: 'Comer con calma, sin metas de peso. Rangos flexibles o Modo Intuitivo.' },
 ];
 
 export const SPORT_GOALS = [
