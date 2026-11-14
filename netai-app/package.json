@@ -1,6 +1,6 @@
 {
   "name": "netai-app",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "private": true,
   "description": "NetAI: app de nutrición consciente (modo Bienestar y Modo Sport), con acceso por código y registros guardados en el teléfono",
   "scripts": {

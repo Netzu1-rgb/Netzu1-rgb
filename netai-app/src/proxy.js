@@ -10,6 +10,7 @@ export async function proxy(request) {
     pathname.startsWith('/api/auth') ||
     pathname === '/sw.js' ||
     pathname === '/manifest.webmanifest' ||
+    pathname === '/fit.webmanifest' ||
     pathname === '/manifest.json' ||
     pathname === '/favicon.ico' ||
     pathname.startsWith('/icons/') ||
@@ -22,7 +23,7 @@ export async function proxy(request) {
   const isAuthenticated = await verifySessionToken(sessionCookie);
 
   // Proteger la zona privada (/app)
-  if (pathname.startsWith('/app')) {
+  if (pathname.startsWith('/app') || pathname.startsWith('/fit')) {
     if (!isAuthenticated) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);

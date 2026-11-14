@@ -39,6 +39,16 @@ async function run(p, label, out) {
     await p.locator('button:has-text("Ver receta")').first().click(); await p.waitForTimeout(300); await run(p, name + '-receta', out); await p.keyboard.press('Escape');
     await p.click('button[aria-label="Ajustes"]'); await p.waitForTimeout(300); await run(p, name + '-ajustes', out); await p.keyboard.press('Escape');
   }
+  // NetAI Fit
+  await p.evaluate(() => { localStorage.removeItem('netai_fit_profile_v1'); localStorage.removeItem('netai_workouts_v1'); });
+  await go('/fit'); await run(p, 'fit-objetivos', out);
+  await p.click('[role=radio]:has-text("Ganar fuerza")'); await p.click('button:has-text("Armar mi plan")'); await p.waitForTimeout(300); await run(p, 'fit-hoy', out);
+  await p.click('button:has-text("Empezar")'); await p.waitForTimeout(300);
+  await p.locator('button[aria-label$="marcar como hecha"]').first().click(); await run(p, 'fit-entrenando', out);
+  await p.click('button:has-text("Terminar entrenamiento")'); await p.waitForTimeout(300); await run(p, 'fit-terminar', out);
+  await p.click('button:has-text("Guardar entrenamiento")'); await p.waitForTimeout(300);
+  for (const t of ['Rutinas', 'Ejercicios', 'Progreso']) { await p.click(`nav button:has-text("${t}")`); await p.waitForTimeout(400); await run(p, 'fit-' + t.toLowerCase(), out); }
+  await p.click('nav button:has-text("Ejercicios")'); await p.locator('section[aria-label=Ejercicios] button').first().click(); await p.waitForTimeout(300); await run(p, 'fit-ejercicio', out); await p.keyboard.press('Escape');
   const seen = new Map();
   for (const v of out) { const k = v.id; if (!seen.has(k)) seen.set(k, { impact: v.impact, where: [], ej: v.ej }); seen.get(k).ej = [...new Set([...seen.get(k).ej, ...v.ej])]; seen.get(k).where.push(v.label + '(' + v.n + ')'); }
   for (const [k, v] of seen) { console.log(`\n[${v.impact}] ${k} -> ${v.where.join(', ')}`); v.ej.forEach(e => console.log('    ' + e)); }

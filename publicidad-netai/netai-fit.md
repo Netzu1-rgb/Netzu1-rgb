@@ -2,6 +2,8 @@
 
 Documento de planificación. No incluye código. El nombre elegido es **NetAI Fit**.
 
+> **Actualización (versión 2.0.0):** NetAI Fit ya existe como app aparte en `/fit`, conectada con NetAI. Este documento es el plan original; lo construido está en `estado-de-la-app.md` y las referencias en `competidores-gym.md`. Dos puntos del plan cambiaron: Fit sí ofrece "Bajar de peso" como objetivo (igual que el Modo Sport de NetAI), salvo para quien indicó un tratamiento por un trastorno alimentario, y se hizo como app separada en lugar de una pestaña.
+
 ## Objetivos
 **Lanzamiento de NetAI**
 - Publicar en App Store y Play Store, con una app fluida.

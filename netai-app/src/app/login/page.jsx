@@ -15,7 +15,9 @@ import {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get('redirect') || '/app';
+  // Solo se vuelve a páginas de la propia app: nunca a otro sitio
+  const wanted = searchParams.get('redirect') || '';
+  const redirectTarget = /^\/(app|fit)(\/|$)/.test(wanted) ? wanted : '/app';
 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

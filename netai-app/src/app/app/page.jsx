@@ -46,7 +46,8 @@ import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
 import { prepareImage } from '@/lib/photo';
-import MoveTab from '@/components/fit/MoveTab';
+import { Sheet, CloseButton } from '@/components/ui/Sheet';
+import { WORKOUTS_KEY, FIT_PROFILE_KEY, WORKOUT_DRAFT_KEY, sanitizeWorkouts, sanitizeFitProfile } from '@/lib/workouts';
 import { sanitizeLogs, sanitizeWeights, parseJson, isObject } from '@/lib/storage';
 import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, avoidedFoods, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
@@ -58,7 +59,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '2.0.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -119,6 +120,7 @@ export default function PwaAppPage() {
   const [profile, setProfile] = useState(null);
   const [onboarding, setOnboarding] = useState(null); // 'inicial' | 'editar' | null
   const [weightLog, setWeightLog] = useState([]); // [{ date, kg }] solo Modo Sport
+  const [workouts, setWorkouts] = useState([]); // entrenamientos de NetAI Fit (acá solo se leen)
   const [weightSheet, setWeightSheet] = useState(false);
   const [weightInput, setWeightInput] = useState('');
 
@@ -194,6 +196,7 @@ export default function PwaAppPage() {
       if (savedIntuitive !== null) setIntuitiveMode(savedIntuitive === 'true');
       const savedWeights = parseJson(localStorage.getItem(WEIGHT_LOG_KEY));
       if (savedWeights) setWeightLog(sanitizeWeights(savedWeights));
+      setWorkouts(sanitizeWorkouts(parseJson(localStorage.getItem(WORKOUTS_KEY))));
       const savedProfile = loadProfile();
       setProfile(savedProfile);
       if (!savedProfile) setOnboarding('inicial');
@@ -627,7 +630,9 @@ export default function PwaAppPage() {
 
   // Copia de seguridad: los registros viven solo en este teléfono
   const handleExport = () => {
-    const payload = { app: 'NetAI', version: 3, exportedAt: new Date().toISOString(), intuitiveMode, profile, weightLog, prefs, logsByDate };
+    // La copia incluye también lo de NetAI Fit (entrenamientos y objetivos), que vive en el mismo teléfono
+    const fitProfile = sanitizeFitProfile(parseJson(localStorage.getItem(FIT_PROFILE_KEY)));
+    const payload = { app: 'NetAI', version: 4, exportedAt: new Date().toISOString(), intuitiveMode, profile, weightLog, prefs, logsByDate, fit: { profile: fitProfile, workouts } };
     downloadFile(JSON.stringify(payload, null, 2), `netai-registros-${today}.json`, 'application/json');
     setToast({ text: 'Descargaste la copia de tus registros.' });
   };
@@ -638,6 +643,15 @@ export default function PwaAppPage() {
       if (!isObject(data) || data.app !== 'NetAI' || !isObject(data.logsByDate)) throw new Error('formato');
       setLogsByDate((prev) => ({ ...prev, ...sanitizeLogs(data.logsByDate) }));
       if (Array.isArray(data.weightLog)) setWeightLog(sanitizeWeights(data.weightLog));
+      if (isObject(data.fit)) {
+        const restoredWorkouts = sanitizeWorkouts(data.fit.workouts);
+        const restoredFit = sanitizeFitProfile(data.fit.profile);
+        try {
+          localStorage.setItem(WORKOUTS_KEY, JSON.stringify(restoredWorkouts));
+          if (restoredFit) localStorage.setItem(FIT_PROFILE_KEY, JSON.stringify(restoredFit));
+        } catch (e) { /* sin almacenamiento */ }
+        setWorkouts(restoredWorkouts);
+      }
       if (isObject(data.prefs)) setPrefs({ ...emptyPrefs(), ...data.prefs, favorites: Array.isArray(data.prefs.favorites) ? data.prefs.favorites.filter((f) => isObject(f) && typeof f.name === 'string') : [], schedule: { ...DEFAULT_SCHEDULE, ...(isObject(data.prefs.schedule) ? data.prefs.schedule : {}) } });
       if (isObject(data.profile)) {
         const restored = { ...emptyProfile(), ...data.profile };
@@ -656,7 +670,8 @@ export default function PwaAppPage() {
     setWeightLog([]);
     setPrefs(emptyPrefs());
     setProfile(null);
-    try { localStorage.removeItem(PROFILE_KEY); } catch (e) { /* sin almacenamiento */ }
+    try { [PROFILE_KEY, WORKOUTS_KEY, FIT_PROFILE_KEY, WORKOUT_DRAFT_KEY].forEach((k) => localStorage.removeItem(k)); } catch (e) { /* sin almacenamiento */ }
+    setWorkouts([]);
     setSettingsOpen(false);
     setToast({ text: 'Borraste todos tus datos de este teléfono.' });
     setOnboarding('inicial');
@@ -691,6 +706,7 @@ export default function PwaAppPage() {
     );
   }
 
+  const dayWorkouts = workouts.filter((w) => w.date === selectedDate);
   const water = currentDayLog.waterGlasses || 0;
   const mealCount = Object.values(currentDayLog.meals || {}).reduce((n, list) => n + list.length, 0);
 
@@ -855,6 +871,16 @@ export default function PwaAppPage() {
                 })}
               </div>
             </section>
+
+            {/* Enlace con NetAI Fit: el entrenamiento del día y el acceso a la app de entrenamiento */}
+            <Link href="/fit" className="flex items-center gap-4 rounded-[24px] bg-papel border border-loza-200 hover:border-agua-400 transition-colors p-4">
+              <span className="grid place-items-center w-12 h-12 rounded-full bg-agua-100 text-agua-800 shrink-0"><Dumbbell className="w-5 h-5" aria-hidden="true" /></span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-bold text-loza-900">{dayWorkouts.length ? `Entrenaste: ${dayWorkouts.map((w) => w.routineName).join(', ')}` : 'NetAI Fit'}</span>
+                <span className="block text-sm text-loza-600 tabular">{dayWorkouts.length ? `${dayWorkouts.reduce((n, w) => n + w.minutes, 0)} min · Ver en NetAI Fit` : 'Rutinas, cargas y progreso de tu entrenamiento.'}</span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-loza-500 shrink-0" aria-hidden="true" />
+            </Link>
             </div>
 
             {/* Comidas del día: es una secuencia real, de la mañana a la noche */}
@@ -1231,8 +1257,6 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {/* APRENDER */}
         {/* ------------------------------------------------------------ */}
-        {activeTab === 'move' && <MoveTab Sheet={Sheet} CloseButton={CloseButton} />}
-
         {activeTab === 'learn' && (
           <div className="space-y-10 animate-fade-in">
             <section aria-labelledby="titulo-escala">
@@ -1406,13 +1430,12 @@ export default function PwaAppPage() {
       {/* NAVEGACIÓN INFERIOR */}
       {/* ============================================================== */}
       <nav aria-label="Secciones" className="fixed bottom-0 inset-x-0 z-40 glass-surface border-x-0 border-b-0 safe-bottom">
-        <div className="max-w-lg mx-auto grid grid-cols-5 px-1 pt-1.5 pb-2">
+        <div className="max-w-md mx-auto grid grid-cols-4 px-2 pt-1.5 pb-2">
           {[
             { id: 'today', label: 'Mi día', Icon: Utensils },
             { id: 'week', label: 'Semana', Icon: CalendarDays },
             { id: 'inspiration', label: 'Inspiración', Icon: Sparkles },
             { id: 'learn', label: 'Aprender', Icon: BookOpen },
-            { id: 'move', label: 'Mover', Icon: Dumbbell },
           ].map(({ id, label, Icon }) => {
             const on = activeTab === id;
             return (
@@ -1423,7 +1446,7 @@ export default function PwaAppPage() {
                 aria-current={on ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 py-1.5 rounded-2xl transition-colors ${on ? 'text-loza-900' : 'text-loza-500 hover:text-loza-800'}`}
               >
-                <span className={`px-3.5 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
+                <span className={`px-4 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
                   <Icon className="w-5 h-5" />
                 </span>
                 <span className={`text-xs ${on ? 'font-bold' : ''}`}>{label}</span>
@@ -1840,85 +1863,6 @@ function ScalePicker({ id, label, value, onChange }) {
   );
 }
 
-// Cuántas hojas hay abiertas: sirve para que el botón Atrás del teléfono cierre la hoja en lugar de salir de la app
-let openSheets = 0;
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-function Sheet({ children, onClose, labelledBy }) {
-  const panel = useRef(null);
-  const close = useRef(onClose);
-  close.current = onClose;
-
-  useEffect(() => {
-    const el = panel.current;
-    const opener = document.activeElement;
-    el.focus({ preventScroll: true });
-
-    const onKey = (e) => {
-      if (e.key === 'Escape') { close.current(); return; }
-      if (e.key !== 'Tab') return;
-      // El foco del teclado no sale de la hoja mientras está abierta
-      const items = [...el.querySelectorAll(FOCUSABLE)].filter((n) => n.getClientRects().length > 0);
-      if (!items.length) { e.preventDefault(); return; }
-      const first = items[0];
-      const last = items[items.length - 1];
-      const active = document.activeElement;
-      if (!el.contains(active) || active === el) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
-      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
-    };
-    document.addEventListener('keydown', onKey);
-
-    let closedByBack = false;
-    openSheets += 1;
-    if (!window.history.state?.netaiSheet) window.history.pushState({ ...(window.history.state || {}), netaiSheet: true }, '');
-    const onPop = () => { closedByBack = true; close.current(); };
-    window.addEventListener('popstate', onPop);
-
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      window.removeEventListener('popstate', onPop);
-      document.body.style.overflow = prev;
-      openSheets -= 1;
-      // Si se cerró con un botón (y no se abrió otra hoja enseguida), se quita la entrada que se sumó al historial
-      queueMicrotask(() => { if (!closedByBack && openSheets === 0 && window.history.state?.netaiSheet) window.history.back(); });
-      if (opener && document.contains(opener)) opener.focus({ preventScroll: true });
-    };
-  }, []);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={panel}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={labelledBy}
-        className="relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto bg-loza-50 rounded-t-[28px] sm:rounded-[28px] shadow-sheet px-5 pt-5 pb-8 sm:p-7 animate-slide-up safe-bottom focus:outline-none"
-      >
-        <span aria-hidden="true" className="sm:hidden block mx-auto -mt-1 mb-4 w-10 h-1 rounded-full bg-loza-300" />
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function CloseButton({ onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Cerrar"
-      className="shrink-0 p-2 -mr-2 -mt-1 rounded-full text-loza-500 hover:text-loza-900 hover:bg-loza-100"
-    >
-      <X className="w-5 h-5" />
-    </button>
-  );
-}
-
 // Ajustes: copia de seguridad, borrar datos, legales y salir. Las acciones que borran piden confirmación dentro de la hoja.
 function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv, onSchedule, theme, onTheme, onImport, onDeleteAll, onLogout, onClose, onEditProfile, numbersLocked, sportOn, hasData }) {
   const [confirm, setConfirm] = useState(null); // 'delete' | 'logout' | null
@@ -2004,7 +1948,7 @@ function SettingsPanel({ intuitiveMode, onToggleIntuitive, onExport, onExportCsv
           {confirm === 'delete' ? (
             <div className="rounded-2xl bg-remolacha-50 p-4">
               <p className="font-bold text-remolacha-900">¿Borrar todos tus datos?</p>
-              <p className="text-sm text-remolacha-800 mt-1">Se borran tus registros y tus datos personales de este teléfono, y no se pueden recuperar salvo que tengas una copia.</p>
+              <p className="text-sm text-remolacha-800 mt-1">Se borran tus registros, tus datos personales y lo de NetAI Fit de este teléfono, y no se pueden recuperar salvo que tengas una copia.</p>
               <div className="mt-3 flex gap-2">
                 <button type="button" onClick={onDeleteAll} className="px-4 py-2.5 rounded-full bg-remolacha-600 text-white text-sm font-bold">Sí, borrar todo</button>
                 <button type="button" onClick={() => setConfirm(null)} className="px-4 py-2.5 rounded-full text-sm font-bold text-remolacha-900 hover:bg-remolacha-100">Cancelar</button>

@@ -84,6 +84,20 @@ Qué se tomó y qué no:
 
 La licencia CC BY-SA obliga a compartir igual los dibujos (y cualquier versión modificada de ellos), no el código ni los textos de la app.
 
+## Qué se tomó de cada app para NetAI Fit 2.0
+
+NetAI Fit ya es una app aparte (ver `estado-de-la-app.md`). Esto es lo que se aprendió de cada referencia; en ningún caso se copió código.
+
+| De dónde | Idea que se tomó | Cómo quedó en NetAI Fit |
+|---|---|---|
+| Workout Guide | Tres poses por ejercicio; ficha con equipo, músculo y tipo | Figura animada y biblioteca de 40 ejercicios (dibujos con su atribución) |
+| Liftosaur | App web instalable; programas que avanzan sesión a sesión | App en `/fit` instalable; la rutina que toca va rotando |
+| wger | Entrenamiento, nutrición y peso en un mismo lugar | Mismo registro de peso que NetAI; objetivo y días tomados del Modo Sport |
+| Registros de fuerza comerciales (Hevy, Strong), vistos como usuario | Anotar serie por serie y ver la carga de la última vez | Filas de serie con repeticiones y kilos, y "La última vez" en cada ejercicio |
+| Fitbod, visto como usuario | Preguntar poco al principio y proponer la rutina | Objetivos en una pantalla y "Hoy te toca" |
+
+Lo que se dejó afuera a propósito: rankings, comparaciones con otras personas y rachas que se pierden.
+
 ## Por dónde empezar
 
 1. **Liftosaur y wger con REA**, porque son los dos que más enseñan: uno es una PWA como NetAI y el otro une entrenamiento con nutrición. El pedido para Claude Code está en `instalar-rea.md`; REA se instala en tu computadora, no en una sesión en la nube.

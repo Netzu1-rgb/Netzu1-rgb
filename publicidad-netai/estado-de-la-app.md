@@ -1,6 +1,36 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.10.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 2.0.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 2.0.0: NetAI Fit, app de entrenamiento aparte
+
+NetAI Fit pasa a ser una app propia en `/fit`, con su nombre, su ícono y su manifiesto, así se instala en el teléfono separada de NetAI. La pestaña Mover se quitó de NetAI.
+
+**Qué tiene**
+- **Objetivos, en una pantalla:** ganar fuerza, ganar músculo, bajar de peso, resistencia, movilidad o moverme más; lugar (casa o gimnasio), días por semana y nivel.
+- **Hoy:** la rutina que toca según el objetivo (va rotando), la semana de lunes a domingo y el acceso a la comida del día en NetAI.
+- **Entrenar:** cada ejercicio con su figura en movimiento; por serie se anotan repeticiones o segundos y los kilos, y se marca como hecha. Propone la carga de la última vez. Si se sale o se cierra la app, el entrenamiento queda guardado para seguir.
+- **Rutinas:** nueve rutinas (cinco en casa, cuatro en gimnasio), primero las del objetivo.
+- **Ejercicios:** la biblioteca de 40 ejercicios con filtros.
+- **Progreso:** totales, carga por ejercicio comparada con la primera vez, historial por ejercicio, peso corporal e historial de entrenamientos.
+
+**Cómo se conecta con NetAI**
+- Toma de NetAI el nombre y, si la persona usa el Modo Sport, el objetivo, los días y el lugar.
+- El peso corporal es el mismo registro: lo que se anota en una app aparece en la otra.
+- NetAI muestra en Mi día el entrenamiento hecho ese día, con acceso a Fit. Fit tiene un acceso a NetAI.
+- La copia de seguridad de NetAI incluye los entrenamientos y los objetivos de Fit, y "Borrar todos mis datos" también los borra.
+- Si en NetAI se indicó un tratamiento por un trastorno alimentario, Fit no ofrece "Bajar de peso" ni pide el peso corporal.
+- Usan el mismo código de acceso y la misma sesión.
+
+**Cómo está hecha la separación.** Las dos apps se publican juntas, en el mismo dominio. Así comparten los datos del teléfono sin cuentas ni servidor. Si más adelante van en dominios distintos o a las tiendas como dos apps, hacen falta cuentas para que sigan conectadas.
+
+**Seguridad.** El ingreso solo vuelve a páginas de la propia app después de entrar (antes aceptaba cualquier dirección en el enlace).
+
+**Pendiente**
+- Las series y repeticiones de las rutinas, y los textos de los ejercicios, son generales: falta la revisión de un profesional del ejercicio.
+- No hay rutinas armadas por la persona, ni temporizador de descanso, ni gráficos de evolución.
+- El movimiento de la figura va a saltos (tres poses por ejercicio).
+- La web de presentación sigue mostrando NetAI Fit como "en desarrollo".
 
 ## Versión 1.10.0: alimentación en una pantalla corta y varios deportes
 
@@ -146,7 +176,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (162 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (32 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (173 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
