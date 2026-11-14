@@ -98,6 +98,19 @@ NetAI Fit ya es una app aparte (ver `estado-de-la-app.md`). Esto es lo que se ap
 
 Lo que se dejó afuera a propósito: rankings, comparaciones con otras personas y rachas que se pierden.
 
+## Cómo hacen sus animaciones otras apps, y qué se hizo en NetAI Fit
+
+Se estudió desde afuera, con información pública, cómo presentan los ejercicios las apps y los proveedores del rubro. No se descargaron ni se desarmaron animaciones de ninguna app: eso sería copiar recursos protegidos, que es justo lo que REA y las licencias excluyen.
+
+| Forma | Quién la usa o la vende | Ventaja | Contra |
+|---|---|---|---|
+| Video o clip 3D licenciado | Bibliotecas comerciales como MoveKit (MP4, GIF, Lottie y secuencias PNG, con API) | Realista, listo para usar | Se paga por clip o por biblioteca; pesa; no se puede cambiar el estilo |
+| Animación hecha a medida por un estudio | Por ejemplo, la app Liftin' encargó 200 animaciones para iPhone y Apple Watch | Estilo propio y de calidad | Caro y lento; cada cambio vuelve al estudio |
+| Lottie (animación vectorial en JSON) | Paquetes de LottieFiles; la app abierta Open Exercises | Liviano y nítido en cualquier tamaño | Los paquetes gratis suelen ser ilustraciones genéricas; licencias variadas |
+| Pocas poses dibujadas | Workout Guide (tres poses por ejercicio) | Simple y claro | El movimiento va a saltos |
+
+**Lo que se tomó para NetAI Fit:** la idea de la animación por huesos y fotogramas clave (la base de Lottie y de las herramientas de animación 2D), resuelta con código propio. Cada ejercicio es una lista corta de poses y la app interpola entre ellas. Resultado: 68 animaciones fluidas, livianas, con el color de la marca y en tema claro u oscuro, sin pagar licencias ni depender de terceros. Si más adelante se quiere un estilo más realista, el camino es licenciar una biblioteca 3D o encargarla a un estudio.
+
 ## Por dónde empezar
 
 1. **Liftosaur y wger con REA**, porque son los dos que más enseñan: uno es una PWA como NetAI y el otro une entrenamiento con nutrición. El pedido para Claude Code está en `instalar-rea.md`; REA se instala en tu computadora, no en una sesión en la nube.
@@ -112,6 +125,10 @@ Lo que se dejó afuera a propósito: rankings, comparaciones con otras personas 
 - **Quién revisa las rutinas** desde el punto de vista profesional.
 
 ## Fuentes
+
+- [MoveKit, biblioteca de ejercicios en 3D (AlternativeTo)](https://alternativeto.net/software/movekit/about/)
+- [Animaciones de gimnasio en LottieFiles](https://lottiefiles.com/free-animations/gym-app)
+- [Caso: animaciones de la app Liftin' (Contra)](https://contra.com/p/2ZE37LrO-liftin-workout-app-animation-project)
 
 - [El método 4-2-1 en TikTok (REP Fitness)](https://repfitness.com/blogs/training/4-2-1-workout)
 - [El método 3-2-1 (Tom's Guide)](https://www.tomsguide.com/news/ive-been-doing-the-tiktok-3-2-1-method-workout-heres-what-you-should-know)

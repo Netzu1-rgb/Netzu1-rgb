@@ -1,6 +1,19 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 2.1.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 2.2.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 2.2.0: un muñeco animado para cada ejercicio de NetAI Fit
+
+Los 68 ejercicios tienen ahora una animación propia: un muñeco que hace el movimiento completo y fluido, en lugar de saltar entre tres dibujos.
+
+- **Cómo está hecho:** un esqueleto 2D con articulaciones (cadera, torso, cabeza, brazos y piernas) animado por fotogramas clave, la misma técnica de las animaciones por huesos que usan herramientas como Lottie o Spine. Donde hace falta, la mano o el pie "busca" un punto fijo (el piso, la barra, el banco) y el brazo o la pierna se acomoda solo, así no se despegan ni atraviesan las cosas. Incluye barra, mancuernas, pesa rusa, bancos, poleas, cinta y sogas.
+- **Vista de costado o de frente** según lo que mejor muestra cada ejercicio (por ejemplo, vuelos laterales y saltos de tijera van de frente).
+- **Dónde se ve:** quieto en las listas; en movimiento en el detalle del ejercicio y durante el entrenamiento. Se puede pausar y queda quieto si el teléfono pide reducir el movimiento.
+- **Las ilustraciones de Workout Guide** siguen en el detalle como "Posiciones clave", con su atribución.
+- **Peso:** el muñeco se dibuja con código (no hay videos ni imágenes nuevas que descargar). Con un entrenamiento abierto, la app se mantuvo a 60 cuadros por segundo en la prueba.
+- **Hecho para NetAI:** las poses de los 68 ejercicios se escribieron desde cero; no se copió ninguna animación de otra app.
+
+**Pendiente:** las animaciones son esquemáticas (un muñeco, no una persona realista). Algunos ejercicios que en la realidad se ven de costado en profundidad (aperturas, giros rusos) son una aproximación. Conviene que un profesional del ejercicio revise que cada movimiento se entienda bien.
 
 ## Versión 2.1.1: mini test de NetAI Fit, arreglos y mejoras tomadas de otras apps
 
@@ -72,7 +85,6 @@ NetAI Fit pasa a ser una app propia en `/fit`, con su nombre, su ícono y su man
 **Pendiente**
 - Las series y repeticiones de las rutinas, y los textos de los ejercicios, son generales: falta la revisión de un profesional del ejercicio.
 - No hay rutinas armadas por la persona ni gráficos de evolución.
-- El movimiento de la figura va a saltos (tres poses por ejercicio).
 - La web de presentación sigue mostrando NetAI Fit como "en desarrollo".
 
 ## Versión 1.10.0: alimentación en una pantalla corta y varios deportes
@@ -219,7 +231,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (35 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (185 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (37 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (187 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

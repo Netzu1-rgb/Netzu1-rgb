@@ -59,7 +59,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '2.1.1';
+const APP_VERSION = '2.2.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';

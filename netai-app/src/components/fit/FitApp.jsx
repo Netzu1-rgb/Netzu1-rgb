@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Info, Pause, Play, Check, Plus, Timer, Trophy, Trash2, ChevronRight, Clock, House, ListChecks, Dumbbell, TrendingUp, Target, Utensils, Flame, HeartPulse, Footprints, Activity, BicepsFlexed, PersonStanding, Scale } from 'lucide-react';
 import { Sheet, CloseButton } from '@/components/ui/Sheet';
+import CharacterFigure from '@/components/fit/CharacterFigure';
 import { EXERCISES, EXERCISE_PLACES, EXERCISE_ZONES, exerciseFrames } from '@/lib/exercises';
 import {
   ROUTINES, FEELINGS, FIT_GOALS, FIT_LEVELS, FIT_PROGRAMS, FIT_SPORTS, programsFor, WORKOUTS_KEY, WORKOUT_DRAFT_KEY, FIT_PROFILE_KEY,
@@ -13,29 +14,14 @@ import {
 import { PROFILE_KEY, WEIGHT_LOG_KEY, hidesNumbers } from '@/lib/profile';
 import { parseJson, sanitizeWeights, isObject } from '@/lib/storage';
 
-// Figura del ejercicio. Animada, alterna las tres poses; quieta, muestra la del medio.
-// Los dibujos se cargan recién cuando la figura está cerca de la pantalla.
-export function ExerciseFigure({ slug, animated = false, className = '' }) {
-  const ref = useRef(null);
-  const [near, setNear] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === 'undefined') { setNear(true); return undefined; }
-    const io = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { setNear(true); io.disconnect(); } }, { rootMargin: '300px' });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  const frames = exerciseFrames(slug);
-  const poses = animated ? [1, 2, 3] : [2];
+// Una de las tres posiciones dibujadas (Workout Guide), en el color del tema
+function KeyPose({ slug, n }) {
   return (
-    <div ref={ref} aria-hidden="true" className={`relative text-agua-800 ${animated ? 'figura-animada' : ''} ${className}`}>
-      {near && poses.map((n) => (
-        <span key={n} data-pose={n} className="figura-pose" style={{ '--pose': `url(${frames[n - 1]})` }} />
-      ))}
+    <div aria-hidden="true" className="relative w-full aspect-square text-agua-800">
+      <span className="figura-pose" data-pose="2" style={{ '--pose': `url(${exerciseFrames(slug)[n - 1]})` }} />
     </div>
   );
 }
-
 
 // Marca de NetAI Fit: el mismo recuadro gris de NetAI, con una línea de pulso en azul
 export function FitMark({ className = '' }) {
@@ -299,14 +285,23 @@ export default function FitApp() {
         <CloseButton onClick={() => setOpen(null)} />
       </div>
       <div className="mt-4 rounded-[24px] bg-papel border border-loza-200">
-        <ExerciseFigure key={`${open.slug}-${playing}`} slug={open.slug} animated={playing} className="w-full max-w-[300px] mx-auto aspect-square" />
+        <CharacterFigure slug={open.slug} animated={playing} label={`${open.name}: animación del movimiento`} className="w-full max-w-[300px] mx-auto aspect-square block" />
       </div>
-      <div className="mt-2 flex justify-end">
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-sm text-loza-600">Posiciones clave</p>
         <button type="button" onClick={() => setPlaying(!playing)} aria-pressed={!playing} className="inline-flex items-center gap-1.5 px-3 min-h-[44px] rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">
           {playing ? <Pause className="w-4 h-4" aria-hidden="true" /> : <Play className="w-4 h-4" aria-hidden="true" />}
           {playing ? 'Pausar' : 'Ver movimiento'}
         </button>
       </div>
+      <ol className="grid grid-cols-3 gap-2" aria-label="Posiciones clave del ejercicio">
+        {[1, 2, 3].map((n) => (
+          <li key={n} className="rounded-2xl bg-papel border border-loza-200 p-1">
+            <KeyPose slug={open.slug} n={n} />
+            <span className="sr-only">Posición {n} de 3</span>
+          </li>
+        ))}
+      </ol>
       <p className="mt-4 text-sm text-loza-600">Trabaja: <span className="font-bold text-loza-800">{open.muscles.join(', ')}</span> · {open.kind === 'tiempo' ? 'Por tiempo' : 'Por repeticiones'}</p>
       <h3 className="mt-5 font-bold text-loza-900">Cómo se hace</h3>
       <ol className="mt-2 space-y-2 text-[15px] text-loza-700 list-decimal pl-5">{open.steps.map((s) => <li key={s}>{s}</li>)}</ol>
@@ -344,7 +339,7 @@ export default function FitApp() {
                 <li key={ex.slug} className="rounded-[24px] bg-papel border border-loza-200 p-4">
                   <div className="flex items-center gap-3">
                     <button type="button" onClick={() => openExercise(info)} aria-label={`Ver cómo se hace: ${info.name}`} className="shrink-0 rounded-2xl bg-loza-50 border border-loza-200 hover:border-agua-400">
-                      <ExerciseFigure slug={ex.slug} animated className="w-20 h-20" />
+                      <CharacterFigure slug={ex.slug} animated className="w-20 h-20" />
                     </button>
                     <div className="min-w-0">
                       <h2 className="font-bold text-[16px] text-loza-900 leading-snug">{info.name}</h2>
@@ -440,7 +435,7 @@ export default function FitApp() {
 
   const RoutineCard = ({ r }) => (
     <button type="button" onClick={() => setRoutine(r)} className="w-full h-full text-left rounded-[24px] bg-papel border border-loza-200 hover:border-agua-400 transition-colors p-4 flex items-center gap-4">
-      <ExerciseFigure slug={r.items[0].slug} className="w-20 h-20 shrink-0" />
+      <CharacterFigure slug={r.items[0].slug} className="w-20 h-20 shrink-0" />
       <span className="min-w-0 flex-1">
         <span className="block font-display text-lg font-bold text-loza-900 leading-tight">{r.name}</span>
         <span className="mt-1 block text-sm text-loza-600">{r.goal} · {r.place === 'gimnasio' ? 'Gimnasio' : 'En casa'}</span>
@@ -486,7 +481,7 @@ export default function FitApp() {
               <section aria-labelledby="titulo-toca" className="rounded-[24px] bg-papel border border-loza-200 p-5">
                 <p className="text-sm text-loza-600">{trainedToday ? 'La próxima' : 'Hoy te toca'}</p>
                 <div className="mt-1 flex items-center gap-4">
-                  <ExerciseFigure slug={upNext.items[0].slug} animated className="w-24 h-24 shrink-0" />
+                  <CharacterFigure slug={upNext.items[0].slug} animated className="w-24 h-24 shrink-0" />
                   <div className="min-w-0">
                     <h2 id="titulo-toca" className="font-display text-2xl font-bold text-loza-900 leading-tight">{upNext.name}</h2>
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-loza-600 tabular"><Clock className="w-4 h-4" aria-hidden="true" />{upNext.minutes} min · {upNext.items.length} ejercicios</p>
@@ -548,7 +543,7 @@ export default function FitApp() {
                         {card.items.map((r) => (
                           <li key={r.id}>
                             <button type="button" onClick={() => setRoutine(r)} className="w-full min-h-[52px] py-2 flex items-center gap-3 text-left hover:bg-loza-100/60 rounded-xl">
-                              <ExerciseFigure slug={r.items[0].slug} className="w-10 h-10 shrink-0" />
+                              <CharacterFigure slug={r.items[0].slug} className="w-10 h-10 shrink-0" />
                               <span className="flex-1 min-w-0 font-bold text-[15px] text-loza-900 leading-snug">{r.name.includes(' · ') ? r.name.split(' · ')[1] : r.name}</span>
                               <span className="text-sm text-loza-600 tabular whitespace-nowrap">{r.minutes} min</span>
                               <ChevronRight className="w-4 h-4 text-loza-500 shrink-0" aria-hidden="true" />
@@ -585,7 +580,7 @@ export default function FitApp() {
                 {list.map((e) => (
                   <li key={e.slug}>
                     <button type="button" onClick={() => openExercise(e)} className="w-full h-full text-left rounded-[20px] bg-papel border border-loza-200 hover:border-agua-400 transition-colors p-3">
-                      <ExerciseFigure slug={e.slug} className="w-full aspect-square" />
+                      <CharacterFigure slug={e.slug} className="w-full aspect-square" />
                       <span className="mt-1 block font-bold text-[15px] text-loza-900 leading-snug">{e.name}</span>
                       <span className="block text-sm text-loza-600">{e.zone} · {e.equipment}</span>
                     </button>
@@ -630,7 +625,7 @@ export default function FitApp() {
                     return (
                       <li key={pr.slug}>
                         <button type="button" onClick={() => setProgressOf(pr)} className="w-full py-3 flex items-center gap-3 text-left hover:bg-loza-100/60 rounded-xl">
-                          <ExerciseFigure slug={pr.slug} className="w-12 h-12 shrink-0" />
+                          <CharacterFigure slug={pr.slug} className="w-12 h-12 shrink-0" />
                           <span className="flex-1 min-w-0"><span className="block font-bold text-loza-900">{info?.name}</span><span className="block text-sm text-loza-600 tabular">{pr.sessions.length} {pr.sessions.length === 1 ? 'vez' : 'veces'}</span></span>
                           <span className="text-right tabular">
                             <span className="block font-bold text-loza-900">{unitText(pr.last, pr.unit)}</span>
@@ -732,7 +727,7 @@ export default function FitApp() {
           <ol className="mt-4 divide-y divide-loza-200 border-y border-loza-200">
             {routine.items.map((item) => (
               <li key={item.slug} className="py-2 flex items-center gap-3">
-                <ExerciseFigure slug={item.slug} className="w-14 h-14 shrink-0" />
+                <CharacterFigure slug={item.slug} className="w-14 h-14 shrink-0" />
                 <span className="flex-1 font-bold text-[15px] text-loza-900">{exerciseBySlug(item.slug)?.name}</span>
                 <span className="text-[15px] text-loza-700 tabular">{targetText(item)}</span>
               </li>

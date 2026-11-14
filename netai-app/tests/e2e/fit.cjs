@@ -42,7 +42,7 @@ const SPORT = { version: 1, name: 'Juan', age: '30', sex: 'masculino', heightCm:
 
   // Entrenar
   await p.click('button:has-text("Empezar")'); await p.waitForTimeout(400);
-  ok(await p.isVisible('text=0 de 19 series') && (await p.locator('.figura-animada').count()) >= 1, 'el entrenamiento lista los ejercicios con la figura en movimiento');
+  ok(await p.isVisible('text=0 de 19 series') && (await p.locator('svg[data-figura][data-animada="si"]').count()) >= 1, 'el entrenamiento lista los ejercicios con el muñeco en movimiento');
   for (let i = 0; i < 3; i++) await p.locator('input[aria-label^="Press de banca"][aria-label$="kilos"]').nth(i).fill(i === 2 ? '62,5'.replace(',', '.') : '60');
   ok((await p.evaluate(() => window.scrollY)) === 0, 'el entrenamiento abre desde arriba');
   // Sin repeticiones no se puede marcar la serie
@@ -101,9 +101,11 @@ const SPORT = { version: 1, name: 'Juan', age: '30', sex: 'masculino', heightCm:
   await p.click('nav button:has-text("Ejercicios")'); await p.waitForTimeout(300);
   await p.click('section[aria-label=Ejercicios] button:has-text("Press de banca")'); await p.waitForTimeout(400);
   const sheet = p.locator('[role=dialog]');
-  ok((await sheet.locator('.figura-animada .figura-pose').count()) === 3 && (await sheet.locator('ol li').count()) === 3, 'Ejercicios: el detalle muestra la figura con sus tres poses y los pasos');
+  ok((await sheet.locator('svg[data-figura="bench-press"][data-animada="si"]').count()) === 1 && (await sheet.locator('[aria-label="Posiciones clave del ejercicio"] .figura-pose').count()) === 3 && (await sheet.locator('ol.list-decimal li').count()) === 3, 'Ejercicios: el detalle muestra el muñeco animado, las posiciones clave y los pasos');
+  const f1 = await sheet.locator('svg[data-figura]').innerHTML(); await p.waitForTimeout(500); const f2 = await sheet.locator('svg[data-figura]').innerHTML();
+  ok(f1 !== f2, 'el muñeco se mueve de verdad (cambia de un momento a otro)');
   await sheet.locator('button:has-text("Pausar")').click(); await p.waitForTimeout(200);
-  ok((await sheet.locator('.figura-animada').count()) === 0, 'se puede pausar el movimiento');
+  ok((await sheet.locator('svg[data-animada="si"]').count()) === 0, 'se puede pausar el movimiento');
   await p.keyboard.press('Escape');
   ok(await p.isVisible('text=CC BY-SA 4.0'), 'acredita a los autores de las ilustraciones');
 
@@ -124,6 +126,14 @@ const SPORT = { version: 1, name: 'Juan', age: '30', sex: 'masculino', heightCm:
   ok((await q.locator('[role=radio]:has-text("Bajar de peso")').count()) === 0 && await q.isVisible('[role=radio]:has-text("Moverme más")'), 'con tratamiento por TCA en NetAI no se ofrece "Bajar de peso"');
   await q.click('[role=radio]:has-text("Moverme más")'); await q.click('button:has-text("Armar mi plan")'); await q.click('nav button:has-text("Progreso")'); await q.waitForTimeout(300);
   ok((await q.locator('#fit-peso').count()) === 0, 'ni se pide el peso corporal');
+  // Con "reducir movimiento" el muñeco queda quieto
+  const rctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  const rm = await rctx.newPage();
+  await rm.request.post(BASE + '/api/auth/login', { data: { password: 'familia-local' } });
+  await rm.goto(BASE + '/fit', { waitUntil: 'networkidle' });
+  await rm.click('[role=radio]:has-text("Ganar fuerza")'); await rm.click('button:has-text("Armar mi plan")'); await rm.click('nav button:has-text("Ejercicios")');
+  await rm.locator('section[aria-label=Ejercicios] button').first().click(); await rm.waitForTimeout(400);
+  ok((await rm.locator('[role=dialog] svg[data-animada="no"]').count()) === 1, 'con "reducir movimiento" activado, el muñeco queda quieto');
   ok(errs.length === 0, 'sin errores ' + errs.join('|'));
   await b.close();
 })();

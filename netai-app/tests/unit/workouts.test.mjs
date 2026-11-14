@@ -129,3 +129,30 @@ test('series válidas, volumen y marcas nuevas', () => {
   assert.equal(usesWeight('farmer-carry'), true);
   assert.equal(targetText({ sets: 1, secs: 1800 }), '30 min');
 });
+
+import { MOVES } from '../../src/lib/anim/moves.js';
+import { shapes, solve, frameAt } from '../../src/lib/anim/rig.js';
+import { EXERCISES } from '../../src/lib/exercises.js';
+
+test('cada ejercicio tiene su animación y se puede dibujar en cualquier momento del ciclo', () => {
+  for (const e of EXERCISES) {
+    const def = MOVES[e.slug];
+    assert.ok(def, `falta la animación de ${e.slug}`);
+    for (const ph of [0, 0.25, 0.5, 0.75, 0.99]) {
+      const list = shapes(def, ph);
+      assert.ok(list.length > 8, e.slug);
+      for (const sh of list) for (const v of Object.values(sh.attrs)) if (typeof v === 'number') assert.ok(Number.isFinite(v), `${e.slug}: número inválido`);
+    }
+  }
+  assert.deepEqual(Object.keys(MOVES).filter((k) => !EXERCISES.some((e) => e.slug === k)), []);
+});
+
+test('los huesos no se estiran: miden siempre lo mismo', () => {
+  const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  for (const [slug, def] of Object.entries(MOVES)) {
+    const j = solve(frameAt(def, 0.37), def.view === 'front');
+    assert.ok(Math.abs(d(j.legN.root, j.legN.mid) - 22) < 0.01 && Math.abs(d(j.legN.mid, j.legN.end) - 21) < 0.01, `${slug}: pierna`);
+    assert.ok(Math.abs(d(j.armN.root, j.armN.mid) - 15) < 0.01 && Math.abs(d(j.armN.mid, j.armN.end) - 14) < 0.01, `${slug}: brazo`);
+    assert.ok(Math.abs(d(j.hip, j.top) - 30) < 0.01, `${slug}: torso`);
+  }
+});
