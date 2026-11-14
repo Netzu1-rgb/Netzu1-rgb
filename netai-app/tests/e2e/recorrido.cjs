@@ -9,6 +9,13 @@ async function fresh(b) {
   await p.goto(BASE + '/app', { waitUntil: 'networkidle' }); await p.waitForTimeout(400);
   return p;
 }
+async function editing(b, profile) {
+  const p = await fresh(b);
+  await p.evaluate((pr) => { localStorage.setItem('netai_profile_v1', JSON.stringify(pr)); localStorage.setItem('netai_pwa_dismissed', 'true'); }, profile);
+  await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(300);
+  await p.click('button[aria-label="Ajustes"]'); await p.click('button:has-text("Tus datos")'); await p.waitForTimeout(300);
+  return p;
+}
 const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:has-text("Empezar")');
 (async () => {
   const b = await chromium.launch();
@@ -37,7 +44,7 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   await p.click('button:has-text("Vegetariana")'); await p.click('button:has-text("Frutos secos")'); await p.fill('#ob-alergias', 'maní');
   ok((await p.locator('button:has-text("Carne roja")').count()) === 0 && await p.isVisible('button:has-text("Huevo")'), 'al elegir vegetariana no ofrece las carnes');
   await next(p);
-  await p.click('[role=radio]:has-text("No")'); await next(p);
+  ok(await p.isVisible('h1:has-text("Listo")') && !(await p.textContent('body')).includes('trastorno de la conducta alimentaria'), 'el recorrido inicial termina en el resumen, sin el paso de vista');
   const resumen = await p.textContent('main');
   ok(resumen.includes('No comés') && resumen.includes('frutos secos, maní') && !resumen.includes('cerdo'), 'el resumen separa cómo comés de lo que no comés');
   const rango = await p.textContent('main p.font-display.tabular');
@@ -52,13 +59,13 @@ const next = (p) => p.click('footer button:has-text("Siguiente"), footer button:
   ok((await p.inputValue('#ob-nombre')) === 'Juan', 'editar datos desde Ajustes: vienen cargados');
   await p.click('button[aria-label="Cerrar sin guardar"]');
   ok(p.errs.length === 0, 'sin errores (adulto) ' + p.errs.join(' | '));
-  // 2. TCA: nunca números
-  p = await fresh(b);
-  await next(p); await p.fill('#ob-edad', '28'); await next(p); await p.click('[role=radio]:has-text("Bienestar")'); await next(p); await next(p); await next(p); await next(p); await next(p);
+  // 2. TCA: nunca números. La pregunta está al editar los datos desde Ajustes.
+  p = await editing(b, { version: 1, name: 'Ana', age: '28', sex: 'femenino', heightCm: '165', weightKg: '60', mode: 'bienestar', activity: 'moderada', tca: '', viewMode: 'rangos', goals: [], diet: [], avoid: [], allergies: '', completedAt: 'x' });
+  for (let i = 0; i < 6; i++) await next(p);
   await p.click('[role=radio]:has-text("Sí")'); await p.waitForTimeout(150);
   ok(await p.isVisible('text=Activamos el Modo Intuitivo'), 'TCA: activa el Modo Intuitivo');
   await next(p); ok(!(await p.isVisible('text=kcal')), 'TCA: el resumen no muestra calorías');
-  await p.click('footer button:has-text("Ir a mi día")'); await p.waitForTimeout(400);
+  await p.click('footer button:has-text("Guardar cambios")'); await p.waitForTimeout(400);
   ok(!(await p.isVisible('[role=switch]')) && !(await p.textContent('main')).includes('kcal'), 'TCA: Mi día sin números ni interruptor');
   // 3. Menor de edad
   p = await fresh(b);

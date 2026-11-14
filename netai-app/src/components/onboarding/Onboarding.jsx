@@ -53,10 +53,15 @@ export default function Onboarding({ initial, mode = 'inicial', onFinish, onSkip
   const minor = p.age !== '' && Number(p.age) < 18;
   const sport = p.mode === 'sport' && !minor;
   const steps = useMemo(() => {
-    if (minor) return ['inicio', 'vos', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'];
-    if (sport) return ['inicio', 'vos', 'modo', 'cuerpo', 'deporte', 'meta', 'alimentacion', 'vista', 'resumen'];
-    return ['inicio', 'vos', 'modo', 'cuerpo', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'];
-  }, [minor, sport]);
+    // El paso "vista" (pregunta sobre trastornos de la conducta alimentaria y cómo ver la app) no forma parte
+    // del recorrido inicial: queda disponible al editar los datos desde Ajustes.
+    const list = minor
+      ? ['inicio', 'vos', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen']
+      : sport
+        ? ['inicio', 'vos', 'modo', 'cuerpo', 'deporte', 'meta', 'alimentacion', 'vista', 'resumen']
+        : ['inicio', 'vos', 'modo', 'cuerpo', 'actividad', 'objetivos', 'alimentacion', 'vista', 'resumen'];
+    return mode === 'editar' ? list : list.filter((x) => x !== 'vista');
+  }, [minor, sport, mode]);
   const step = steps[Math.min(stepIndex, steps.length - 1)];
   const errors = { ...validateNumbers(p), ...validateSport(p) };
   const stepErrors = step === 'vos' ? ['age'] : step === 'cuerpo' ? ['heightCm', 'weightKg'] : step === 'deporte' ? ['trainingDays'] : step === 'meta' ? ['targetWeightKg'] : [];
