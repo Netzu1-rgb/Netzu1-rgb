@@ -44,15 +44,26 @@ const SPORT = { version: 1, name: 'Juan', age: '30', sex: 'masculino', heightCm:
   await p.click('button:has-text("Empezar")'); await p.waitForTimeout(400);
   ok(await p.isVisible('text=0 de 19 series') && (await p.locator('.figura-animada').count()) >= 1, 'el entrenamiento lista los ejercicios con la figura en movimiento');
   for (let i = 0; i < 3; i++) await p.locator('input[aria-label^="Press de banca"][aria-label$="kilos"]').nth(i).fill(i === 2 ? '62,5'.replace(',', '.') : '60');
+  ok((await p.evaluate(() => window.scrollY)) === 0, 'el entrenamiento abre desde arriba');
+  // Sin repeticiones no se puede marcar la serie
+  await p.fill('input[aria-label="Press de banca, serie 1: repeticiones"]', '');
+  await p.locator('button[aria-label^="Press de banca"][aria-label$="marcar como hecha"]').first().click(); await p.waitForTimeout(200);
+  ok(await p.isVisible('text=0 de 19 series') && await p.isVisible('text=Anotá las repeticiones o el tiempo'), 'una serie sin repeticiones no se marca, y avisa por qué');
+  await p.fill('input[aria-label="Press de banca, serie 1: repeticiones"]', '8');
   for (let i = 0; i < 3; i++) await p.locator('button[aria-label^="Press de banca"][aria-label$="marcar como hecha"]').first().click();
   ok(await p.isVisible('text=3 de 19 series'), 'cada serie se marca como hecha y avanza el contador');
+  ok(await p.isVisible('[role=timer]') && /Descanso 1:\d\d/.test(await p.textContent('[role=timer]')), 'al marcar una serie arranca el descanso con cuenta regresiva');
+  await p.click('[role=timer] button:has-text("Saltar")'); await p.waitForTimeout(200);
+  ok((await p.locator('[role=timer]').count()) === 0, 'el descanso se puede saltar');
   // Salir no pierde lo cargado
   await p.click('button:has-text("Salir")'); await p.waitForTimeout(300);
   ok(await p.isVisible('text=Tenés un entrenamiento sin terminar'), 'al salir, el entrenamiento queda guardado para seguir');
   await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(300);
   await p.click('button:has-text("Seguir")'); await p.waitForTimeout(300);
   ok(await p.isVisible('text=3 de 19 series') && (await p.inputValue('input[aria-label="Press de banca, serie 3: kilos"]')) === '62.5', 'y sobrevive a cerrar y volver a abrir la app');
-  await p.click('button:has-text("Terminar entrenamiento")'); await p.click('[role=radio]:has-text("Exigente")'); await p.click('button:has-text("Guardar entrenamiento")'); await p.waitForTimeout(400);
+  await p.click('button:has-text("Terminar entrenamiento")');
+  ok((await p.textContent('[role=dialog]')).includes('Kilos movidos') && (await p.textContent('[role=dialog]')).includes('1.460'), 'al terminar muestra el resumen con los kilos movidos');
+  await p.click('[role=radio]:has-text("Exigente")'); await p.click('button:has-text("Guardar entrenamiento")'); await p.waitForTimeout(400);
   ok(await p.isVisible('text=1 de 4 entrenamientos') && await p.isVisible('text=Ya entrenaste hoy'), 'al guardar, cuenta en la semana');
 
   // Progreso
@@ -65,10 +76,19 @@ const SPORT = { version: 1, name: 'Juan', age: '30', sex: 'masculino', heightCm:
   // La próxima vez propone la carga anterior y rota la rutina
   await p.click('nav button:has-text("Rutinas")');
   const rut = await p.textContent('main');
-  ok(rut.includes('Programas conocidos') && rut.includes('Arnold · Pecho y espalda') && rut.includes('5×5 · Día A') && rut.includes('Caminata 12-3-30') && rut.includes('Por deporte') && rut.includes('Circuito funcional'), 'Rutinas: lista los programas conocidos y las rutinas por deporte');
-  await p.click('button:has-text("Caminata 12-3-30")'); ok(await p.isVisible('text=12 % de pendiente') && await p.isVisible('[role=dialog] >> text=30 min'), 'la caminata 12-3-30 explica cómo se hace'); await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+  ok(rut.includes('Programas conocidos') && rut.includes('Arnold split') && rut.includes('Pecho y espalda') && rut.includes('5×5') && rut.includes('Caminata 12-3-30') && rut.includes('Por deporte') && rut.includes('Circuito funcional') && !rut.includes('Fuerza en casa'), 'Rutinas: agrupa los programas conocidos y las rutinas por deporte del lugar elegido');
+  await p.click('button:has-text("Caminata 12-3-30") >> nth=-1'); ok(await p.isVisible('text=12 % de pendiente') && await p.isVisible('[role=dialog] >> text=30 min'), 'la caminata 12-3-30 explica cómo se hace'); await p.keyboard.press('Escape'); await p.waitForTimeout(300);
   await p.click('button:has-text("PPL · Empuje")'); await p.click('[role=dialog] button:has-text("Empezar")'); await p.waitForTimeout(300);
   ok((await p.inputValue('input[aria-label="Press de banca, serie 1: kilos"]')) === '60' && await p.isVisible('text=La última vez:'), 'la próxima vez trae la carga anterior');
+  await p.fill('input[aria-label="Press de banca, serie 1: kilos"]', '65'); await p.locator('button[aria-label^="Press de banca"][aria-label$="marcar como hecha"]').first().click();
+  await p.click('button:has-text("Terminar entrenamiento")');
+  ok((await p.textContent('[aria-label="Marcas nuevas"]')).includes('Press de banca') && (await p.textContent('[aria-label="Marcas nuevas"]')).includes('65 kg'), 'avisa cuando superás tu mejor carga');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+  // Con un entrenamiento en curso, empezar otro avisa antes de pisarlo
+  await p.click('button:has-text("Salir")'); await p.click('nav button:has-text("Rutinas")'); await p.click('button:has-text("Caminata 12-3-30") >> nth=-1'); await p.waitForTimeout(300);
+  ok(await p.isVisible('text=Si empezás esta, ese se descarta') && await p.isVisible('[role=dialog] button:has-text("Seguir el anterior")'), 'con un entrenamiento sin terminar, avisa antes de empezar otro');
+  await p.click('[role=dialog] button:has-text("Descartar y empezar")'); await p.waitForTimeout(300);
+  ok((await p.inputValue('input[aria-label="Caminata en cinta con pendiente, serie 1: minutos"]')) === '30' && (await p.locator('input[aria-label$="kilos"]').count()) === 0, 'la caminata se anota en minutos y sin kilos');
   await p.click('button:has-text("Terminar entrenamiento")'); await p.click('button:has-text("Descartar")'); await p.waitForTimeout(300);
   await p.click('nav button:has-text("Hoy")'); await p.waitForTimeout(200);
   ok(await p.isVisible('h2:has-text("PPL · Tirón")'), 'la rutina que toca va rotando dentro del programa');

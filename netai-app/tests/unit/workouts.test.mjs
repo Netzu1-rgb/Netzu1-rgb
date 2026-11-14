@@ -114,3 +114,18 @@ test('quien practica un deporte recibe primero su rutina, en casa y en el gimnas
   // sin deporte elegido no aparecen rutinas por deporte
   assert.ok(!recommendedRoutines({ goal: 'fuerza', place: 'casa', sports: [] }).some((r) => r.sports));
 });
+
+import { setIsValid, workoutVolume, newRecords, targetText } from '../../src/lib/workouts.js';
+
+test('series válidas, volumen y marcas nuevas', () => {
+  assert.equal(setIsValid({ reps: '', secs: '' }), false);
+  assert.equal(setIsValid({ reps: '8', secs: '' }), true);
+  assert.equal(setIsValid({ reps: '', secs: 1800 }), true);
+  assert.equal(workoutVolume([{ sets: [{ reps: 10, kg: 20 }, { reps: 8, kg: '22,5' }] }]), 380);
+  const past = [{ date: '2026-11-01', finishedAt: 1, exercises: [{ slug: 'bench-press', sets: [{ reps: 8, kg: 60 }] }] }];
+  const draft = { exercises: [{ slug: 'bench-press', sets: [{ reps: 8, kg: '62.5', done: true }, { reps: 8, kg: '70', done: false }] }, { slug: 'squat', sets: [{ reps: 5, kg: 100, done: true }] }] };
+  assert.deepEqual(newRecords(draft, past), [{ slug: 'bench-press', kg: 62.5, before: 60 }]);
+  assert.equal(usesWeight('treadmill-incline-walk'), false);
+  assert.equal(usesWeight('farmer-carry'), true);
+  assert.equal(targetText({ sets: 1, secs: 1800 }), '30 min');
+});

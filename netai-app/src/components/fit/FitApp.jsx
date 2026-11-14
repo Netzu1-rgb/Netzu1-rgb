@@ -2,13 +2,13 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Info, Pause, Play, Check, Plus, Trash2, ChevronRight, Clock, House, ListChecks, Dumbbell, TrendingUp, Target, Utensils, Flame, HeartPulse, Footprints, Activity, BicepsFlexed, PersonStanding, Scale } from 'lucide-react';
+import { Info, Pause, Play, Check, Plus, Timer, Trophy, Trash2, ChevronRight, Clock, House, ListChecks, Dumbbell, TrendingUp, Target, Utensils, Flame, HeartPulse, Footprints, Activity, BicepsFlexed, PersonStanding, Scale } from 'lucide-react';
 import { Sheet, CloseButton } from '@/components/ui/Sheet';
 import { EXERCISES, EXERCISE_PLACES, EXERCISE_ZONES, exerciseFrames } from '@/lib/exercises';
 import {
   ROUTINES, FEELINGS, FIT_GOALS, FIT_LEVELS, FIT_PROGRAMS, FIT_SPORTS, programsFor, WORKOUTS_KEY, WORKOUT_DRAFT_KEY, FIT_PROFILE_KEY,
   emptyFitProfile, sanitizeFitProfile, fitDefaultsFromNetAI, recommendedRoutines, nextRoutine, weekDays, exerciseProgress,
-  exerciseBySlug, usesWeight, targetText, startWorkout, finishWorkout, lastSets, lastSetsText, sanitizeWorkouts,
+  exerciseBySlug, usesWeight, targetText, startWorkout, finishWorkout, lastSets, lastSetsText, sanitizeWorkouts, setIsValid, workoutVolume, newRecords,
 } from '@/lib/workouts';
 import { PROFILE_KEY, WEIGHT_LOG_KEY, hidesNumbers } from '@/lib/profile';
 import { parseJson, sanitizeWeights, isObject } from '@/lib/storage';
@@ -79,6 +79,8 @@ export default function FitApp() {
   const [weightInput, setWeightInput] = useState('');
   const [toast, setToast] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [restEnd, setRestEnd] = useState(0); // hora en que termina el descanso entre series
+  const [now, setNow] = useState(() => Date.now());
 
   // Cargar del teléfono. NetAI Fit comparte el teléfono con NetAI: lee su perfil y usa el mismo registro de peso.
   useEffect(() => {
@@ -103,6 +105,19 @@ export default function FitApp() {
   useEffect(() => { if (loaded) try { localStorage.setItem(WEIGHT_LOG_KEY, JSON.stringify(weights)); } catch (e) { /* sin almacenamiento */ } }, [weights, loaded]);
   useEffect(() => { if (loaded) try { if (draft) localStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(draft)); else localStorage.removeItem(WORKOUT_DRAFT_KEY); } catch (e) { /* sin almacenamiento */ } }, [draft, loaded]);
   useEffect(() => { const id = setInterval(() => setToday(localDate()), 60000); return () => clearInterval(id); }, []);
+  // Descanso entre series: cuenta regresiva mientras hay un descanso en curso
+  useEffect(() => {
+    if (!restEnd) return undefined;
+    const id = setInterval(() => { const t = Date.now(); setNow(t); if (t >= restEnd) setRestEnd(0); }, 500);
+    return () => clearInterval(id);
+  }, [restEnd]);
+  // El tema oscuro se aplica cuando ya hay objetivos cargados (la pantalla de objetivos va siempre en claro)
+  useEffect(() => {
+    if (!loaded) return;
+    const prefs = parseJson(localStorage.getItem('netai_prefs_v1'));
+    const dark = prefs?.theme === 'oscuro' || (prefs?.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('oscuro', Boolean(dark) && Boolean(fit) && !setup);
+  }, [loaded, fit, setup]);
   useEffect(() => { if (!toast) return undefined; const id = setTimeout(() => setToast(''), 5000); return () => clearTimeout(id); }, [toast]);
 
   const noNumbers = hidesNumbers(netai || {}); // tratamiento por un trastorno alimentario indicado en NetAI
@@ -121,18 +136,19 @@ export default function FitApp() {
   const trainedToday = workouts.some((w) => w.date === today);
   const goalLabel = FIT_GOALS.find((g) => g.id === fit?.goal)?.label;
   const openExercise = (e) => { setPlaying(true); setOpen(e); };
-  // El resto de las rutinas, agrupadas: programas conocidos, por deporte y generales
+  // Rutinas del lugar elegido, agrupadas: cada programa junta sus días en una sola tarjeta
   const routineGroups = useMemo(() => {
-    const rest = ROUTINES.filter((r) => !recommended.includes(r));
-    const programs = rest.filter((r) => r.program);
-    const sports = rest.filter((r) => r.sports);
-    const others = rest.filter((r) => !r.program && !r.sports);
+    const inPlace = ROUTINES.filter((r) => r.place === place && !recommended.includes(r));
+    const programs = [...FIT_PROGRAMS, { id: '12-3-30', label: 'Caminata 12-3-30', hint: 'La caminata en cinta que se hizo conocida en redes' }]
+      .map((pr) => ({ title: pr.label, hint: pr.hint, items: inPlace.filter((r) => r.program === pr.id) })).filter((g) => g.items.length);
+    const sports = FIT_SPORTS.map((sp) => ({ title: sp.label, hint: '', items: inPlace.filter((r) => (r.sports || []).includes(sp.id)) })).filter((g) => g.items.length);
+    const others = inPlace.filter((r) => !r.program && !r.sports);
     return [
-      { title: 'Programas conocidos', hint: 'PPL, Arnold split, 5×5, torso y pierna y la caminata 12-3-30. Son de gimnasio.', items: programs },
-      { title: 'Por deporte', hint: '', items: sports },
-      { title: 'Otras rutinas', hint: '', items: others },
-    ].filter((g) => g.items.length);
-  }, [recommended]);
+      { title: 'Programas conocidos', cards: programs },
+      { title: 'Por deporte', cards: sports },
+      { title: 'Otras rutinas', cards: others.length ? [{ title: '', hint: '', items: others }] : [] },
+    ].filter((g) => g.cards.length);
+  }, [recommended, place]);
 
   const saveSetup = () => {
     if (!setup.goal) return;
@@ -142,15 +158,26 @@ export default function FitApp() {
     try { localStorage.setItem(FIT_PROFILE_KEY, JSON.stringify(data)); } catch (e) { /* sin almacenamiento */ }
     setFit(data); setPlace(data.place); setSetup(null); setTab('hoy');
   };
-  const begin = (r) => { setDraft(startWorkout(r, workouts)); setRoutine(null); setTraining(true); };
+  const begin = (r) => { setDraft(startWorkout(r, workouts)); setRoutine(null); setRestEnd(0); setTraining(true); window.scrollTo(0, 0); };
+  const resume = () => { setRoutine(null); setTraining(true); window.scrollTo(0, 0); };
+  // Marcar una serie: tiene que tener repeticiones o tiempo. Al marcarla arranca el descanso.
+  const toggleDone = (ei, si) => {
+    const st = draft.exercises[ei].sets[si];
+    if (st.done) { updateSet(ei, si, { done: false }); return; }
+    if (!setIsValid(st)) { setToast('Anotá las repeticiones o el tiempo antes de marcar la serie.'); return; }
+    updateSet(ei, si, { done: true });
+    const lastOfAll = draft.exercises.every((e, i) => e.sets.every((x, j) => x.done || (i === ei && j === si)));
+    if (!lastOfAll) { setNow(Date.now()); setRestEnd(Date.now() + 90000); }
+  };
   const updateSet = (ei, si, patch) => setDraft((d) => ({ ...d, exercises: d.exercises.map((e, i) => (i !== ei ? e : { ...e, sets: e.sets.map((st, j) => (j !== si ? st : { ...st, ...patch })) })) }));
   const addSet = (ei) => setDraft((d) => ({ ...d, exercises: d.exercises.map((e, i) => (i !== ei ? e : { ...e, sets: [...e.sets, { ...e.sets[e.sets.length - 1], done: false }] })) }));
   const doneSets = draft ? draft.exercises.reduce((n, e) => n + e.sets.filter((st) => st.done).length, 0) : 0;
   const totalSets = draft ? draft.exercises.reduce((n, e) => n + e.sets.length, 0) : 0;
   const save = () => {
     const workout = finishWorkout(draft, feeling);
-    if (!workout) return;
+    if (!workout) { setToast('No hay series válidas para guardar.'); return; }
     setWorkouts((prev) => [...prev, workout]);
+    setRestEnd(0);
     setDraft(null); setTraining(false); setFinishing(false); setFeeling('bien'); setTab('hoy');
     setToast('Guardaste el entrenamiento.');
   };
@@ -260,6 +287,8 @@ export default function FitApp() {
     );
   }
 
+  const toastEl = toast && <div role="status" className="fixed bottom-28 inset-x-0 z-40 px-4 pointer-events-none"><p className="max-w-sm mx-auto rounded-2xl bg-loza-900 text-loza-50 px-4 py-3 text-sm font-bold text-center shadow-sheet">{toast}</p></div>;
+
   const exerciseSheet = open && (
     <Sheet onClose={() => setOpen(null)} labelledBy="titulo-ejercicio">
       <div className="flex items-start justify-between gap-4">
@@ -306,7 +335,8 @@ export default function FitApp() {
             {draft.exercises.map((ex, ei) => {
               const info = exerciseBySlug(ex.slug);
               if (!info) return null;
-              const timed = ex.sets[0]?.secs !== '' && ex.sets[0]?.secs != null;
+              const timed = info.kind === 'tiempo';
+              const inMinutes = timed && Number(ex.sets[0]?.secs) >= 120; // caminatas y cardio largo se anotan en minutos
               const weight = usesWeight(ex.slug);
               const last = lastSetsText(lastSets(workouts, ex.slug));
               const cols = weight ? 'grid-cols-[2rem_1fr_1fr_2.75rem]' : 'grid-cols-[2rem_1fr_2.75rem]';
@@ -324,18 +354,19 @@ export default function FitApp() {
                   </div>
                   <div className="mt-3 space-y-2">
                     <div className={`grid ${cols} gap-2 text-sm text-loza-600`} aria-hidden="true">
-                      <span>Serie</span><span className="text-center">{timed ? 'Segundos' : 'Repeticiones'}</span>{weight && <span className="text-center">Kilos</span>}<span />
+                      <span>Serie</span><span className="text-center">{inMinutes ? 'Minutos' : timed ? 'Segundos' : 'Repeticiones'}</span>{weight && <span className="text-center">Kilos</span>}<span />
                     </div>
                     {ex.sets.map((st, si) => (
                       <div key={si} className={`grid ${cols} gap-2 items-center`}>
                         <span className="font-bold text-loza-800 tabular text-center">{si + 1}</span>
-                        <input type="number" inputMode="numeric" min="1" aria-label={`${info.name}, serie ${si + 1}: ${timed ? 'segundos' : 'repeticiones'}`} value={timed ? st.secs : st.reps}
-                          onChange={(e) => updateSet(ei, si, timed ? { secs: e.target.value } : { reps: e.target.value })} className={numberCls} />
+                        <input type="number" inputMode="numeric" min="1" aria-label={`${info.name}, serie ${si + 1}: ${inMinutes ? 'minutos' : timed ? 'segundos' : 'repeticiones'}`}
+                          value={inMinutes ? (st.secs === '' ? '' : Math.round(Number(st.secs) / 60)) : timed ? st.secs : st.reps}
+                          onChange={(e) => updateSet(ei, si, inMinutes ? { secs: e.target.value === '' ? '' : Number(e.target.value) * 60 } : timed ? { secs: e.target.value } : { reps: e.target.value })} className={numberCls} />
                         {weight && (
                           <input type="number" inputMode="decimal" min="0" step="0.5" placeholder="—" aria-label={`${info.name}, serie ${si + 1}: kilos`} value={st.kg}
                             onChange={(e) => updateSet(ei, si, { kg: e.target.value })} className={`${numberCls} placeholder:text-loza-500`} />
                         )}
-                        <button type="button" aria-pressed={st.done} aria-label={`${info.name}, serie ${si + 1}: ${st.done ? 'hecha' : 'marcar como hecha'}`} onClick={() => updateSet(ei, si, { done: !st.done })}
+                        <button type="button" aria-pressed={st.done} aria-label={`${info.name}, serie ${si + 1}: ${st.done ? 'hecha' : 'marcar como hecha'}`} onClick={() => toggleDone(ei, si)}
                           className={`grid place-items-center w-11 h-11 rounded-full border transition-colors ${st.done ? 'bg-agua-600 border-agua-600 text-white' : 'bg-papel border-loza-300 text-loza-500 hover:border-agua-500'}`}>
                           <Check className="w-5 h-5" aria-hidden="true" />
                         </button>
@@ -352,24 +383,45 @@ export default function FitApp() {
           <p className="mt-4 text-sm text-loza-600">Descansá entre 1 y 2 minutos entre series. Si algo duele, pará.</p>
         </main>
 
-        <div className="fixed bottom-0 inset-x-0 z-10 glass-surface border-x-0 border-b-0 safe-bottom">
+        <section aria-label="Descanso y cierre del entrenamiento" className="fixed bottom-0 inset-x-0 z-10 glass-surface border-x-0 border-b-0 safe-bottom">
           <div className="max-w-xl mx-auto px-4 py-3">
+            {restEnd > now && (
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-2xl bg-agua-50 text-agua-900 pl-4 pr-1.5 py-1.5" role="timer" aria-label="Descanso entre series">
+                <span className="flex items-center gap-2 font-bold tabular"><Timer className="w-5 h-5" aria-hidden="true" />Descanso {Math.floor(Math.ceil((restEnd - now) / 1000) / 60)}:{String(Math.ceil((restEnd - now) / 1000) % 60).padStart(2, '0')}</span>
+                <span className="flex gap-1">
+                  <button type="button" onClick={() => setRestEnd(restEnd + 30000)} className="px-3 min-h-[44px] rounded-full text-sm font-bold hover:bg-agua-100">+30 s</button>
+                  <button type="button" onClick={() => setRestEnd(0)} className="px-3 min-h-[44px] rounded-full text-sm font-bold hover:bg-agua-100">Saltar</button>
+                </span>
+              </div>
+            )}
             <button type="button" onClick={() => setFinishing(true)} className={`w-full min-h-[48px] rounded-full text-[15px] font-bold ${primary}`}>Terminar entrenamiento</button>
           </div>
-        </div>
+        </section>
 
         {finishing && (
           <Sheet onClose={() => setFinishing(false)} labelledBy="titulo-terminar">
             <div className="flex items-start justify-between gap-4">
-              <h2 id="titulo-terminar" className="font-display text-2xl font-bold text-loza-900">¿Cómo estuvo?</h2>
+              <h2 id="titulo-terminar" className="font-display text-2xl font-bold text-loza-900">{doneSets === 0 ? 'Todavía no hay series' : 'Buen trabajo'}</h2>
               <CloseButton onClick={() => setFinishing(false)} />
             </div>
             {doneSets === 0 ? (
               <p role="alert" className="mt-4 rounded-2xl bg-trigo-50 text-loza-900 p-4 text-[15px]">Marcá al menos una serie como hecha para guardar el entrenamiento.</p>
             ) : (
               <>
-                <p className="mt-2 text-loza-600">Hiciste {doneSets} {doneSets === 1 ? 'serie' : 'series'}.</p>
-                <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Cómo estuvo el entrenamiento">
+                <dl className="mt-4 grid grid-cols-3 gap-2">
+                  {[['Series', doneSets], ['Minutos', Math.max(1, Math.round((Date.now() - draft.startedAt) / 60000))], ['Kilos movidos', fmt(workoutVolume(draft.exercises.map((e) => ({ sets: e.sets.filter((st) => st.done) }))))]].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl bg-papel border border-loza-200 p-3"><dt className="text-sm text-loza-600">{label}</dt><dd className="font-display text-xl font-bold text-loza-900 tabular">{value}</dd></div>
+                  ))}
+                </dl>
+                {newRecords(draft, workouts).length > 0 && (
+                  <ul className="mt-3 space-y-1.5" aria-label="Marcas nuevas">
+                    {newRecords(draft, workouts).map((r) => (
+                      <li key={r.slug} className="flex items-center gap-2 rounded-2xl bg-trigo-50 text-loza-900 px-3 py-2 text-[15px]"><Trophy className="w-4 h-4 text-trigo-700 shrink-0" aria-hidden="true" /><span>Nueva marca en <strong>{exerciseBySlug(r.slug)?.name}</strong>: <span className="tabular">{fmt(r.kg)} kg</span> (antes {fmt(r.before)})</span></li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-4 text-[15px] font-bold text-loza-800">¿Cómo te sentiste?</p>
+                <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Cómo estuvo el entrenamiento">
                   {FEELINGS.map((f) => <button key={f.id} type="button" role="radio" aria-checked={feeling === f.id} onClick={() => setFeeling(f.id)} className={pill(feeling === f.id)}>{f.label}</button>)}
                 </div>
               </>
@@ -380,6 +432,7 @@ export default function FitApp() {
             </div>
           </Sheet>
         )}
+        {toastEl}
         {exerciseSheet}
       </div>
     );
@@ -425,7 +478,7 @@ export default function FitApp() {
                 <h2 id="titulo-en-curso" className="font-display text-xl font-bold text-agua-50">Tenés un entrenamiento sin terminar</h2>
                 <p className="mt-1 text-agua-100">{draft.routineName}: {doneSets} de {totalSets} series.</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setTraining(true)} className="px-5 min-h-[44px] rounded-full bg-agua-50 text-agua-900 text-sm font-bold">Seguir</button>
+                  <button type="button" onClick={resume} className="px-5 min-h-[44px] rounded-full bg-agua-50 text-agua-900 text-sm font-bold">Seguir</button>
                   <button type="button" onClick={() => setDraft(null)} className="px-5 min-h-[44px] rounded-full text-sm font-bold text-agua-50 hover:bg-agua-800">Descartar</button>
                 </div>
               </section>
@@ -477,14 +530,35 @@ export default function FitApp() {
           <div className="space-y-8 animate-fade-in">
             <section aria-labelledby="titulo-para-vos">
               <h1 id="titulo-para-vos" className="font-display text-3xl font-bold text-loza-900">Rutinas</h1>
-              <h2 className="mt-5 font-display text-xl font-bold text-loza-900">Para tu objetivo</h2>
+              <div className="mt-4 inline-flex p-1 rounded-full bg-loza-100" role="group" aria-label="Lugar de las rutinas">
+                {EXERCISE_PLACES.map((pl) => <button key={pl.id} type="button" aria-pressed={place === pl.id} onClick={() => setPlace(pl.id)} className={segment(place === pl.id)}>{pl.label}</button>)}
+              </div>
+              <h2 className="mt-6 font-display text-xl font-bold text-loza-900">Tu plan</h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">{recommended.map((r) => <li key={r.id}><RoutineCard r={r} /></li>)}</ul>
             </section>
             {routineGroups.map((g) => (
               <section key={g.title} aria-label={g.title}>
                 <h2 className="font-display text-xl font-bold text-loza-900">{g.title}</h2>
-                {g.hint && <p className="mt-1 text-sm text-loza-600">{g.hint}</p>}
-                <ul className="mt-3 grid gap-3 sm:grid-cols-2">{g.items.map((r) => <li key={r.id}><RoutineCard r={r} /></li>)}</ul>
+                <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {g.cards.map((card) => (
+                    <li key={card.title || 'otras'} className="rounded-[24px] bg-papel border border-loza-200 px-4 py-3">
+                      {card.title && <h3 className="font-display text-lg font-bold text-loza-900 leading-tight">{card.title}</h3>}
+                      {card.hint && <p className="text-sm text-loza-600">{card.hint}</p>}
+                      <ul className={`divide-y divide-loza-200 ${card.title ? 'mt-1' : ''}`}>
+                        {card.items.map((r) => (
+                          <li key={r.id}>
+                            <button type="button" onClick={() => setRoutine(r)} className="w-full min-h-[52px] py-2 flex items-center gap-3 text-left hover:bg-loza-100/60 rounded-xl">
+                              <ExerciseFigure slug={r.items[0].slug} className="w-10 h-10 shrink-0" />
+                              <span className="flex-1 min-w-0 font-bold text-[15px] text-loza-900 leading-snug">{r.name.includes(' · ') ? r.name.split(' · ')[1] : r.name}</span>
+                              <span className="text-sm text-loza-600 tabular whitespace-nowrap">{r.minutes} min</span>
+                              <ChevronRight className="w-4 h-4 text-loza-500 shrink-0" aria-hidden="true" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
               </section>
             ))}
             <aside className="flex items-start gap-3 text-sm text-loza-600">
@@ -629,7 +703,7 @@ export default function FitApp() {
         )}
       </main>
 
-      {toast && <div role="status" className="fixed bottom-24 inset-x-0 z-40 px-4 pointer-events-none"><p className="max-w-sm mx-auto rounded-2xl bg-loza-900 text-loza-50 px-4 py-3 text-sm font-bold text-center shadow-sheet">{toast}</p></div>}
+      {toastEl}
 
       <nav aria-label="Secciones" className="fixed bottom-0 inset-x-0 z-40 glass-surface border-x-0 border-b-0 safe-bottom">
         <div className="max-w-md mx-auto grid grid-cols-4 px-2 pt-1.5 pb-2">
@@ -664,8 +738,12 @@ export default function FitApp() {
               </li>
             ))}
           </ol>
-          <div className="sticky bottom-0 -mx-5 sm:-mx-7 px-5 sm:px-7 py-3 mt-4 bg-loza-50 border-t border-loza-200 flex justify-end">
-            <button type="button" onClick={() => begin(routine)} className={`px-7 min-h-[48px] rounded-full text-[15px] font-bold ${primary}`}>Empezar</button>
+          <div className="sticky bottom-0 -mx-5 sm:-mx-7 px-5 sm:px-7 py-3 mt-4 bg-loza-50 border-t border-loza-200">
+            {draft && <p className="mb-2 text-sm text-loza-700">Tenés sin terminar <strong>{draft.routineName}</strong> ({doneSets} de {totalSets} series). Si empezás esta, ese se descarta.</p>}
+            <div className="flex flex-wrap justify-end gap-2">
+              {draft && <button type="button" onClick={resume} className="px-5 min-h-[48px] rounded-full text-sm font-bold text-loza-700 hover:bg-loza-100">Seguir el anterior</button>}
+              <button type="button" onClick={() => begin(routine)} className={`px-7 min-h-[48px] rounded-full text-[15px] font-bold ${primary}`}>{draft ? 'Descartar y empezar' : 'Empezar'}</button>
+            </div>
           </div>
         </Sheet>
       )}

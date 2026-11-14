@@ -199,8 +199,10 @@ export const FEELINGS = [
 
 export const exerciseBySlug = (slug) => EXERCISES.find((e) => e.slug === slug);
 /** Los ejercicios de gimnasio llevan carga en kilos; los de casa, solo repeticiones o tiempo */
-export const usesWeight = (slug) => exerciseBySlug(slug)?.place === 'gimnasio' && exerciseBySlug(slug)?.equipment !== 'Barra fija';
-const timeText = (secs) => (secs >= 120 && secs % 60 === 0 ? `${secs / 60} min` : `${secs} s`);
+// Equipos con los que no se anota carga: el peso es el del cuerpo o no aplica
+const NO_LOAD = ['Barra fija', 'Barras paralelas', 'Cinta', 'Sogas'];
+export const usesWeight = (slug) => exerciseBySlug(slug)?.place === 'gimnasio' && !NO_LOAD.includes(exerciseBySlug(slug)?.equipment);
+export const timeText = (secs) => (secs >= 120 && secs % 60 === 0 ? `${secs / 60} min` : `${secs} s`);
 export const targetText = (item) => (item.secs ? (item.sets === 1 ? timeText(item.secs) : `${item.sets} × ${timeText(item.secs)}`) : `${item.sets} × ${item.reps}`);
 
 /** Arma el entrenamiento en curso a partir de una rutina, con la carga de la última vez si existe */
@@ -236,7 +238,7 @@ export function lastSets(workouts, slug) {
 /** Texto corto con lo último que se hizo: "12 · 12 · 10 con 20 kg" */
 export function lastSetsText(sets) {
   if (!sets.length) return '';
-  const values = sets.map((s) => (s.secs ? `${s.secs} s` : s.reps)).join(' · ');
+  const values = sets.map((s) => (s.secs ? timeText(s.secs) : s.reps)).join(' · ');
   const kgs = [...new Set(sets.map((s) => s.kg).filter((k) => k !== '' && k != null))];
   return `${values}${kgs.length ? ` con ${kgs.join(' / ')} kg` : ''}`;
 }
@@ -250,7 +252,7 @@ export function finishWorkout(draft, feeling, now = Date.now()) {
       slug: e.slug,
       sets: e.sets.filter((s) => s.done).map((s) => {
         const out = {};
-        const reps = num(s.reps, 1, 500); const secs = num(s.secs, 1, 3600); const kg = num(s.kg, 0, 600);
+        const reps = num(s.reps, 1, 500); const secs = num(s.secs, 1, 36000); const kg = num(s.kg, 0, 600);
         if (secs !== null) out.secs = Math.round(secs); else if (reps !== null) out.reps = Math.round(reps);
         if (kg !== null && kg > 0) out.kg = kg;
         return out;
@@ -298,7 +300,7 @@ export function sanitizeWorkouts(data) {
           slug: e.slug,
           sets: e.sets.filter((s) => s && typeof s === 'object').map((s) => {
             const out = {};
-            const reps = num(s.reps, 1, 500); const secs = num(s.secs, 1, 3600); const kg = num(s.kg, 0, 600);
+            const reps = num(s.reps, 1, 500); const secs = num(s.secs, 1, 36000); const kg = num(s.kg, 0, 600);
             if (secs !== null) out.secs = Math.round(secs); else if (reps !== null) out.reps = Math.round(reps);
             if (kg !== null && kg > 0) out.kg = kg;
             return out;
@@ -308,4 +310,19 @@ export function sanitizeWorkouts(data) {
     }))
     .filter((w) => w.exercises.length)
     .slice(-2000);
+}
+
+/** Una serie se puede marcar como hecha solo si tiene repeticiones o tiempo válidos */
+export const setIsValid = (st) => (num(st.secs, 1, 36000) !== null) || (num(st.reps, 1, 500) !== null);
+
+/** Kilos totales movidos en un entrenamiento (repeticiones por carga) */
+export const workoutVolume = (exercises) => Math.round((exercises || []).reduce((n, e) => n + e.sets.reduce((m, st) => m + (Number(st.reps) || 0) * (Number(String(st.kg ?? '').replace(',', '.')) || 0), 0), 0));
+
+/** Ejercicios en los que el entrenamiento en curso supera la mejor carga anterior */
+export function newRecords(draft, workouts) {
+  const best = new Map(exerciseProgress(workouts).filter((p) => p.unit === 'kg').map((p) => [p.slug, p.best]));
+  return (draft?.exercises || []).map((e) => {
+    const top = Math.max(0, ...e.sets.filter((st) => st.done).map((st) => Number(String(st.kg ?? '').replace(',', '.')) || 0));
+    return best.has(e.slug) && top > best.get(e.slug) ? { slug: e.slug, kg: top, before: best.get(e.slug) } : null;
+  }).filter(Boolean);
 }

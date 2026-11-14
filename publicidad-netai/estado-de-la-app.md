@@ -1,6 +1,22 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 2.1.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 2.1.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 2.1.1: mini test de NetAI Fit, arreglos y mejoras tomadas de otras apps
+
+**Fallas encontradas y corregidas**
+- Si una serie se marcaba como hecha sin repeticiones, "Guardar entrenamiento" no hacía nada y no avisaba. Ahora esa serie no se puede marcar y la app explica por qué.
+- Empezar una rutina con otra sin terminar pisaba la anterior sin avisar. Ahora avisa y deja elegir entre seguir la anterior o descartarla.
+- Al empezar a entrenar, la pantalla quedaba a mitad de página. Ahora abre desde arriba.
+- El tema oscuro no se aplicaba hasta recargar después de elegir los objetivos.
+- La caminata 12-3-30 pedía "1800 segundos" y kilos. Ahora se anota en minutos y sin kilos; dominadas, fondos, cinta y sogas tampoco piden kilos.
+- Los avisos no se veían durante el entrenamiento.
+
+**Mejoras tomadas de otras apps** (ideas, no código)
+- **Descanso con cuenta regresiva** al marcar una serie, con "+30 s" y "Saltar", como en los registros de fuerza más usados.
+- **Resumen al terminar:** series, minutos y kilos movidos.
+- **Marcas nuevas:** avisa cuando se supera la mejor carga anterior de un ejercicio.
+- **Rutinas agrupadas:** cada programa junta sus días en una tarjeta y la lista se filtra por casa o gimnasio; la pantalla quedó en menos de la mitad de largo.
 
 ## Versión 2.1.0: programas conocidos y rutinas por deporte en NetAI Fit
 
@@ -55,7 +71,7 @@ NetAI Fit pasa a ser una app propia en `/fit`, con su nombre, su ícono y su man
 
 **Pendiente**
 - Las series y repeticiones de las rutinas, y los textos de los ejercicios, son generales: falta la revisión de un profesional del ejercicio.
-- No hay rutinas armadas por la persona, ni temporizador de descanso, ni gráficos de evolución.
+- No hay rutinas armadas por la persona ni gráficos de evolución.
 - El movimiento de la figura va a saltos (tres poses por ejercicio).
 - La web de presentación sigue mostrando NetAI Fit como "en desarrollo".
 
@@ -203,7 +219,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (34 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (177 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (35 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (185 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
