@@ -206,3 +206,23 @@ summary:focus-visible,
 
 /* Números alineados en cifras y escalas */
 .tabular { font-variant-numeric: tabular-nums; }
+
+/* Figura animada de los ejercicios: tres poses apiladas que se alternan (inicio, mitad, final, mitad). */
+.figura-pose {
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--pose) center / contain no-repeat;
+  mask: var(--pose) center / contain no-repeat;
+  opacity: 0;
+}
+.figura-pose[data-pose='2'] { opacity: 1; } /* sin animación se ve la pose del medio */
+@media (prefers-reduced-motion: no-preference) {
+  .figura-animada .figura-pose { animation: 2.8s step-end infinite; }
+  .figura-animada .figura-pose[data-pose='1'] { animation-name: figura-pose-1; }
+  .figura-animada .figura-pose[data-pose='2'] { animation-name: figura-pose-2; }
+  .figura-animada .figura-pose[data-pose='3'] { animation-name: figura-pose-3; }
+}
+@keyframes figura-pose-1 { 0% { opacity: 1; } 25% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes figura-pose-2 { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes figura-pose-3 { 0% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 0; } }

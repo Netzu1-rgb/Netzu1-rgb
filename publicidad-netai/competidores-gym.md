@@ -66,6 +66,24 @@ Una fila por app, con lo mismo para todas:
 | Qué es gratis y qué es pago | Dónde está el corte |
 | Lo que no queremos copiar | Presión, comparaciones, metas de peso sin límites |
 
+## Elegida para empezar: Workout Guide
+
+Buscando una app abierta con un personaje que muestre el ejercicio en movimiento, la mejor base resultó **Workout Guide** (`bryllim/workout-guide`):
+
+| Candidata | Qué ofrece | Por qué sí o por qué no |
+|---|---|---|
+| **Workout Guide** | 302 ejercicios, tres poses dibujadas por ejercicio, con equipo y músculos | **Elegida.** Licencia clara: código MIT y dibujos CC BY-SA 4.0, que permite uso comercial con atribución |
+| Open Exercises (`badboysm890/open-exercises-app`) | 75 ejercicios con animación fluida (Lottie) | Las animaciones vienen de otro proyecto (*sixpack-lottie*) cuya licencia no está aclarada |
+| openGym (`DuarteSantos8/openGym`) | Más de 5.600 ejercicios con demos animadas | Las imágenes son de un tercero y solo se pueden usar dentro de openGym |
+| workout.cool | Más de 1.200 ejercicios con video | Los videos son de una app socia |
+
+Qué se tomó y qué no:
+- **Se usan los dibujos** de 40 ejercicios, sin modificar, con la atribución que pide la licencia.
+- **Se aprendió la idea** de animar alternando tres poses y de describir cada ejercicio con equipo, músculo principal y tipo (repeticiones o tiempo).
+- **No se copió código.** La pantalla, los filtros, la animación y los textos en español se escribieron para NetAI.
+
+La licencia CC BY-SA obliga a compartir igual los dibujos (y cualquier versión modificada de ellos), no el código ni los textos de la app.
+
 ## Por dónde empezar
 
 1. **Liftosaur y wger con REA**, porque son los dos que más enseñan: uno es una PWA como NetAI y el otro une entrenamiento con nutrición. El pedido para Claude Code está en `instalar-rea.md`; REA se instala en tu computadora, no en una sesión en la nube.
@@ -80,6 +98,11 @@ Una fila por app, con lo mismo para todas:
 - **Quién revisa las rutinas** desde el punto de vista profesional.
 
 ## Fuentes
+
+- [Workout Guide en GitHub](https://github.com/bryllim/workout-guide)
+- [Open Exercises en GitHub](https://github.com/badboysm890/open-exercises-app)
+- [openGym en GitHub](https://github.com/DuarteSantos8/openGym/tree/main)
+- [workout.cool en Hacker News](https://news.ycombinator.com/item?id=44309320)
 
 - [wger en GitHub](https://www.github.com/wger-project/flutter) y [su README](https://cdn.jsdelivr.net/gh/wger-project/wger@master/README.md)
 - [Liftosaur en GitHub](https://github.com/astashov/liftosaur) y [su ficha en ecosyste.ms](https://awesome.ecosyste.ms/projects/github.com%2Fastashov%2Fliftosaur)

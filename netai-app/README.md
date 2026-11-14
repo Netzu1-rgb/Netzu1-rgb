@@ -17,6 +17,7 @@ Tiene dos modos:
 | Semana y Mes | Días registrados, agua, hambre y saciedad; comparación de los últimos 30 días con los anteriores e informe descargable; en Sport, peso y ritmo |
 | Inspiración | Método del Plato, "Ideas para hoy" (sugerencias con IA) y recetas filtradas por alimentación |
 | Aprender | Artículos breves de alimentación consciente |
+| Mover | Biblioteca de 40 ejercicios con una figura animada, para casa o gimnasio |
 | Ajustes | Tus datos, Modo Intuitivo, tema claro u oscuro, horarios y recordatorios, copia de seguridad, exportar a CSV y borrar todo |
 
 La página de inicio (`/`) presenta la app, los planes y el formulario para pedir acceso. `/app` pide un código de acceso.

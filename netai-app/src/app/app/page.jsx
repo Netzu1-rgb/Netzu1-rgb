@@ -46,6 +46,7 @@ import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
 import { prepareImage } from '@/lib/photo';
+import MoveTab from '@/components/fit/MoveTab';
 import { sanitizeLogs, sanitizeWeights, parseJson, isObject } from '@/lib/storage';
 import { PROFILE_KEY, WEIGHT_LOG_KEY, loadProfile, saveProfile, emptyProfile, avoidedFoods, energyRangeFor, hidesNumbers, sportPlan, isSport, SPORT_GOALS, weightTrend, minHealthyWeight, weeksToTarget } from '@/lib/profile';
 
@@ -57,7 +58,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.8.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
@@ -1229,6 +1230,8 @@ export default function PwaAppPage() {
         {/* ------------------------------------------------------------ */}
         {/* APRENDER */}
         {/* ------------------------------------------------------------ */}
+        {activeTab === 'move' && <MoveTab Sheet={Sheet} CloseButton={CloseButton} />}
+
         {activeTab === 'learn' && (
           <div className="space-y-10 animate-fade-in">
             <section aria-labelledby="titulo-escala">
@@ -1402,12 +1405,13 @@ export default function PwaAppPage() {
       {/* NAVEGACIÓN INFERIOR */}
       {/* ============================================================== */}
       <nav aria-label="Secciones" className="fixed bottom-0 inset-x-0 z-40 glass-surface border-x-0 border-b-0 safe-bottom">
-        <div className="max-w-md mx-auto grid grid-cols-4 px-2 pt-1.5 pb-2">
+        <div className="max-w-lg mx-auto grid grid-cols-5 px-1 pt-1.5 pb-2">
           {[
             { id: 'today', label: 'Mi día', Icon: Utensils },
             { id: 'week', label: 'Semana', Icon: CalendarDays },
             { id: 'inspiration', label: 'Inspiración', Icon: Sparkles },
             { id: 'learn', label: 'Aprender', Icon: BookOpen },
+            { id: 'move', label: 'Mover', Icon: Dumbbell },
           ].map(({ id, label, Icon }) => {
             const on = activeTab === id;
             return (
@@ -1418,7 +1422,7 @@ export default function PwaAppPage() {
                 aria-current={on ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 py-1.5 rounded-2xl transition-colors ${on ? 'text-loza-900' : 'text-loza-500 hover:text-loza-800'}`}
               >
-                <span className={`px-4 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
+                <span className={`px-3.5 py-1 rounded-full transition-colors ${on ? 'bg-hoja-100 text-hoja-800' : ''}`}>
                   <Icon className="w-5 h-5" />
                 </span>
                 <span className={`text-xs ${on ? 'font-bold' : ''}`}>{label}</span>

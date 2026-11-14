@@ -1,6 +1,21 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 1.7.2). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 1.8.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 1.8.0: primer paso de NetAI Fit, la pestaña Mover
+
+Una quinta pestaña, "Mover", con una biblioteca de 40 ejercicios y una figura que muestra el movimiento.
+
+- **Figura animada:** cada ejercicio tiene tres dibujos (inicio, mitad y final) que se alternan. Se puede pausar, y queda quieta si el teléfono tiene activado "reducir movimiento". Toma el color del tema claro u oscuro.
+- **Filtros:** "En casa" (24 ejercicios sin equipo) o "Gimnasio" (suma barra, mancuernas, poleas y máquinas), y zona del cuerpo.
+- **Detalle:** músculos que trabaja, tres pasos y un cuidado, en español.
+- **De dónde salen los dibujos:** de Workout Guide (Bryl Lim), basados en Everkinetic, con licencia CC BY-SA 4.0. La app los acredita en pantalla y en `netai-app/public/ejercicios/ATRIBUCION.md`. La elección está explicada en `competidores-gym.md`.
+
+**Pendiente**
+- Los textos de los ejercicios son propios y generales: falta la revisión de un profesional del ejercicio.
+- El grosor del trazo cambia entre las poses de algunos ejercicios, y el movimiento se ve a saltos (tres poses, no un video).
+- Todavía no hay rutinas ni registro de series; es solo la biblioteca.
+- La revisión automática de accesibilidad todavía no recorre esta pestaña.
 
 ## Versión 1.7.2: el Modo Sport va primero y viene marcado
 
@@ -100,7 +115,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (135 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (21 pruebas de los cálculos, el acceso y la lectura de datos) y `npm run test:e2e` (149 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 
