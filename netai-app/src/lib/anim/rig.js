@@ -67,6 +67,8 @@ export function mixFrames(a, b, t) {
 export function frameAt(def, phase) {
   const fr = def.frames;
   if (fr.length === 1) return fr[0];
+  // El momento siempre queda dentro del ciclo, aunque llegue un valor negativo o mayor que 1
+  phase = Number.isFinite(phase) ? ((phase % 1) + 1) % 1 : 0;
   if (def.mode === 'loop') {
     const x = phase * fr.length;
     const i = Math.floor(x) % fr.length;
@@ -116,140 +118,227 @@ export function jointPoint(j, name) {
 }
 
 const r1 = (n) => Math.round(n * 10) / 10;
-const pts = (...p) => p.map((q) => `${r1(q[0])},${r1(q[1])}`).join(' ');
+const P = (q) => `${r1(q[0])},${r1(q[1])}`;
+
+// Colores del maniquí: variables definidas en globals.css, con valores para tema claro y oscuro
+const C = {
+  skin: 'var(--fig-skin)', skinF: 'var(--fig-skin-far)',
+  shirt: 'var(--fig-shirt)', shirtF: 'var(--fig-shirt-far)',
+  shorts: 'var(--fig-shorts)', shortsF: 'var(--fig-shorts-far)',
+  shoe: 'var(--fig-shoe)', hair: 'var(--fig-hair)',
+  focus: 'var(--fig-focus)', focusF: 'var(--fig-focus-far)',
+  prop: 'var(--fig-prop)', ghost: 'var(--fig-ghost)',
+};
+
+// Qué parte del cuerpo se resalta según la zona del ejercicio
+export const FOCUS_BY_ZONE = {
+  Piernas: ['thigh'], Glúteos: ['glute'], Pecho: ['chest'], Espalda: ['chest'], Hombros: ['shoulder'],
+  Brazos: ['upperArm'], Abdomen: ['abs'], Cardio: [], Movilidad: [],
+};
 
 /**
  * Formas a dibujar para un momento del ciclo: [{ tag, attrs }].
- * Se usa igual en la app (React) y para generar imágenes de control.
+ * opts.focus: partes a resaltar. opts.ghost: dibuja de fondo la posición inicial (para la figura quieta).
  */
-export function shapes(def, phase) {
+export function shapes(def, phase, opts = {}) {
   const front = def.view === 'front';
-  const f = frameAt(def, phase);
-  const j = solve(f, front);
+  const focus = def.focus || opts.focus || [];
+  const j = solve(frameAt(def, phase), front);
   const out = [];
-  const S = 'currentColor';
-  const line = (a, b, w, op = 1, extra = {}) => out.push({ tag: 'line', attrs: { x1: r1(a[0]), y1: r1(a[1]), x2: r1(b[0]), y2: r1(b[1]), stroke: S, strokeWidth: w, strokeLinecap: 'round', opacity: op, ...extra } });
-  const poly = (p, w, op = 1) => out.push({ tag: 'polyline', attrs: { points: pts(...p), fill: 'none', stroke: S, strokeWidth: w, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: op } });
-  const circle = (c, r, attrs = {}) => out.push({ tag: 'circle', attrs: { cx: r1(c[0]), cy: r1(c[1]), r, ...attrs } });
-  const at = (p) => (typeof p === 'string' ? jointPoint(j, p) : p);
+  const push = (tag, attrs, fill, extra = {}) => out.push({ tag, attrs: { ...attrs, style: { fill, ...extra } } });
+  const circle = (c, r, fill, extra) => push('circle', { cx: r1(c[0]), cy: r1(c[1]), r: r1(r) }, fill, extra);
+  // Segmento con volumen: una cápsula que puede afinarse de un extremo al otro
+  const seg = (p, q, ra, rb, fill, extra) => {
+    const dx = q[0] - p[0]; const dy = q[1] - p[1]; const d = Math.hypot(dx, dy);
+    if (d < 0.5) { circle(p, Math.max(ra, rb), fill, extra); return; }
+    const n = [-dy / d, dx / d];
+    const p1 = [p[0] + n[0] * ra, p[1] + n[1] * ra]; const p2 = [q[0] + n[0] * rb, q[1] + n[1] * rb];
+    const p3 = [q[0] - n[0] * rb, q[1] - n[1] * rb]; const p4 = [p[0] - n[0] * ra, p[1] - n[1] * ra];
+    push('path', { d: `M${P(p1)} L${P(p2)} A${r1(rb)},${r1(rb)} 0 0 0 ${P(p3)} L${P(p4)} A${r1(ra)},${r1(ra)} 0 0 0 ${P(p1)} Z` }, fill, extra);
+  };
+  const stroke = (d, color, w, op = 1) => out.push({ tag: 'path', attrs: { d, style: { fill: 'none', stroke: color, strokeWidth: w, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: op } } });
+  const line = (p, q, color, w, op = 1) => stroke(`M${P(p)} L${P(q)}`, color, w, op);
+  const mix = (p, q, t) => lerpP(p, q, t);
+  const at = (jj, name) => (typeof name === 'string' ? jointPoint(jj, name) : name);
 
-  // Suelo y sombra
-  if (def.floor !== false) {
-    out.push({ tag: 'line', attrs: { x1: -40, y1: FLOOR + 3, x2: 160, y2: FLOOR + 3, stroke: S, strokeWidth: 1.2, opacity: 0.18 } });
-  }
-
-  const props = def.props || [];
-  const drawProp = (p) => {
-    const o = { opacity: 0.55 };
-    switch (p.t) {
-      case 'bench': // banco o camilla: tapa y patas
-        out.push({ tag: 'rect', attrs: { x: p.x1, y: p.y, width: p.x2 - p.x1, height: 5, rx: 2.5, fill: S, opacity: 0.22 } });
-        if (p.legs !== false) [p.x1 + 4, p.x2 - 4].forEach((x) => line([x, p.y + 4], [x, FLOOR + 2], 2.2, 0.22));
-        break;
-      case 'box':
-        out.push({ tag: 'rect', attrs: { x: p.x1, y: p.y, width: p.x2 - p.x1, height: FLOOR + 3 - p.y, rx: 3, fill: S, opacity: 0.16 } });
-        break;
-      case 'wall':
-        out.push({ tag: 'rect', attrs: { x: p.x - 4, y: 0, width: 4, height: FLOOR + 3, fill: S, opacity: 0.2 } });
-        break;
-      case 'pad': // respaldo o almohadilla recta
-        line(p.from, p.to, p.w || 5, 0.24);
-        break;
-      case 'post':
-        line([p.x, p.y], [p.x, FLOOR + 2], 2.2, 0.22);
-        break;
-      case 'bar': // barra fija o paralelas
-        line([p.x1, p.y], [p.x2, p.y], 3, 0.5);
-        if (p.posts) [p.x1, p.x2].forEach((x) => line([x, p.y], [x, FLOOR + 2], 2, 0.22));
-        if (p.hang) [p.x1, p.x2].forEach((x) => line([x, p.y], [x, -20], 2, 0.22));
-        break;
-      case 'cable': {
-        const a = at(p.on);
-        line(a, p.to, 1.1, 0.5);
-        circle(p.to, 2.6, { fill: 'none', stroke: S, strokeWidth: 1.4, opacity: 0.5 });
-        break;
+  // ---------------------------------------------------------------- cuerpo
+  const drawBody = (jj, mono) => {
+    const col = (near, far, isFar) => mono || (isFar ? far : near);
+    const has = (part) => !mono && focus.includes(part);
+    const leg = (l, isFar) => {
+      const knee = l.mid; const cut = mix(l.root, knee, 0.4);
+      seg(l.root, knee, 5, 3.9, col(has('thigh') ? C.focus : C.skin, has('thigh') ? C.focusF : C.skinF, isFar));
+      seg(l.root, cut, 5.7, 5.2, col(has('glute') ? C.focus : C.shorts, has('glute') ? C.focusF : C.shortsF, isFar));
+      seg(knee, l.end, 3.8, 2.6, col(has('shin') ? C.focus : C.skin, has('shin') ? C.focusF : C.skinF, isFar));
+      if (l.tip) seg(l.end, l.tip, 3, 2.3, col(C.shoe, C.shoe, isFar)); else circle(l.end, 3, col(C.shoe, C.shoe, isFar));
+    };
+    const arm = (a, isFar) => {
+      const cut = mix(a.root, a.mid, 0.48);
+      seg(a.root, a.mid, 3.6, 2.9, col(has('upperArm') ? C.focus : C.skin, has('upperArm') ? C.focusF : C.skinF, isFar));
+      seg(a.root, cut, 4, 3.5, col(C.shirt, C.shirtF, isFar));
+      seg(a.mid, a.end, 2.9, 2.2, col(has('forearm') ? C.focus : C.skin, has('forearm') ? C.focusF : C.skinF, isFar));
+      circle(a.end, 2.6, col(C.skin, C.skinF, isFar));
+      if (has('shoulder')) circle(a.root, 4.4, isFar ? C.focusF : C.focus);
+    };
+    const chest = [-jj.dir[1], jj.dir[0]]; // hacia dónde mira el pecho
+    const head = () => {
+      seg(jj.top, mix(jj.top, jj.head, 0.55), 2.7, 2.5, mono || C.skin);
+      circle(jj.head, 6.4, mono || C.skin);
+      if (mono) return;
+      // Pelo: media cabeza del lado de atrás y arriba (o solo arriba, de frente)
+      const h = front ? jj.dir : [jj.dir[0] * 0.75 - chest[0] * 0.66, jj.dir[1] * 0.75 - chest[1] * 0.66];
+      const hl = Math.hypot(h[0], h[1]) || 1; const u = [h[0] / hl, h[1] / hl]; const t = [-u[1], u[0]];
+      const R = 6.9; const c = [jj.head[0] + u[0] * 0.6, jj.head[1] + u[1] * 0.6];
+      const e1 = [c[0] + t[0] * R, c[1] + t[1] * R]; const e2 = [c[0] - t[0] * R, c[1] - t[1] * R];
+      push('path', { d: `M${P(e1)} A${R},${R} 0 0 0 ${P(e2)} Z` }, C.hair);
+    };
+    const torso = () => {
+      if (front) {
+        const d = `M${P(jj.armN.root)} L${P(jj.armF.root)} L${P(jj.legF.root)} L${P(jj.legN.root)} Z`;
+        out.push({ tag: 'path', attrs: { d, style: { fill: mono || C.shirt, stroke: mono || C.shirt, strokeWidth: 7, strokeLinejoin: 'round' } } });
+        if (has('chest')) seg(mix(jj.hip, jj.top, 0.62), mix(jj.hip, jj.top, 0.92), 7.5, 8.5, C.focus);
+        if (has('abs')) seg(mix(jj.hip, jj.top, 0.12), mix(jj.hip, jj.top, 0.5), 5.5, 6, C.focus);
+        const dh = `M${P(jj.legN.root)} L${P(jj.legF.root)}`;
+        out.push({ tag: 'path', attrs: { d: dh, style: { fill: 'none', stroke: mono || C.shorts, strokeWidth: 11.5, strokeLinecap: 'round' } } });
+        if (has('glute')) circle(jj.hip, 5, C.focus);
+        return;
       }
-      case 'band': line(at(p.from), at(p.to), 1.6, 0.6); break;
+      if (jj.arch) {
+        const m = mix(jj.hip, jj.top, 0.5);
+        const cpt = [m[0] + jj.dir[1] * jj.arch, m[1] - jj.dir[0] * jj.arch];
+        stroke(`M${P(jj.hip)} Q${P(cpt)} ${P(jj.top)}`, mono || C.shirt, 12.6);
+      } else {
+        seg(jj.hip, jj.top, 6.2, 6.9, mono || C.shirt);
+        if (has('chest')) seg(mix(jj.hip, jj.top, 0.5), mix(jj.hip, jj.top, 0.96), 6.3, 6.9, C.focus);
+        if (has('abs')) seg(mix(jj.hip, jj.top, 0.1), mix(jj.hip, jj.top, 0.52), 6.2, 6.5, C.focus);
+      }
+      circle(jj.hip, 6.4, mono || (has('glute') ? C.focus : C.shorts));
+    };
+    if (front) { leg(jj.legF, false); leg(jj.legN, false); torso(); arm(jj.armF, false); arm(jj.armN, false); head(); return; }
+    arm(jj.armF, true); leg(jj.legF, true); torso(); head(); leg(jj.legN, false); arm(jj.armN, false);
+  };
+
+  // ---------------------------------------------------------------- suelo y objetos fijos
+  if (def.floor !== false) line([-60, FLOOR - 0.3], [180, FLOOR - 0.3], C.prop, 1.4, 0.35);
+  const props = def.props || [];
+  const fixedProp = (p) => {
+    switch (p.t) {
+      case 'bench':
+        push('rect', { x: p.x1, y: p.y, width: p.x2 - p.x1, height: 5.5, rx: 2.7 }, C.prop, { opacity: 0.55 });
+        if (p.legs !== false) [p.x1 + 5, p.x2 - 5].forEach((x) => line([x, p.y + 5], [x, FLOOR - 1], C.prop, 2.6, 0.4));
+        break;
+      case 'box': push('rect', { x: p.x1, y: p.y, width: p.x2 - p.x1, height: FLOOR - 1 - p.y, rx: 3 }, C.prop, { opacity: 0.4 }); break;
+      case 'wall': push('rect', { x: p.x - 5, y: -30, width: 5, height: FLOOR + 29 }, C.prop, { opacity: 0.4 }); break;
+      case 'pad': line(p.from, p.to, C.prop, p.w || 5.5, 0.5); break;
+      case 'post': line([p.x, p.y], [p.x, FLOOR - 1], C.prop, 2.6, 0.4); break;
+      case 'bar':
+        if (p.posts) [p.x1, p.x2].forEach((x) => line([x, p.y], [x, FLOOR - 1], C.prop, 2.4, 0.4));
+        if (p.hang) [p.x1, p.x2].forEach((x) => line([x, p.y], [x, -30], C.prop, 2.4, 0.4));
+        line([p.x1, p.y], [p.x2, p.y], C.prop, 3.4, 0.9);
+        break;
       case 'treadmill':
-        line(p.from, p.to, 4, 0.3);
-        line([p.to[0] - 6, p.to[1]], [p.to[0] - 2, p.to[1] - 40], 2.2, 0.25);
+        line(p.from, p.to, C.prop, 4.5, 0.55);
+        line([p.to[0] - 6, p.to[1]], [p.to[0] - 1, p.to[1] - 42], C.prop, 2.6, 0.45);
+        line([p.to[0] - 1, p.to[1] - 42], [p.to[0] - 12, p.to[1] - 44], C.prop, 2.6, 0.45);
         break;
       default: break;
     }
-    void o;
   };
-  const drawHeld = (p) => {
-    const c = p.on ? add(at(p.on), [p.dx || 0, p.dy || 0]) : [0, 0];
+  const heldProp = (p, jj) => {
+    const c = p.on ? add(at(jj, p.on), [p.dx || 0, p.dy || 0]) : [0, 0];
     switch (p.t) {
-      case 'plate': // disco de la barra visto de costado
-        circle(c, p.r || 8.5, { fill: 'none', stroke: S, strokeWidth: 3, opacity: 0.9 });
-        circle(c, 1.6, { fill: S, opacity: 0.9 });
+      case 'plate': { // barra con discos, vista de punta
+        const r = p.r || 8.5;
+        circle(c, r, C.shorts); circle(c, r - 2.6, C.prop, { opacity: 0.55 }); circle(c, 1.8, C.shoe);
         break;
-      case 'db': // mancuerna vista de punta
-        circle(c, p.r || 4.2, { fill: S, opacity: 0.9 });
-        break;
-      case 'dbs': // mancuerna vista de costado (vista de frente)
-        out.push({ tag: 'rect', attrs: { x: r1(c[0] - 2.5), y: r1(c[1] - 6), width: 5, height: 12, rx: 2, fill: S, opacity: 0.9 } });
+      }
+      case 'db': circle(c, p.r || 4.4, C.shorts); circle(c, 1.6, C.prop); break; // mancuerna vista de punta
+      case 'dbs': // mancuerna vista de costado
+        push('rect', { x: r1(c[0] - 1.2), y: r1(c[1] - 6.5), width: 2.4, height: 13, rx: 1 }, C.prop);
+        push('rect', { x: r1(c[0] - 3.2), y: r1(c[1] - 7.5), width: 6.4, height: 4, rx: 1.4 }, C.shorts);
+        push('rect', { x: r1(c[0] - 3.2), y: r1(c[1] + 3.5), width: 6.4, height: 4, rx: 1.4 }, C.shorts);
         break;
       case 'kb': // pesa rusa
-        circle(add(c, [0, 5]), 5.5, { fill: S, opacity: 0.9 });
-        out.push({ tag: 'path', attrs: { d: `M${r1(c[0] - 3)},${r1(c[1] + 2)} Q${r1(c[0])},${r1(c[1] - 4)} ${r1(c[0] + 3)},${r1(c[1] + 2)}`, fill: 'none', stroke: S, strokeWidth: 1.8, opacity: 0.9 } });
+        stroke(`M${r1(c[0] - 3.2)},${r1(c[1] + 3)} Q${r1(c[0])},${r1(c[1] - 5)} ${r1(c[0] + 3.2)},${r1(c[1] + 3)}`, C.shorts, 2.2);
+        circle(add(c, [0, 6]), 5.8, C.shorts);
         break;
-      case 'handle': line(add(c, [-(p.w || 10) / 2, 0]), add(c, [(p.w || 10) / 2, 0]), 2.4, 0.85); break;
-      case 'sled': { // plataforma de la prensa, perpendicular a la pierna
-        const d = vec((p.angle || 0) + 90, 9);
-        line(add(c, d), add(c, [-d[0], -d[1]]), 3.5, 0.5);
-        break;
-      }
-      case 'roller': circle(c, 3.6, { fill: 'none', stroke: S, strokeWidth: 2, opacity: 0.6 }); break;
+      case 'handle': line(add(c, [-(p.w || 10) / 2, 0]), add(c, [(p.w || 10) / 2, 0]), C.shoe, 2.8); break;
+      case 'sled': { const d = vec((p.angle || 0) + 90, 10); line(add(c, d), add(c, [-d[0], -d[1]]), C.prop, 4, 0.8); break; }
+      case 'roller': circle(c, 3.8, C.prop); break;
+      case 'cable': { const a = at(jj, p.on); line(a, p.to, C.prop, 1.3, 0.8); circle(p.to, 3, C.prop, { opacity: 0.8 }); break; }
+      case 'band': line(at(jj, p.from), at(jj, p.to), C.focus, 2); break;
       case 'rope': { // soga de saltar: pasa por arriba de la cabeza y por debajo de los pies
-        const a = j.armN.end; const b = j.armF.end;
-        const cy = -14 + (FLOOR + 22) * j.k;
-        const cx = (a[0] + b[0]) / 2 + 6;
-        out.push({ tag: 'path', attrs: { d: `M${r1(a[0])},${r1(a[1])} Q${r1(cx)},${r1(cy)} ${r1(b[0])},${r1(b[1])}`, fill: 'none', stroke: S, strokeWidth: 1.3, opacity: 0.7 } });
+        const a = jj.armN.end; const b2 = jj.armF.end; const cy = -14 + (FLOOR + 22) * jj.k; const cx = (a[0] + b2[0]) / 2 + 6;
+        stroke(`M${P(a)} Q${r1(cx)},${r1(cy)} ${P(b2)}`, C.prop, 1.5, 0.9);
         break;
       }
-      case 'waves': { // sogas de batalla
-        [j.armN.end, j.armF.end].forEach((h, i) => {
-          const mx = (h[0] + p.to[0]) / 2; const my = (h[1] + p.to[1]) / 2 + (i ? -1 : 1) * (8 - 16 * j.k);
-          out.push({ tag: 'path', attrs: { d: `M${r1(h[0])},${r1(h[1])} Q${r1(mx)},${r1(my)} ${r1(p.to[0])},${r1(p.to[1])}`, fill: 'none', stroke: S, strokeWidth: 2, opacity: i ? 0.35 : 0.7 } });
+      case 'waves': // sogas de batalla
+        [jj.armN.end, jj.armF.end].forEach((h, i) => {
+          const mx = (h[0] + p.to[0]) / 2; const my = (h[1] + p.to[1]) / 2 + (i ? -1 : 1) * (8 - 16 * jj.k);
+          stroke(`M${P(h)} Q${r1(mx)},${r1(my)} ${P(p.to)}`, C.prop, 2.4, i ? 0.5 : 0.9);
         });
         break;
-      }
       default: break;
     }
   };
+  const FIXED = ['bench', 'box', 'wall', 'pad', 'post', 'bar', 'treadmill'];
+  props.filter((p) => FIXED.includes(p.t)).forEach(fixedProp);
 
-  props.filter((p) => !p.on && p.t !== 'rope' && p.t !== 'waves').forEach(drawProp);
+  // ---------------------------------------------------------------- posición inicial de fondo (figura quieta)
+  if (opts.ghost) {
+    const j0 = solve(frameAt(def, 0), front);
+    const moved = Math.hypot(j0.hip[0] - j.hip[0], j0.hip[1] - j.hip[1]) + Math.hypot(j0.armN.end[0] - j.armN.end[0], j0.armN.end[1] - j.armN.end[1])
+      + Math.hypot(j0.legN.end[0] - j.legN.end[0], j0.legN.end[1] - j.legN.end[1]) + Math.hypot(j0.top[0] - j.top[0], j0.top[1] - j.top[1]);
+    if (moved > 8) {
+      const start = out.length;
+      drawBody(j0, C.ghost);
+      const ghostShapes = out.splice(start);
+      out.push({ tag: 'g', attrs: { style: { opacity: 0.2 } }, children: ghostShapes });
+    }
+  }
 
-  const far = front ? 0.85 : 0.4;
-  const W = { limb: 6.2, torso: front ? 11 : 9 };
-  const leg = (l, op) => { poly([l.root, l.mid, l.end], W.limb, op); if (l.tip) line(l.end, l.tip, W.limb - 1.6, op); };
-  const arm = (a, op) => poly([a.root, a.mid, a.end], W.limb - 0.6, op);
-
-  // Lo que está del lado de atrás primero
-  props.filter((p) => p.on && p.behind).forEach(drawHeld);
-  leg(j.legF, far);
-  arm(j.armF, far);
-  props.filter((p) => p.on && p.side === 'F' && !p.behind).forEach(drawHeld);
-
-  // Torso: en vista de costado puede curvarse (gato y vaca)
-  if (front) {
-    line(j.hip, j.top, W.torso);
-    line(j.armN.root, j.armF.root, 5.5);
-    line(j.legN.root, j.legF.root, 5.5);
-  } else if (j.arch) {
-    const mid = lerpP(j.hip, j.top, 0.5);
-    const c = add(mid, [j.dir[1] * j.arch, -j.dir[0] * j.arch]);
-    out.push({ tag: 'path', attrs: { d: `M${r1(j.hip[0])},${r1(j.hip[1])} Q${r1(c[0])},${r1(c[1])} ${r1(j.top[0])},${r1(j.top[1])}`, fill: 'none', stroke: S, strokeWidth: W.torso, strokeLinecap: 'round' } });
-  } else line(j.hip, j.top, W.torso);
-  circle(j.head, LEN.head, { fill: S });
-
-  leg(j.legN, 1);
-  arm(j.armN, 1);
-  props.filter((p) => p.on && p.side !== 'F' && !p.behind).forEach(drawHeld);
-  props.filter((p) => p.t === 'rope' || p.t === 'waves').forEach(drawHeld);
+  // ---------------------------------------------------------------- objetos en mano y cuerpo
+  const held = props.filter((p) => !FIXED.includes(p.t));
+  held.filter((p) => p.behind || p.side === 'F').forEach((p) => heldProp(p, j));
+  drawBody(j, null);
+  held.filter((p) => !(p.behind || p.side === 'F')).forEach((p) => heldProp(p, j));
   return out;
 }
 
-export const DEFAULT_VIEWBOX = '0 0 120 120';
+export const DEFAULT_VIEWBOX = '-8 -20 136 136';
+
+// Encuadre automático: un cuadrado que contiene al maniquí y sus objetos durante todo el movimiento,
+// para que cada ejercicio llene el recuadro (parado, acostado o colgado).
+const boxCache = new Map();
+export function viewBoxFor(def) {
+  if (boxCache.has(def)) return boxCache.get(def);
+  const front = def.view === 'front';
+  let x1 = Infinity; let y1 = Infinity; let x2 = -Infinity; let y2 = -Infinity;
+  const grow = (pt, r = 0) => { x1 = Math.min(x1, pt[0] - r); x2 = Math.max(x2, pt[0] + r); y1 = Math.min(y1, pt[1] - r); y2 = Math.max(y2, pt[1] + r); };
+  const steps = def.mode === 'loop' ? def.frames.length * 4 : 8;
+  for (let i = 0; i <= steps; i++) {
+    const j = solve(frameAt(def, (i / steps) * 0.999), front);
+    grow(j.head, 8); grow(j.hip, 7); grow(j.top, 8);
+    [j.legN, j.legF].forEach((l) => { grow(l.mid, 5); grow(l.end, 4); if (l.tip) grow(l.tip, 3); });
+    [j.armN, j.armF].forEach((a) => { grow(a.mid, 4); grow(a.end, 3); });
+    (def.props || []).forEach((pr) => {
+      if (pr.on && typeof pr.on === 'string') grow(add(jointPoint(j, pr.on), [pr.dx || 0, pr.dy || 0]), pr.t === 'plate' ? (pr.r || 8.5) + 1 : 8);
+    });
+  }
+  (def.props || []).forEach((pr) => {
+    if (pr.t === 'bench' || pr.t === 'box') { grow([pr.x1, pr.y]); grow([pr.x2, FLOOR]); }
+    if (pr.t === 'bar') { grow([pr.x1, pr.y - 3]); grow([pr.x2, pr.y]); }
+    if (pr.t === 'pad' || pr.t === 'treadmill') { grow(pr.from, 4); grow(pr.to, 4); }
+    if (pr.t === 'treadmill') grow([pr.to[0], pr.to[1] - 46]);
+    if (pr.t === 'cable' || pr.t === 'waves') grow(pr.to, 4);
+    if (pr.t === 'wall') grow([pr.x - 6, FLOOR]);
+    if (pr.t === 'rope') grow([(x1 + x2) / 2, -14]);
+  });
+  if (def.floor !== false) grow([x1, FLOOR + 1]);
+  const size = Math.max(x2 - x1, y2 - y1) + 12;
+  const cx = (x1 + x2) / 2;
+  const top = y2 + 6 - size + (size - (y2 - y1) - 12) / 2; // centrado vertical, con el piso cerca del borde de abajo
+  const vb = `${r1(cx - size / 2)} ${r1(def.floor !== false ? y2 + 6 - size : top)} ${r1(size)} ${r1(size)}`;
+  boxCache.set(def, vb);
+  return vb;
+}

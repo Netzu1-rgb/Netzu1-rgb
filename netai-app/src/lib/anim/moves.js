@@ -76,10 +76,10 @@ export const MOVES = {
   'step-up': {
     dur: 2600,
     frames: [
-      pose({ hip: [46, 61], torso: 176, legN: L(68, 81), legF: L(46, 104), armN: G(0, 0), armF: G(-2, -2) }),
-      pose({ hip: [66, 40], torso: 180, legN: L(70, 81), legF: L(62, 76, 1, 40), armN: G(0, 0), armF: G(-2, -2) }),
+      pose({ hip: [46, 61], torso: 174, legN: L(68, 88), legF: L(46, 104), armN: G(0, 0), armF: G(-2, -2) }),
+      pose({ hip: [66, 46], torso: 180, legN: L(70, 88), legF: L(62, 82, 1, 40), armN: G(0, 0), armF: G(-2, -2) }),
     ],
-    props: [{ t: 'box', x1: 58, x2: 92, y: 85 }, { t: 'db', on: 'handN' }],
+    props: [{ t: 'box', x1: 58, x2: 94, y: 91.5 }, { t: 'db', on: 'handN' }],
   },
   'calf-raise': {
     dur: 1800,
@@ -91,12 +91,12 @@ export const MOVES = {
     props: [{ t: 'handle', on: 'shoulder', w: 14 }, { t: 'post', x: 40, y: 30 }],
   },
   'leg-press': {
-    dur: 2400, floor: false,
+    dur: 2600, floor: false,
     frames: [
-      pose({ hip: [42, 90], torso: 225, head: 25, legN: L(58, 70, -1, 165), legF: L(56, 72, -1, 165), armN: A(40, 88, -1), armF: A(38, 88, -1) }),
-      pose({ hip: [42, 90], torso: 225, head: 25, legN: L(72, 60, -1, 165), legF: L(70, 62, -1, 165), armN: A(40, 88, -1), armF: A(38, 88, -1) }),
+      pose({ hip: [44, 92], torso: 228, head: 20, legN: L(63, 74, 1, 140), legF: L(61, 76, 1, 140), armN: A(46, 96, -1), armF: A(44, 96, -1) }),
+      pose({ hip: [44, 92], torso: 228, head: 20, legN: L(74, 63, 1, 140), legF: L(72, 65, 1, 140), armN: A(46, 96, -1), armF: A(44, 96, -1) }),
     ],
-    props: [{ t: 'pad', from: [16, 72], to: [40, 98], w: 6 }, { t: 'pad', from: [40, 98], to: [60, 98], w: 5 }, { t: 'sled', on: 'toeN', angle: 45 }],
+    props: [{ t: 'pad', from: [18, 68], to: [42, 98], w: 6.5 }, { t: 'pad', from: [42, 99], to: [58, 99], w: 5.5 }, { t: 'sled', on: 'toeN', angle: 50 }],
   },
   'leg-extension': {
     dur: 2200, floor: false,
@@ -130,7 +130,7 @@ export const MOVES = {
   deadlift: {
     dur: 2800,
     frames: [
-      pose({ hip: [44, 86], torso: 128, legN: L(60, 104), legF: L(56, 104), armN: G(0, 0), armF: G(-2, -2) }),
+      pose({ hip: [42, 77], torso: 122, legN: L(60, 104), legF: L(56, 104), armN: G(0, 0), armF: G(-2, -2) }),
       stand(),
     ],
     props: [{ t: 'plate', on: 'handN', r: 9 }],
@@ -140,8 +140,8 @@ export const MOVES = {
   'glute-bridge': {
     dur: 2400,
     frames: [
-      pose({ hip: [52, 104], torso: -90, head: 0, legN: L(76, 104, -1), legF: L(74, 104, -1), armN: G(90, 90), armF: G(90, 90) }),
-      pose({ hip: [52, 88], torso: -58, head: -32, legN: L(76, 104, -1), legF: L(74, 104, -1), armN: G(90, 90), armF: G(90, 90) }),
+      pose({ hip: [52, 100], torso: -90, head: 0, legN: L(76, 104, -1), legF: L(74, 104, -1), armN: G(88, 92), armF: G(88, 92) }),
+      pose({ hip: [52, 86], torso: -62, head: -28, legN: L(76, 104, -1), legF: L(74, 104, -1), armN: G(70, 88), armF: G(70, 88) }),
     ],
   },
   'hip-thrust': {
@@ -268,8 +268,8 @@ export const MOVES = {
   superman: {
     dur: 2400, vb: '-16 -24 152 152',
     frames: [
-      pose({ hip: [72, 104], torso: -90, head: 0, legN: G(91, 91, 178), legF: G(92, 92, 179), armN: G(-91, -91), armF: G(-92, -92) }),
-      pose({ hip: [72, 103], torso: -100, head: -12, legN: G(102, 104, 180), legF: G(103, 105, 181), armN: G(-112, -114), armF: G(-113, -115) }),
+      pose({ hip: [72, 100], torso: -90, head: 0, legN: G(91, 91, 178), legF: G(92, 92, 179), armN: G(-91, -91), armF: G(-92, -92) }),
+      pose({ hip: [72, 100], torso: -102, head: -12, legN: G(102, 104, 180), legF: G(103, 105, 181), armN: G(-112, -114), armF: G(-113, -115) }),
     ],
   },
   'bird-dog': {
@@ -370,15 +370,15 @@ export const MOVES = {
   'dead-bug': {
     dur: 2600, vb: '-10 -10 140 140',
     frames: [
-      pose({ hip: [64, 104], torso: -90, legN: G(180, 90, 95), legF: G(95, 95, 175), armN: G(-94, -94), armF: G(180, 180) }),
-      pose({ hip: [64, 104], torso: -90, legN: G(95, 95, 175), legF: G(180, 90, 95), armN: G(180, 180), armF: G(-94, -94) }),
+      pose({ hip: [64, 100], torso: -90, legN: G(180, 90, 95), legF: G(95, 95, 175), armN: G(-94, -94), armF: G(180, 180) }),
+      pose({ hip: [64, 100], torso: -90, legN: G(95, 95, 175), legF: G(180, 90, 95), armN: G(180, 180), armF: G(-94, -94) }),
     ],
   },
   crunch: {
     dur: 2200,
     frames: [
-      pose({ hip: [56, 104], torso: -90, legN: L(80, 104, -1), legF: L(78, 104, -1), armN: A(38, 100, -1), armF: A(36, 100, -1) }),
-      pose({ hip: [56, 104], torso: -116, head: 10, legN: L(80, 104, -1), legF: L(78, 104, -1), armN: A(40, 92, -1), armF: A(38, 92, -1) }),
+      pose({ hip: [56, 100], torso: -90, legN: L(80, 104, -1), legF: L(78, 104, -1), armN: A(20, 94, -1), armF: A(18, 94, -1) }),
+      pose({ hip: [56, 100], torso: -122, head: 12, legN: L(80, 104, -1), legF: L(78, 104, -1), armN: A(26, 78, -1), armF: A(24, 78, -1) }),
     ],
   },
   'hanging-leg-raise': {
@@ -399,8 +399,8 @@ export const MOVES = {
   'flutter-kick': {
     dur: 900, vb: '-12 -10 140 140',
     frames: [
-      pose({ hip: [62, 104], torso: -90, head: 8, legN: G(80, 80, 170), legF: G(96, 96, 186), armN: G(90, 90), armF: G(91, 91) }),
-      pose({ hip: [62, 104], torso: -90, head: 8, legN: G(96, 96, 186), legF: G(80, 80, 170), armN: G(90, 90), armF: G(91, 91) }),
+      pose({ hip: [62, 100], torso: -90, head: 8, legN: G(80, 80, 170), legF: G(92, 92, 182), armN: G(90, 90), armF: G(91, 91) }),
+      pose({ hip: [62, 100], torso: -90, head: 8, legN: G(92, 92, 182), legF: G(80, 80, 170), armN: G(90, 90), armF: G(91, 91) }),
     ],
   },
 

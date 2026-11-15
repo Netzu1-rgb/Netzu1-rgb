@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { shapes, DEFAULT_VIEWBOX } from '@/lib/anim/rig';
+import { shapes, viewBoxFor, FOCUS_BY_ZONE } from '@/lib/anim/rig';
+import { EXERCISES } from '@/lib/exercises';
 import { MOVES } from '@/lib/anim/moves';
 
 // Momento del ciclo que se muestra quieto: el final del movimiento, que es el más claro
@@ -40,7 +41,7 @@ export default function CharacterFigure({ slug, animated = false, className = ''
     const dur = def.dur || 2400;
     let raf = 0; let last = 0; const t0 = performance.now();
     const tick = (now) => {
-      if (now - last > 33) { last = now; setPhase(((now - t0) % dur) / dur); } // unos 30 cuadros por segundo alcanzan
+      if (now - last > 33) { last = now; setPhase(Math.max(0, (now - t0) % dur) / dur); } // unos 30 cuadros por segundo alcanzan
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -48,10 +49,11 @@ export default function CharacterFigure({ slug, animated = false, className = ''
   }, [moving, def]);
 
   if (!def) return <div ref={ref} className={className} aria-hidden="true" />;
+  const focus = FOCUS_BY_ZONE[EXERCISES.find((e) => e.slug === slug)?.zone] || [];
   return (
-    <svg ref={ref} viewBox={def.vb || DEFAULT_VIEWBOX} className={`text-agua-800 ${className}`} data-figura={slug} data-animada={moving ? 'si' : 'no'}
+    <svg ref={ref} viewBox={viewBoxFor(def)} className={className} data-figura={slug} data-animada={moving ? 'si' : 'no'}
       role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'} focusable="false">
-      {shapes(def, phase).map((s, i) => React.createElement(s.tag, { key: i, ...s.attrs }))}
+      {shapes(def, phase, { focus, ghost: !moving }).map((s, i) => React.createElement(s.tag, { key: i, ...s.attrs }, s.children ? s.children.map((c, k) => React.createElement(c.tag, { key: k, ...c.attrs })) : undefined))}
     </svg>
   );
 }

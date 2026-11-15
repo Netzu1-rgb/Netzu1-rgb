@@ -226,3 +226,21 @@ summary:focus-visible,
 @keyframes figura-pose-1 { 0% { opacity: 1; } 25% { opacity: 0; } 100% { opacity: 0; } }
 @keyframes figura-pose-2 { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 1; } }
 @keyframes figura-pose-3 { 0% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 0; } }
+
+/* Maniquí de los ejercicios (NetAI Fit): colores para tema claro y oscuro */
+:root {
+  --fig-skin: #B7C9DA; --fig-skin-far: #93A9BE;
+  --fig-shirt: #2C6390; --fig-shirt-far: #234F74;
+  --fig-shorts: #19344C; --fig-shorts-far: #12273A;
+  --fig-shoe: #0F2131; --fig-hair: #19344C;
+  --fig-focus: #E3A32C; --fig-focus-far: #BC8520;
+  --fig-prop: #6B7B73; --fig-ghost: #2C6390;
+}
+html.oscuro {
+  --fig-skin: #D6E4EF; --fig-skin-far: #A6BBCD;
+  --fig-shirt: #4E91BF; --fig-shirt-far: #3D789F;
+  --fig-shorts: #2F6A97; --fig-shorts-far: #26567B;
+  --fig-shoe: #B0D0E7; --fig-hair: #8FB4D0;
+  --fig-focus: #F0B84A; --fig-focus-far: #C99632;
+  --fig-prop: #9FB0A6; --fig-ghost: #7DB1D5;
+}

@@ -138,7 +138,7 @@ test('cada ejercicio tiene su animación y se puede dibujar en cualquier momento
   for (const e of EXERCISES) {
     const def = MOVES[e.slug];
     assert.ok(def, `falta la animación de ${e.slug}`);
-    for (const ph of [0, 0.25, 0.5, 0.75, 0.99]) {
+    for (const ph of [0, 0.25, 0.5, 0.75, 0.99, -0.003, 1, 1.4, NaN]) { // incluye momentos fuera del ciclo
       const list = shapes(def, ph);
       assert.ok(list.length > 8, e.slug);
       for (const sh of list) for (const v of Object.values(sh.attrs)) if (typeof v === 'number') assert.ok(Number.isFinite(v), `${e.slug}: número inválido`);

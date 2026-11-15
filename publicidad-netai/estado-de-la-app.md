@@ -1,6 +1,20 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 2.2.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 2.3.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 2.3.0: el muñeco de palitos pasa a ser un maniquí con volumen
+
+El muñeco de la versión anterior no se entendía y se veía poco profesional. Se rehízo el dibujo, con los mismos movimientos:
+
+- **Cuerpo con volumen:** torso, brazos y piernas que se afinan, cuello, cabeza con pelo (marca hacia dónde mira), manos y zapatillas, con remera y short.
+- **Músculo resaltado:** la zona que trabaja cada ejercicio va en color (muslos, glúteos, pecho o espalda, hombros, brazos, abdomen).
+- **Posición inicial de fondo:** cuando la figura está quieta, se ve en transparente dónde empieza el movimiento y, encima, dónde termina.
+- **Encuadre automático:** cada ejercicio llena el recuadro, esté la persona parada, acostada o colgada.
+- **Objetos más claros:** barra con discos, mancuernas, pesa rusa, bancos y poleas con relleno.
+- **Poses corregidas:** prensa de piernas, peso muerto, subida al banco y los ejercicios acostados, que quedaban hundidos en el piso.
+- **Falla corregida:** al abrir algunos ejercicios la pantalla podía mostrar "Algo salió mal" por un error en el arranque de la animación.
+
+Sigue siendo una figura esquemática, no una persona realista, y sigue pendiente que un profesional revise cada movimiento.
 
 ## Versión 2.2.0: un muñeco animado para cada ejercicio de NetAI Fit
 
