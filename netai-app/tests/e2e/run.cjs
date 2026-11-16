@@ -25,11 +25,9 @@ function fakeClaude() {
       if (!req.url.startsWith('/v1/messages') || sent.model !== 'claude-haiku-5-5' || sent.output_config?.effort !== 'low' || sent.output_config?.format?.type !== 'json_schema' || !(req.headers['x-api-key'] || req.headers.authorization) || 'temperature' in sent) {
         return send(400, { type: 'error', error: { type: 'invalid_request_error', message: 'pedido distinto del esperado' } });
       }
-      const parts = sent.messages[0].content;
-      const img = parts.find((p) => p.type === 'image');
-      const text = parts.find((p) => p.type === 'text').text;
+      const text = sent.messages[0].content.find((p) => p.type === 'text').text;
       let answer;
-      if (!img) {
+      if (text.includes('Proponé 3 ideas')) {
         fs.appendFileSync(AI_LOG, JSON.stringify({ prompt: text }) + '\n');
         answer = { sugerencias: [
           { nombre: 'Tarta de verduras con ensalada', descripcion: 'Tarta de acelga y queso con ensalada de tomate.', kcal: 520, proteinas_g: 24, carbohidratos_g: 48, grasas_g: 24 },
@@ -37,7 +35,10 @@ function fakeClaude() {
           { nombre: 'Omelette con vegetales', descripcion: 'Omelette de dos huevos con espinaca y pan integral.', kcal: 430, proteinas_g: 26, carbohidratos_g: 30, grasas_g: 22 },
         ] };
       } else {
-        answer = { esComida: img.source.data.length >= 3000, nombre: 'Milanesa con puré y ensalada', porcion: '1 plato mediano', alimentos: ['milanesa', 'puré', 'ensalada'], kcal: 720, proteinas_g: 42, carbohidratos_g: 58, grasas_g: 34, plato: { vegetales: 25, proteinas: 40, cereales: 35 }, confianza: 'media', nota: 'La porción de puré es aproximada.' };
+        // Estimación de una comida escrita: lo que no parece comida vuelve como "no es comida"
+        const meal = (text.match(/<comida>([\s\S]*)<\/comida>/) || [])[1] || '';
+        fs.appendFileSync(AI_LOG, JSON.stringify({ comida: meal }) + '\n');
+        answer = { esComida: !/asdf|ignor/i.test(meal), nombre: 'Milanesa con puré y ensalada', porcion: '1 plato mediano', alimentos: ['milanesa', 'puré', 'ensalada'], kcal: 720, proteinas_g: 42, carbohidratos_g: 58, grasas_g: 34, plato: { vegetales: 25, proteinas: 40, cereales: 35 }, confianza: 'media', nota: 'La porción de puré es aproximada.' };
       }
       // Como el modelo real con razonamiento activado: primero un bloque de razonamiento vacío, después el texto
       send(200, { id: 'msg_prueba', type: 'message', role: 'assistant', model: sent.model, content: [{ type: 'thinking', thinking: '', signature: 'x' }, { type: 'text', text: JSON.stringify(answer) }], stop_reason: 'end_turn', stop_sequence: null, usage: { input_tokens: 1300, output_tokens: 250 } });

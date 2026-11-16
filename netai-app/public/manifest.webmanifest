@@ -2,7 +2,7 @@
   "id": "/app",
   "name": "NetAI · Nutrición consciente",
   "short_name": "NetAI",
-  "description": "Comé con calma, sin dietas ni culpa: registrá con una foto o a mano, escuchá tu hambre y elegí entre el modo Bienestar y el Modo Sport.",
+  "description": "Comé con calma, sin dietas ni culpa: escribí lo que comiste y la IA lo estima, escuchá tu hambre y elegí entre el modo Bienestar y el Modo Sport.",
   "lang": "es-AR",
   "dir": "ltr",
   "start_url": "/app",

@@ -6,7 +6,7 @@ import RequestForm from '@/components/landing/RequestForm';
 
 export const metadata = {
   title: 'NetAI · Comé con calma, sin dietas ni culpa',
-  description: 'Registrá tus comidas con una foto o a mano, escuchá tu hambre y elegí tu modo: Bienestar, sin metas de peso, o Sport, para deportistas.',
+  description: 'Escribí lo que comiste y la IA estima calorías y macros, escuchá tu hambre y elegí tu modo: Bienestar, sin metas de peso, o Sport, para deportistas.',
 };
 
 const GROUPS = [
@@ -16,7 +16,7 @@ const GROUPS = [
 ];
 
 const FEATURES = [
-  { title: 'Registrá con una foto o a mano', text: 'Sacale una foto al plato y la IA estima porción, calorías, proteínas, carbohidratos y grasas. Siempre podés corregirlo.' },
+  { title: 'Escribilo y listo', text: 'Contá qué comiste con tus palabras y la IA estima porción, calorías, proteínas, carbohidratos y grasas. Siempre podés corregirlo.' },
   { title: 'Escuchá tu hambre', text: 'Anotá cuánta hambre tenías antes y cómo te sentiste después, con una escala del 1 al 10.' },
   { title: 'Modo Intuitivo', text: 'Con un toque desaparecen las calorías y los números. Quedan los grupos del plato y cómo te sentís.' },
   { title: 'Tu semana y tu mes', text: 'Mirá tu constancia, tu agua y tus hábitos sin rachas que se pierden.' },

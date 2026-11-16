@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Check, Camera } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 
 const PLANS = [
   {
@@ -10,7 +10,7 @@ const PLANS = [
     price: 'US$0',
     period: 'para siempre',
     note: 'Para empezar a cuidarte sin pagar nada.',
-    photos: 'Sin análisis por foto',
+    photos: 'Sin estimación con IA',
     featured: false,
     features: [
       'Registro manual ilimitado de comidas',
@@ -23,12 +23,12 @@ const PLANS = [
     name: 'Plus',
     price: 'US$0,99',
     period: 'por mes',
-    note: 'Registrá tus platos con una foto.',
-    photos: '60 fotos al mes',
+    note: 'Escribí lo que comiste y la IA lo estima.',
+    photos: '60 estimaciones al mes',
     featured: false,
     features: [
       'Todo lo del plan Gratis',
-      '60 análisis de platos por foto con IA',
+      '60 estimaciones de comidas con IA',
       'Estimación automática de porciones',
       'Historial completo y exportable',
       'Soporte prioritario y sin anuncios',
@@ -38,12 +38,12 @@ const PLANS = [
     name: 'Pro',
     price: 'US$1,99',
     period: 'por mes',
-    note: 'Para registrar casi todo con una foto.',
-    photos: '150 fotos al mes',
+    note: 'Para estimar casi todas tus comidas.',
+    photos: '150 estimaciones al mes',
     featured: true,
     features: [
       'Todo lo del plan Plus',
-      '150 análisis de platos por foto con IA (unos 5 al día)',
+      '150 estimaciones de comidas con IA (unas 5 al día)',
       'Tendencias de tus hábitos y comparación entre períodos',
       'Sugerencias de comidas con IA',
       'Informe mensual de hábitos',
@@ -58,7 +58,7 @@ export default function PricingSection() {
         <div className="max-w-2xl mb-12">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-loza-900 tracking-tight">Planes</h2>
           <p className="mt-4 text-lg text-loza-600 leading-relaxed">
-            Empezá gratis, sin límite de registros. Si querés que la IA reconozca tus platos por foto, elegí Plus o Pro. Precios en dólares estadounidenses.
+            Empezá gratis, sin límite de registros. Si querés que la IA estime tus comidas a partir de lo que escribís, elegí Plus o Pro. Precios en dólares estadounidenses.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function PricingSection() {
               <p className={`mt-6 flex items-center gap-2 rounded-2xl px-4 py-3 font-bold ${
                 p.featured ? 'bg-hoja-800 text-white' : p.price === 'US$0' ? 'bg-loza-100 text-loza-500' : 'bg-hoja-50 text-hoja-800'
               }`}>
-                <Camera className="w-[18px] h-[18px]" aria-hidden="true" />
+                <Sparkles className="w-[18px] h-[18px]" aria-hidden="true" />
                 {p.photos}
               </p>
 

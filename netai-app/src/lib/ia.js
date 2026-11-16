@@ -45,7 +45,7 @@ const fail = (message, status) => NextResponse.json({ message }, { status });
 /**
  * Comprueba origen, sesión, clave y límite de uso. Devuelve {} o { error: respuesta }.
  */
-export async function aiGuard(request, what = 'El análisis por foto') {
+export async function aiGuard(request, what = 'La estimación con IA') {
   if (!sameOrigin(request)) return { error: fail('Pedido no permitido.', 403) };
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!(await verifySessionToken(token))) return { error: fail('Tu sesión venció. Volvé a entrar a la app.', 401) };

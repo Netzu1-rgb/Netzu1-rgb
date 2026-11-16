@@ -4,7 +4,6 @@ const path = require('path');
 const BASE = process.env.BASE || 'http://localhost:3210';
 const USERS = Number(process.env.USERS || 150);
 const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
-const img = fs.readFileSync(path.join(__dirname, 'fixtures', 'plato.jpg')).toString('base64');
 const pct = (list, p) => [...list].sort((a, b) => a - b)[Math.min(list.length - 1, Math.floor(list.length * p))];
 const timed = async (bucket, fn) => { const t = performance.now(); const r = await fn(); bucket.push(performance.now() - t); return r; };
 
@@ -17,9 +16,9 @@ async function user(i, times, sharedIp) {
   const app = await timed(times.app, () => fetch(BASE + '/app', { headers: { cookie, 'x-forwarded-for': ip }, redirect: 'manual' }));
   if (app.status !== 200) return 'app ' + app.status;
   await app.text();
-  const photo = await timed(times.photo, () => fetch(BASE + '/api/analizar-plato', { method: 'POST', headers: { ...json, cookie }, body: JSON.stringify({ image: img, mimeType: 'image/jpeg' }) }));
+  const photo = await timed(times.photo, () => fetch(BASE + '/api/analizar-comida', { method: 'POST', headers: { ...json, cookie }, body: JSON.stringify({ text: 'milanesa con puré y ensalada' }) }));
   const data = await photo.json().catch(() => ({}));
-  if (photo.status !== 200 || !data.name) return 'foto ' + photo.status;
+  if (photo.status !== 200 || !data.name) return 'estimación ' + photo.status;
   const ideas = await timed(times.ideas, () => fetch(BASE + '/api/sugerir-comidas', { method: 'POST', headers: { ...json, cookie }, body: JSON.stringify({ moment: 'cena', diet: [], allergies: '' }) }));
   if (ideas.status !== 200) return 'ideas ' + ideas.status;
   return null;
@@ -31,7 +30,7 @@ async function user(i, times, sharedIp) {
   const results = await Promise.all(Array.from({ length: USERS }, (_, i) => user(i, times)));
   const total = performance.now() - t0;
   const failed = results.filter(Boolean);
-  ok(failed.length === 0, `${USERS} personas a la vez: ingreso, app, foto e ideas sin errores ${failed.slice(0, 5).join(', ')}`);
+  ok(failed.length === 0, `${USERS} personas a la vez: ingreso, app, estimación e ideas sin errores ${failed.slice(0, 5).join(', ')}`);
   const line = Object.entries(times).map(([k, v]) => `${k} ${Math.round(pct(v, 0.5))}/${Math.round(pct(v, 0.95))} ms`).join(' · ');
   console.log(`      mediana / percentil 95: ${line} · total ${Math.round(total)} ms`);
   ok(pct(times.app, 0.95) < 3000 && pct(times.photo, 0.95) < 5000, 'con esa carga, el 95 % de las respuestas llega en tiempos razonables');

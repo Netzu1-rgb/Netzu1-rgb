@@ -27,7 +27,6 @@ import {
   UserRound,
   Scale,
   Dumbbell,
-  Camera,
   Loader2,
   Star,
   Bell,
@@ -45,7 +44,6 @@ import {
 import { PlateGraphic, PLATE_TONES } from '@/components/brand/Plate';
 import { LogoMark } from '@/components/brand/Logo';
 import Onboarding from '@/components/onboarding/Onboarding';
-import { prepareImage } from '@/lib/photo';
 import { Sheet, CloseButton } from '@/components/ui/Sheet';
 import { WORKOUTS_KEY, FIT_PROFILE_KEY, WORKOUT_DRAFT_KEY, sanitizeWorkouts, sanitizeFitProfile } from '@/lib/workouts';
 import { sanitizeLogs, sanitizeWeights, parseJson, isObject } from '@/lib/storage';
@@ -59,9 +57,8 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '3.0.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
-const PHOTO_CONSENT_KEY = 'netai_photo_consent';
 const PREFS_KEY = 'netai_prefs_v1';
 const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };
 const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false, theme: 'claro' }); // theme: 'auto' | 'claro' | 'oscuro'. Empieza en claro; se cambia desde Ajustes
@@ -140,8 +137,7 @@ export default function PwaAppPage() {
   const remindedRef = useRef('');
 
   const emptyForm = { name: '', energy: '', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
-  const [photo, setPhoto] = useState({ status: 'idle' }); // idle | consent | loading | done | error
-  const photoInputRef = useRef(null);
+  const [estimate, setEstimate] = useState({ status: 'idle' }); // estimación con IA a partir del texto: idle | loading | done | error
   const [newMealForm, setNewMealForm] = useState(emptyForm);
 
   // "Hoy" se actualiza si la app queda abierta al pasar la medianoche
@@ -338,7 +334,7 @@ export default function PwaAppPage() {
   // Abrir la hoja para registrar o para editar
   const openNewMeal = (category, preset) => {
     setToast(null);
-    setPhoto({ status: 'idle' });
+    setEstimate({ status: 'idle' });
     setEditingMealId(null);
     setNewMealForm(preset ? { ...emptyForm, ...preset } : emptyForm);
     setActiveMealModal(category);
@@ -346,7 +342,7 @@ export default function PwaAppPage() {
 
   const openEditMeal = (category, meal) => {
     setToast(null);
-    setPhoto({ status: 'idle' });
+    setEstimate({ status: 'idle' });
     setEditingMealId(meal.id);
     setNewMealForm({
       name: meal.name,
@@ -362,55 +358,36 @@ export default function PwaAppPage() {
   };
 
   const closeMealSheet = () => {
-    setPhoto({ status: 'idle' });
+    setEstimate({ status: 'idle' });
     setActiveMealModal(null);
     setEditingMealId(null);
     setNewMealForm(emptyForm);
   };
 
-  // Foto del plato: la primera vez pide permiso; después abre la cámara
-  const startPhoto = () => {
-    let consent = false;
-    try { consent = localStorage.getItem(PHOTO_CONSENT_KEY) === 'true'; } catch (e) { /* sin almacenamiento */ }
-    if (!consent) { setPhoto({ status: 'consent' }); return; }
-    photoInputRef.current?.click();
-  };
-
-  const acceptPhotoConsent = () => {
-    try { localStorage.setItem(PHOTO_CONSENT_KEY, 'true'); } catch (e) { /* sin almacenamiento */ }
-    setPhoto({ status: 'idle' });
-    photoInputRef.current?.click();
-  };
-
-  const handlePhotoFile = async (file) => {
-    if (!file) return;
-    let prepared;
+  // Estimación con IA: se envía lo que la persona escribió y vuelven energía y macronutrientes para revisar
+  const estimateMeal = async () => {
+    const text = newMealForm.name.trim();
+    if (text.length < 3) { setEstimate({ status: 'error', error: 'Escribí qué comiste para estimarlo.' }); return; }
+    setEstimate({ status: 'loading' });
     try {
-      prepared = await prepareImage(file);
-    } catch (e) {
-      setPhoto({ status: 'error', error: 'No pudimos leer esa imagen. Probá con otra foto.' });
-      return;
-    }
-    setPhoto({ status: 'loading', preview: prepared.preview });
-    try {
-      const res = await fetch('/api/analizar-plato', {
+      const res = await fetch('/api/analizar-comida', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: prepared.base64, mimeType: prepared.mimeType }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'No pudimos analizar la foto.');
+      if (!res.ok) throw new Error(data.message || 'No pudimos estimarlo.');
       setNewMealForm((prev) => ({
         ...prev,
-        name: data.name,
+        name: data.name || prev.name,
         energy: String(data.energy),
         protein: String(data.protein),
         carbs: String(data.carbs),
         fat: String(data.fat),
       }));
-      setPhoto({ status: 'done', preview: prepared.preview, result: data });
+      setEstimate({ status: 'done', result: data, typed: text });
     } catch (e) {
-      setPhoto({ status: 'error', preview: prepared.preview, error: e.message });
+      setEstimate({ status: 'error', error: e.message });
     }
   };
 
@@ -544,7 +521,7 @@ export default function PwaAppPage() {
       ...(newMealForm.protein !== '' && Number(newMealForm.protein) >= 0 ? { protein: Math.round(Number(newMealForm.protein)) } : {}),
       ...(newMealForm.carbs !== '' && Number(newMealForm.carbs) >= 0 ? { carbs: Math.round(Number(newMealForm.carbs)) } : {}),
       ...(newMealForm.fat !== '' && Number(newMealForm.fat) >= 0 ? { fat: Math.round(Number(newMealForm.fat)) } : {}),
-      ...(photo.status === 'done' ? { source: 'foto' } : {}),
+      ...(estimate.status === 'done' ? { source: 'ia' } : {}),
       satietyBefore: parseInt(newMealForm.satietyBefore, 10) || 3,
       satietyAfter: parseInt(newMealForm.satietyAfter, 10) || 7,
       notes: newMealForm.notes.trim(),
@@ -1468,25 +1445,7 @@ export default function PwaAppPage() {
             <CloseButton onClick={closeMealSheet} />
           </div>
 
-          <PhotoPanel
-            photo={photo}
-            showNumbers={showNumbers}
-            onStart={startPhoto}
-            onAccept={acceptPhotoConsent}
-            onDecline={() => setPhoto({ status: 'idle' })}
-          />
-          <input
-            ref={photoInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            aria-hidden="true"
-            tabIndex={-1}
-            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; handlePhotoFile(f); }}
-          />
-
-          {!editingMealId && photo.status !== 'done' && prefs.favorites.length > 0 && (
+          {!editingMealId && estimate.status !== 'done' && prefs.favorites.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-bold text-loza-800">Tus favoritas</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -1505,7 +1464,7 @@ export default function PwaAppPage() {
             </div>
           )}
 
-          {!editingMealId && photo.status !== 'done' && frequentMeals.filter((f) => !isFavorite(f.name)).length > 0 && (
+          {!editingMealId && estimate.status !== 'done' && frequentMeals.filter((f) => !isFavorite(f.name)).length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -1530,11 +1489,13 @@ export default function PwaAppPage() {
                 id="meal-name"
                 type="text"
                 required
-                placeholder="Por ejemplo: guiso de lentejas"
+                maxLength={300}
+                placeholder="Por ejemplo: 2 empanadas de carne y ensalada"
                 value={newMealForm.name}
-                onChange={(e) => setNewMealForm({ ...newMealForm, name: e.target.value })}
+                onChange={(e) => { setNewMealForm({ ...newMealForm, name: e.target.value }); if (estimate.status !== 'idle' && estimate.status !== 'loading') setEstimate({ status: 'idle' }); }}
                 className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
+              <EstimatePanel ai={estimate} showNumbers={showNumbers} canEstimate={newMealForm.name.trim().length >= 3} onEstimate={estimateMeal} />
             </div>
 
             {showNumbers && (
@@ -2014,70 +1975,49 @@ function SportMacros({ plan, today, goalLabel }) {
           );
         })}
       </div>
-      <p className="mt-4 text-xs text-loza-500">Valores orientativos según guías de nutrición deportiva (ACSM e ISSN). Se suman los gramos que registres en cada comida o que estime la foto.</p>
+      <p className="mt-4 text-xs text-loza-500">Valores orientativos según guías de nutrición deportiva (ACSM e ISSN). Se suman los gramos que registres en cada comida o que estime la IA.</p>
     </div>
   );
 }
 
-// Foto del plato: permiso, análisis y resultado para revisar
-function PhotoPanel({ photo, showNumbers, onStart, onAccept, onDecline }) {
-  if (photo.status === 'consent') {
-    return (
-      <div className="mt-4 rounded-2xl bg-agua-50 p-4 text-agua-900">
-        <p className="font-bold">Antes de tu primera foto</p>
-        <p className="text-sm mt-1 leading-relaxed">
-          Para reconocer el plato, la foto se envía a Claude, un servicio de inteligencia artificial de Anthropic. No la guardamos y solo se usa para este análisis. El resultado es una estimación que podés corregir.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={onAccept} className="px-4 py-2.5 rounded-full bg-agua-600 text-white text-sm font-bold">Aceptar y sacar foto</button>
-          <button type="button" onClick={onDecline} className="px-4 py-2.5 rounded-full text-sm font-bold text-agua-900 hover:bg-agua-100">Ahora no</button>
-        </div>
-      </div>
-    );
-  }
+// Estimación con IA de la comida escrita: botón, estado y resultado para revisar
+function EstimatePanel({ ai, showNumbers, canEstimate, onEstimate }) {
+  const r = ai.result;
   return (
-    <div className="mt-4">
-      {photo.status === 'idle' && (
-        <button type="button" onClick={onStart} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-hoja-300 text-hoja-800 font-bold hover:bg-hoja-50">
-          <Camera className="w-5 h-5" aria-hidden="true" /> Sacar foto del plato
-        </button>
-      )}
-      {photo.status !== 'idle' && (
-        <div className="flex gap-3 items-start">
-          {photo.preview && <img src={photo.preview} alt="Foto del plato" className="w-20 h-20 rounded-2xl object-cover shrink-0" />}
-          <div className="min-w-0 flex-1" aria-live="polite">
-            {photo.status === 'loading' && (
-              <p className="flex items-center gap-2 text-loza-700"><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Analizando el plato…</p>
-            )}
-            {photo.status === 'error' && (
-              <>
-                <p className="text-remolacha-800 text-sm">{photo.error}</p>
-                <button type="button" onClick={onStart} className="mt-2 text-sm font-bold text-hoja-700 underline underline-offset-4">Probar con otra foto</button>
-              </>
-            )}
-            {photo.status === 'done' && photo.result && (
-              <>
-                <p className="font-bold text-loza-900 leading-snug">{photo.result.name}</p>
-                <p className="text-sm text-loza-600">{photo.result.portion}</p>
-                {showNumbers ? (
-                  <p className="text-sm text-loza-800 mt-1 tabular">
-                    {photo.result.energy} kcal · P {photo.result.protein} g · C {photo.result.carbs} g · G {photo.result.fat} g
-                  </p>
-                ) : (
-                  <p className="text-sm text-loza-800 mt-1">
-                    Vegetales {photo.result.plate.vegetables} % · Proteínas {photo.result.plate.protein} % · Cereales {photo.result.plate.carbs} %
-                  </p>
-                )}
-                <p className="text-xs text-loza-500 mt-1">
-                  Estimación {photo.result.confidence === 'alta' ? 'bastante segura' : photo.result.confidence === 'baja' ? 'poco segura' : 'aproximada'}. Revisá y corregí antes de guardar.
-                  {photo.result.note ? ` ${photo.result.note}` : ''}
-                </p>
-                <button type="button" onClick={onStart} className="mt-1.5 text-sm font-bold text-hoja-700 underline underline-offset-4">Sacar otra foto</button>
-              </>
-            )}
-          </div>
+    <div className="mt-2" aria-live="polite">
+      {ai.status !== 'done' && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <button type="button" onClick={onEstimate} disabled={!canEstimate || ai.status === 'loading'}
+            className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-full bg-hoja-100 text-hoja-900 text-sm font-bold hover:bg-hoja-200 transition-colors disabled:opacity-50 disabled:pointer-events-none">
+            {ai.status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
+            {ai.status === 'loading' ? 'Estimando…' : 'Estimar con IA'}
+          </button>
+          <p className="text-sm text-loza-600">{showNumbers ? 'Completa calorías y macros por vos.' : 'Te muestra cómo quedó armado el plato.'}</p>
         </div>
       )}
+      {ai.status === 'error' && <p role="alert" className="mt-2 text-sm text-remolacha-800">{ai.error}</p>}
+      {ai.status === 'done' && r && (
+        <div className="rounded-2xl bg-hoja-50 text-hoja-900 p-4">
+          <p className="flex items-center gap-2 text-sm font-bold"><Sparkles className="w-4 h-4" aria-hidden="true" />Estimación de la IA</p>
+          {r.portion && <p className="mt-1 text-[15px]">{r.portion}</p>}
+          {showNumbers ? (
+            <dl className="mt-2 grid grid-cols-4 gap-2 text-center">
+              {[['kcal', r.energy], ['Proteínas', `${r.protein} g`], ['Carbos', `${r.carbs} g`], ['Grasas', `${r.fat} g`]].map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-papel px-1 py-2">
+                  <dd className="font-display text-lg font-bold text-loza-900 tabular leading-tight">{value}</dd>
+                  <dt className="text-xs text-loza-600">{label}</dt>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-2 text-[15px]">Vegetales {r.plate.vegetables} % · Proteínas {r.plate.protein} % · Cereales {r.plate.carbs} %</p>
+          )}
+          <p className="mt-2 text-sm">
+            Estimación {r.confidence === 'alta' ? 'bastante segura' : r.confidence === 'baja' ? 'poco segura' : 'aproximada'}. Revisá y corregí antes de guardar.{r.note ? ` ${r.note}` : ''}
+          </p>
+        </div>
+      )}
+      {ai.status === 'idle' && <p className="mt-1.5 text-xs text-loza-600">El texto se envía a Claude, de Anthropic, solo para esta estimación. No se guarda.</p>}
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default function TerminosPage() {
           contratás desde una tienda de aplicaciones, también se aplican sus condiciones de pago y reembolso.
         </p>
         <p>
-          Las funciones de análisis por foto con inteligencia artificial dan estimaciones aproximadas. Siempre podés
+          Las funciones de estimación de comidas con inteligencia artificial dan valores aproximados. Siempre podés
           corregir el resultado.
         </p>
       </Seccion>

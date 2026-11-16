@@ -64,10 +64,10 @@ export default function PrivacidadPage() {
             proteger el servicio.
           </li>
           <li>
-            <strong className="text-loza-900">Análisis de platos por foto:</strong> si sacás una foto de tu comida, la foto
-            (reducida) se envía a Claude, un servicio de inteligencia artificial de Anthropic, para reconocer el plato y
-            estimar calorías, proteínas, carbohidratos y grasas. Nosotros no guardamos la foto: solo se usa para ese
-            análisis. Antes de la primera foto te pedimos permiso; si no lo das, podés seguir registrando a mano.
+            <strong className="text-loza-900">Estimación de comidas con IA:</strong> si tocás “Estimar con IA”, el texto
+            que escribiste sobre tu comida se envía a Claude, un servicio de inteligencia artificial de Anthropic, para
+            estimar la porción, las calorías, las proteínas, los carbohidratos y las grasas. Nosotros no guardamos ese
+            texto en ningún servidor: solo se usa para esa estimación. Es opcional; siempre podés completar los datos a mano.
           </li>
           <li>
             <strong className="text-loza-900">Pagos:</strong> los pagos de los planes los procesa la plataforma de pago que
