@@ -1,6 +1,10 @@
 # Estado de la app NetAI
 
-Revisión del 16 de noviembre de 2026 (versión 3.1.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 16 de noviembre de 2026 (versión 3.1.1). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 3.1.1: estimaciones sin límite
+
+Se puede escribir y estimar todas las comidas que se quiera, las veces que haga falta en el día. Los planes Plus y Pro ya no hablan de 60 o 150 estimaciones: dicen "sin límite". Queda solo un freno contra abusos (200 pedidos por hora por sesión, `AI_PER_HOUR`), que una persona no alcanza y que evita que un programa gaste el crédito de la cuenta. El tope de gasto mensual se pone en la consola de Anthropic.
 
 ## Versión 3.1.0: registrar solo escribiendo el plato
 

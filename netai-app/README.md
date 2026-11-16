@@ -47,7 +47,7 @@ Están explicadas en `.env.example`. En Vercel se cargan en *Project Settings �
 | `SESSION_SECRET` | Clave que firma las sesiones, de 32 caracteres o más (`openssl rand -base64 32`) | Sí, en producción |
 | `ANTHROPIC_API_KEY` | Estimación de comidas con IA y sugerencias. Sin la clave, se registra a mano | No |
 | `CLAUDE_MODEL` | Modelo de Claude. Por defecto `claude-haiku-5-5`, el más económico | No |
-| `PHOTO_ANALYSIS_PER_HOUR` | Máximo de pedidos a la IA por hora y por sesión (por defecto 30) | No |
+| `AI_PER_HOUR` | Freno contra abusos: pedidos a la IA por hora y por sesión (por defecto 200; `0` lo desactiva). No es un cupo para las personas | No |
 | `NEXT_PUBLIC_SITE_URL` | Dirección pública, para la vista previa al compartir | Recomendada |
 | `NEXT_PUBLIC_REQUEST_ENDPOINT` | Adónde llegan las solicitudes de acceso (FormSubmit). Sin ella, el formulario no se muestra | No |
 

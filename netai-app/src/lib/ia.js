@@ -12,11 +12,13 @@ const MODEL = process.env.CLAUDE_MODEL || 'claude-haiku-5-5';
 let client;
 const getClient = () => { client ||= new Anthropic({ maxRetries: 1 }); return client; };
 
-// Límites de uso (por instancia del servidor). El tope real de gasto se configura en Google Cloud.
+// Freno contra abusos (por instancia del servidor), no un cupo: una persona puede estimar todas las comidas que quiera.
+// Solo corta a un programa que dispare pedidos sin parar. El tope real de gasto se configura en la consola de Anthropic.
+// AI_PER_HOUR=0 lo desactiva.
 // - Por sesión: cada persona tiene su propio cupo, aunque comparta la red (wifi de un club, datos móviles).
 // - Por conexión: un tope más alto, para que nadie lo esquive abriendo sesiones nuevas.
 const WINDOW_MS = 60 * 60 * 1000;
-const MAX_PER_WINDOW = Number(process.env.PHOTO_ANALYSIS_PER_HOUR || 30);
+const MAX_PER_WINDOW = Number(process.env.AI_PER_HOUR ?? process.env.PHOTO_ANALYSIS_PER_HOUR ?? 200);
 const MAX_PER_IP = MAX_PER_WINDOW * 10;
 const MAX_KEYS = 20000;
 const hits = new Map();
@@ -50,7 +52,7 @@ export async function aiGuard(request, what = 'La estimación con IA') {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!(await verifySessionToken(token))) return { error: fail('Tu sesión venció. Volvé a entrar a la app.', 401) };
   if (!process.env.ANTHROPIC_API_KEY) return { error: fail(`${what} todavía no está activado.`, 503) };
-  if (overLimit(`s:${token.slice(-32)}`, MAX_PER_WINDOW) || overLimit(`ip:${clientIp(request)}`, MAX_PER_IP)) return { error: fail('Llegaste al máximo de pedidos por hora. Probá más tarde.', 429) };
+  if (MAX_PER_WINDOW > 0 && (overLimit(`s:${token.slice(-32)}`, MAX_PER_WINDOW) || overLimit(`ip:${clientIp(request)}`, MAX_PER_IP))) return { error: fail('Demasiados pedidos seguidos. Esperá unos minutos y probá de nuevo.', 429) };
   return {};
 }
 

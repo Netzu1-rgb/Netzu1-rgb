@@ -28,9 +28,9 @@ Planes vigentes en la web (`netai-web/`), en dólares estadounidenses:
 
 | Plan | Precio | Incluye |
 |---|---|---|
-| Gratis | US$0, para siempre | Registro manual ilimitado, sin análisis por foto |
-| Plus | US$0,99/mes | 60 análisis de platos por foto con IA al mes |
-| Pro (recomendado) | US$1,99/mes | 150 análisis de platos por foto con IA al mes (unos 5 platos al día) |
+| Gratis | US$0, para siempre | Registro manual ilimitado, sin estimación con IA |
+| Plus | US$0,99/mes | Estimaciones de comidas con IA (escribiendo el plato), sin límite |
+| Pro (recomendado) | US$1,99/mes | Estimaciones sin límite, más tendencias, sugerencias e informe mensual |
 
 Medios de pago: tarjetas, Mercado Pago, transferencia y cripto (USDT). La landing de Next.js todavía muestra los precios anteriores en pesos (`PricingSection.jsx`).
 

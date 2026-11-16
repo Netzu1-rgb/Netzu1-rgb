@@ -57,7 +57,7 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.1.1';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PREFS_KEY = 'netai_prefs_v1';
 const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };

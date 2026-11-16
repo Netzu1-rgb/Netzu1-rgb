@@ -64,7 +64,7 @@ const waitFor = async (url) => {
     SESSION_SECRET: 'clave-de-prueba-de-al-menos-32-caracteres',
     ANTHROPIC_API_KEY: 'clave-de-prueba',
     ANTHROPIC_BASE_URL: `http://127.0.0.1:${AI_PORT}`,
-    PHOTO_ANALYSIS_PER_HOUR: '1000',
+    AI_PER_HOUR: '1000',
     NEXT_PUBLIC_REQUEST_ENDPOINT: 'https://formsubmit.co/ajax/prueba',
     NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}`,
   };

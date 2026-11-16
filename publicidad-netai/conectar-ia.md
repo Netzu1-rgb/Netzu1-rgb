@@ -8,7 +8,7 @@
 - **Modelo:** `claude-haiku-5-5`, el más económico de Claude. Se puede cambiar con la variable `CLAUDE_MODEL`.
 - **Precio:** US$0,10 por millón de tokens de entrada y US$0,50 de salida. Como ahora se envía texto y no una imagen, cada estimación cuesta bastante menos que con foto: una fracción de milésima de dólar. El número exacto se ve en la consola de Anthropic después de los primeros usos.
 - **Dónde está:** `netai-app/src/lib/ia.js` (conexión), `src/app/api/analizar-comida/` (estimación) y `src/app/api/sugerir-comidas/` ("Ideas para hoy").
-- **Límites:** texto de hasta 300 caracteres, 30 pedidos por hora por sesión y un tope por conexión (`PHOTO_ANALYSIS_PER_HOUR`). El tope real de gasto se pone en la consola de Anthropic.
+- **Límites:** texto de hasta 300 caracteres, sin cupo para las personas; solo un freno contra abusos de 200 pedidos por hora por sesión y un tope por conexión (`AI_PER_HOUR`, `0` lo desactiva). El tope real de gasto se pone en la consola de Anthropic.
 - **Cuidados:** el texto se trata solo como descripción de una comida; si alguien escribe otra cosa o intenta darle órdenes a la IA, la app responde que no reconoció una comida.
 - **Privacidad:** se envía solo el texto de la comida, sin el nombre. No se guarda en el servidor.
 
@@ -80,6 +80,8 @@ Teléfono (app)  →  Ruta del servidor en Vercel  →  Gemini API
 - Mantener siempre la opción de **editar** el resultado y el registro manual.
 
 ### 5. Cuotas por plan
+
+> **Actualización (3.1.1):** se decidió que las estimaciones no tengan límite. La tabla de abajo queda como referencia histórica de cuando el análisis era por foto.
 
 | Plan | Fotos al mes |
 |---|---|
