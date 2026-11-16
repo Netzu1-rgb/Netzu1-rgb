@@ -137,6 +137,7 @@ export default function PwaAppPage() {
   const remindedRef = useRef('');
 
   const emptyForm = { name: '', energy: '', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const [showValues, setShowValues] = useState(false); // muestra los valores para corregirlos después de una estimación
   const [estimate, setEstimate] = useState({ status: 'idle' }); // estimación con IA a partir del texto: idle | loading | done | error
   const [newMealForm, setNewMealForm] = useState(emptyForm);
 
@@ -385,6 +386,7 @@ export default function PwaAppPage() {
         carbs: String(data.carbs),
         fat: String(data.fat),
       }));
+      setShowValues(false);
       setEstimate({ status: 'done', result: data, typed: text });
     } catch (e) {
       setEstimate({ status: 'error', error: e.message });
@@ -785,8 +787,8 @@ export default function PwaAppPage() {
               )}
               <p className="text-loza-600 text-[15px] leading-relaxed max-w-prose">{dailyEncouragement}</p>
 
+              {!showNumbers ? (
               <div className="mt-6 rounded-[28px] bg-papel border border-loza-200 p-5 sm:p-7">
-                {!showNumbers ? (
                   <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                     <PlateGraphic className="w-40 h-40 sm:w-44 sm:h-44 mx-auto sm:mx-0 shrink-0" />
                     <div className="space-y-3">
@@ -797,23 +799,29 @@ export default function PwaAppPage() {
                       <PlateLegend />
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+              </div>
+              ) : (
+                <>
+                  <div className="mt-6 rounded-[28px] bg-hoja-900 text-hoja-50 p-5 sm:p-7">
+                    <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h2 id="titulo-dia" className="font-display text-xl font-bold text-loza-900">Energía de hoy</h2>
-                        <p className="text-sm text-loza-500 mt-0.5">Un rango flexible: el cuerpo se regula a lo largo de la semana.</p>
+                        <h2 id="titulo-dia" className="text-sm font-bold text-hoja-200">Energía de hoy</h2>
+                        <p className="mt-1 font-display tabular text-hoja-50 leading-none">
+                          <span className="text-5xl font-bold">{totalEnergyToday.toLocaleString('es-AR')}</span>
+                          <span className="text-base text-hoja-200 ml-2">kcal</span>
+                        </p>
                       </div>
-                      <p className="font-display tabular text-loza-900">
-                        <span className="text-4xl font-bold">{totalEnergyToday.toLocaleString('es-AR')}</span>
-                        <span className="text-sm text-loza-500 ml-1.5">kcal</span>
-                      </p>
+                      <PlateGraphic decorative tone="dark" className="w-16 h-16 shrink-0 opacity-90" />
                     </div>
                     <EnergyRange total={totalEnergyToday} range={plan ? { ...plan.energy, personal: true, label: 'Tu objetivo' } : energyRange} floor={plan?.floor} />
-                    {plan && <SportMacros plan={plan} today={macrosToday} goalLabel={SPORT_GOALS.find((g) => g.id === plan.goal)?.label} />}
                   </div>
-                )}
-              </div>
+                  {plan && (
+                    <div className="mt-3 rounded-[28px] bg-papel border border-loza-200 px-5 sm:px-7 pb-5">
+                      <SportMacros plan={plan} today={macrosToday} goalLabel={SPORT_GOALS.find((g) => g.id === plan.goal)?.label} />
+                    </div>
+                  )}
+                </>
+              )}
             </section>
 
             {/* Hidratación */}
@@ -1445,43 +1453,6 @@ export default function PwaAppPage() {
             <CloseButton onClick={closeMealSheet} />
           </div>
 
-          {!editingMealId && estimate.status !== 'done' && prefs.favorites.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-bold text-loza-800">Tus favoritas</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {prefs.favorites.map((f) => (
-                  <button
-                    key={f.name}
-                    type="button"
-                    onClick={() => applyPreset(f)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
-                  >
-                    <Star className="w-3.5 h-3.5 shrink-0" fill="currentColor" aria-hidden="true" />
-                    {f.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!editingMealId && estimate.status !== 'done' && frequentMeals.filter((f) => !isFavorite(f.name)).length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {frequentMeals.filter((f) => !isFavorite(f.name)).map((f) => (
-                  <button
-                    key={f.name}
-                    type="button"
-                    onClick={() => applyPreset(f)}
-                    className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
-                  >
-                    {f.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleAddMealSubmit} className="mt-5 space-y-5">
             <div>
               <label htmlFor="meal-name" className="block text-sm font-bold text-loza-800 mb-1.5">¿Qué comiste?</label>
@@ -1495,50 +1466,72 @@ export default function PwaAppPage() {
                 onChange={(e) => { setNewMealForm({ ...newMealForm, name: e.target.value }); if (estimate.status !== 'idle' && estimate.status !== 'loading') setEstimate({ status: 'idle' }); }}
                 className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
               />
-              <EstimatePanel ai={estimate} showNumbers={showNumbers} canEstimate={newMealForm.name.trim().length >= 3} onEstimate={estimateMeal} />
+              <EstimatePanel ai={estimate} showNumbers={showNumbers} canEstimate={newMealForm.name.trim().length >= 3} onEstimate={estimateMeal} onFix={() => setShowValues(true)} fixing={showValues} hasValues={showNumbers} />
             </div>
 
-            {showNumbers && (
+          {!editingMealId && estimate.status !== 'done' && prefs.favorites.length > 0 && (
               <div>
-                <label htmlFor="meal-energy" className="block text-sm font-bold text-loza-800 mb-1.5">Energía estimada (kcal)</label>
-                <input
-                  id="meal-energy"
-                  type="number"
-                  inputMode="numeric"
-                  min="50"
-                  max="1800"
-                  value={newMealForm.energy}
-                  onChange={(e) => setNewMealForm({ ...newMealForm, energy: e.target.value })}
-                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500"
-                />
-                <p className="text-sm text-loza-500 mt-1.5">Una estimación alcanza. No hace falta pesar nada.</p>
+                <p className="text-sm font-bold text-loza-800">Tus favoritas</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {prefs.favorites.map((f) => (
+                    <button
+                      key={f.name}
+                      type="button"
+                      onClick={() => applyPreset(f)}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                    >
+                      <Star className="w-3.5 h-3.5 shrink-0" fill="currentColor" aria-hidden="true" />
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {sportOn && (
+            {!editingMealId && estimate.status !== 'done' && frequentMeals.filter((f) => !isFavorite(f.name)).length > 0 && (
               <div>
-                <label htmlFor="meal-protein" className="block text-sm font-bold text-loza-800 mb-1.5">Proteínas (g)</label>
-                <input
-                  id="meal-protein"
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  max="300"
-                  value={newMealForm.protein}
-                  onChange={(e) => setNewMealForm({ ...newMealForm, protein: e.target.value })}
-                  className="w-40 px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500"
-                />
-                <p className="text-sm text-loza-500 mt-1.5">Opcional. Por ejemplo: 100 g de pollo tienen unos 25 g de proteínas.</p>
-                <div className="mt-3 grid grid-cols-2 gap-3 max-w-xs">
-                  <div>
-                    <label htmlFor="meal-carbs" className="block text-sm font-bold text-loza-800 mb-1.5">Carbohidratos (g)</label>
-                    <input id="meal-carbs" type="number" inputMode="numeric" min="0" max="500" value={newMealForm.carbs} onChange={(e) => setNewMealForm({ ...newMealForm, carbs: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500" />
-                  </div>
-                  <div>
-                    <label htmlFor="meal-fat" className="block text-sm font-bold text-loza-800 mb-1.5">Grasas (g)</label>
-                    <input id="meal-fat" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.fat} onChange={(e) => setNewMealForm({ ...newMealForm, fat: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-loza-300 bg-papel text-[15px] tabular focus:outline-none focus:border-hoja-500" />
-                  </div>
+                <p className="text-sm font-bold text-loza-800">Tus frecuentes</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {frequentMeals.filter((f) => !isFavorite(f.name)).map((f) => (
+                    <button
+                      key={f.name}
+                      type="button"
+                      onClick={() => applyPreset(f)}
+                      className={`px-3.5 py-2 rounded-full text-sm transition-colors text-left ${newMealForm.name === f.name ? 'bg-hoja-600 text-white' : 'bg-papel border border-loza-200 text-loza-700 hover:border-loza-400'}`}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
                 </div>
+              </div>
+            )}
+
+
+            {showNumbers && (
+              <div hidden={estimate.status === 'done' && !showValues}>
+                <div className={`grid gap-3 ${sportOn ? 'grid-cols-2' : 'grid-cols-1 max-w-[11rem]'}`}>
+                  <div>
+                    <label htmlFor="meal-energy" className="block text-sm font-bold text-loza-800 mb-1">Energía (kcal)</label>
+                    <input id="meal-energy" type="number" inputMode="numeric" min="0" max="1800" value={newMealForm.energy} onChange={(e) => setNewMealForm({ ...newMealForm, energy: e.target.value })} className="w-full px-3 py-2.5 rounded-2xl border border-loza-300 bg-papel text-[16px] tabular focus:outline-none focus:border-hoja-500" />
+                  </div>
+                  {sportOn && (
+                    <>
+                    <div>
+                      <label htmlFor="meal-protein" className="block text-sm font-bold text-loza-800 mb-1">Proteínas (g)</label>
+                      <input id="meal-protein" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.protein} onChange={(e) => setNewMealForm({ ...newMealForm, protein: e.target.value })} className="w-full px-3 py-2.5 rounded-2xl border border-loza-300 bg-papel text-[16px] tabular focus:outline-none focus:border-hoja-500" />
+                    </div>
+                    <div>
+                      <label htmlFor="meal-carbs" className="block text-sm font-bold text-loza-800 mb-1">Carbohidratos (g)</label>
+                      <input id="meal-carbs" type="number" inputMode="numeric" min="0" max="500" value={newMealForm.carbs} onChange={(e) => setNewMealForm({ ...newMealForm, carbs: e.target.value })} className="w-full px-3 py-2.5 rounded-2xl border border-loza-300 bg-papel text-[16px] tabular focus:outline-none focus:border-hoja-500" />
+                    </div>
+                    <div>
+                      <label htmlFor="meal-fat" className="block text-sm font-bold text-loza-800 mb-1">Grasas (g)</label>
+                      <input id="meal-fat" type="number" inputMode="numeric" min="0" max="300" value={newMealForm.fat} onChange={(e) => setNewMealForm({ ...newMealForm, fat: e.target.value })} className="w-full px-3 py-2.5 rounded-2xl border border-loza-300 bg-papel text-[16px] tabular focus:outline-none focus:border-hoja-500" />
+                    </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-sm text-loza-600 mt-1.5">{sportOn ? 'Opcionales. Una estimación alcanza: no hace falta pesar nada.' : 'Opcional. Una estimación alcanza: no hace falta pesar nada.'}</p>
               </div>
             )}
 
@@ -1737,28 +1730,23 @@ function EnergyRange({ total, range, floor = MINIMUM_SAFE_ENERGY_FLOOR }) {
   const pct = (v) => `${Math.min(100, (v / scaleMax) * 100)}%`;
   const inRange = total >= range.min;
   return (
-    <div className="mt-6">
-      <div className="relative h-3 rounded-full bg-loza-100">
-        <div
-          className="absolute inset-y-0 rounded-full bg-hoja-100"
-          style={{ left: pct(range.min), width: `calc(${pct(range.max)} - ${pct(range.min)})` }}
-        />
-        <div className="absolute inset-y-0 left-0 rounded-full bg-hoja-600 transition-[width] duration-500" style={{ width: pct(total) }} />
-        <div className="absolute -top-1 -bottom-1 w-0.5 bg-loza-700 rounded" style={{ left: pct(floor) }} aria-hidden="true" />
+    <div className="mt-5">
+      <div className="relative h-3 rounded-full bg-hoja-800">
+        <div className="absolute inset-y-0 rounded-full bg-hoja-700" style={{ left: pct(range.min), width: `calc(${pct(range.max)} - ${pct(range.min)})` }} />
+        <div className="absolute inset-y-0 left-0 rounded-full bg-hoja-200 transition-[width] duration-500" style={{ width: pct(total) }} />
+        <div className="absolute -top-1 -bottom-1 w-0.5 bg-hoja-50 rounded" style={{ left: pct(floor) }} aria-hidden="true" />
       </div>
-      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-loza-600 tabular">
+      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-hoja-100 tabular">
         <li className="flex items-center gap-2">
-          <span aria-hidden="true" className="w-0.5 h-3.5 rounded bg-loza-700" />
-          Piso seguro: {floor.toLocaleString('es-AR')} kcal
-        </li>
-        <li className="flex items-center gap-2">
-          <span aria-hidden="true" className="w-3.5 h-2.5 rounded-sm bg-hoja-100 border border-hoja-300" />
+          <span aria-hidden="true" className="w-3.5 h-2.5 rounded-sm bg-hoja-700 border border-hoja-400" />
           {range.label || (range.personal ? 'Tu rango' : 'Rango general')}: {range.min.toLocaleString('es-AR')} a {range.max.toLocaleString('es-AR')} kcal
         </li>
+        <li className="flex items-center gap-2">
+          <span aria-hidden="true" className="w-0.5 h-3.5 rounded bg-hoja-50" />
+          Piso seguro: {floor.toLocaleString('es-AR')} kcal
+        </li>
       </ul>
-      {inRange && (
-        <p className="mt-3 text-sm text-hoja-800">Hoy tu cuerpo ya recibió energía de sobra para tu día.</p>
-      )}
+      <p className="mt-3 text-sm text-hoja-100">{inRange ? 'Hoy tu cuerpo ya recibió energía de sobra para tu día.' : 'Un rango flexible: el cuerpo se regula a lo largo de la semana.'}</p>
     </div>
   );
 }
@@ -1954,7 +1942,7 @@ function SportMacros({ plan, today, goalLabel }) {
     { key: 'fat', label: 'Grasas', range: plan.fatG, bar: 'bg-agua-500', band: 'bg-agua-100' },
   ];
   return (
-    <div className="mt-6 pt-5 border-t border-loza-200">
+    <div className="pt-5">
       <p className="flex items-center gap-2 text-sm font-bold text-hoja-800">
         <Dumbbell className="w-4 h-4" aria-hidden="true" /> Objetivo: {goalLabel}
       </p>
@@ -1981,7 +1969,7 @@ function SportMacros({ plan, today, goalLabel }) {
 }
 
 // Estimación con IA de la comida escrita: botón, estado y resultado para revisar
-function EstimatePanel({ ai, showNumbers, canEstimate, onEstimate }) {
+function EstimatePanel({ ai, showNumbers, canEstimate, onEstimate, onFix, fixing, hasValues }) {
   const r = ai.result;
   return (
     <div className="mt-2" aria-live="polite">
@@ -2013,8 +2001,13 @@ function EstimatePanel({ ai, showNumbers, canEstimate, onEstimate }) {
             <p className="mt-2 text-[15px]">Vegetales {r.plate.vegetables} % · Proteínas {r.plate.protein} % · Cereales {r.plate.carbs} %</p>
           )}
           <p className="mt-2 text-sm">
-            Estimación {r.confidence === 'alta' ? 'bastante segura' : r.confidence === 'baja' ? 'poco segura' : 'aproximada'}. Revisá y corregí antes de guardar.{r.note ? ` ${r.note}` : ''}
+            Estimación {r.confidence === 'alta' ? 'bastante segura' : r.confidence === 'baja' ? 'poco segura' : 'aproximada'}.{r.note ? ` ${r.note}` : ''}
           </p>
+          {hasValues && !fixing && (
+            <button type="button" onClick={onFix} className="mt-1 inline-flex items-center gap-1.5 min-h-[44px] text-sm font-bold underline underline-offset-4 hover:no-underline">
+              <Pencil className="w-4 h-4" aria-hidden="true" /> Corregir valores
+            </button>
+          )}
         </div>
       )}
       {ai.status === 'idle' && <p className="mt-1.5 text-xs text-loza-600">El texto se envía a Claude, de Anthropic, solo para esta estimación. No se guarda.</p>}

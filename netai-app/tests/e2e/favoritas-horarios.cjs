@@ -16,7 +16,7 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   ok(await p.isVisible('text=Guardada en tus favoritas.'), 'marca favorita');
   await p.getByRole('button', { name: 'Registrar' }).nth(1).click(); await p.waitForTimeout(200);
   ok(await p.isVisible('text=Tus favoritas'), 'la hoja muestra las favoritas');
-  await p.click('form >> xpath=preceding::button[contains(., "Tostadas con queso")][1]'); 
+  await p.click('[role=dialog] form button:has-text("Tostadas con queso")'); 
   ok((await p.inputValue('#meal-name')) === 'Tostadas con queso', 'un toque completa el registro');
   await p.click('button:has-text("Cancelar")');
   // horarios y recordatorio

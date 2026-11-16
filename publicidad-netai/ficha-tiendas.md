@@ -12,7 +12,7 @@ Registrá tus comidas sin culpa. Con Método del Plato, Modo Intuitivo y Modo Sp
 
 NetAI te ayuda a comer mejor sin dietas ni culpa.
 
-Registrá lo que comés en segundos, escribiendo o con una foto del plato. Llevá la cuenta del agua, anotá cómo llegaste de hambre y cómo quedaste, y mirá tu semana y tu mes de un vistazo.
+Registrá lo que comés en segundos: escribilo con tus palabras y la IA lo estima. Llevá la cuenta del agua, anotá cómo llegaste de hambre y cómo quedaste, y mirá tu semana y tu mes de un vistazo.
 
 Dos modos, vos elegís:
 
@@ -21,7 +21,7 @@ Dos modos, vos elegís:
 • Modo Sport. Para deportistas mayores de 18. Un plan de energía, proteínas, carbohidratos, grasas y agua según tu objetivo: bajar de peso, subir masa muscular, recomposición o rendimiento. Con límites de seguridad y seguimiento del peso semana a semana.
 
 Qué incluye:
-• Foto del plato: la IA estima kcal, proteínas, carbohidratos y grasas, y vos revisás antes de guardar.
+• Estimar con IA: escribís qué comiste y la IA estima porción, kcal, proteínas, carbohidratos y grasas; vos revisás antes de guardar.
 • Ideas para hoy: sugerencias de comidas según tu alimentación y tus alergias.
 • Método del Plato, recetas y artículos de alimentación consciente.
 • Favoritas y frecuentes para registrar con un toque.
@@ -49,7 +49,7 @@ Base para "Seguridad de los datos" (Google Play) y "Etiquetas de privacidad" (Ap
 |---|---|---|
 | Perfil (nombre, edad, sexo, altura, peso, actividad, alimentación) | En el teléfono | No |
 | Registros de comidas, agua, hambre, saciedad y peso | En el teléfono | No |
-| Foto del plato | No se guarda | Se envía a Anthropic (Claude) para analizarla, con permiso previo |
+| Texto de la comida, al tocar "Estimar con IA" | No se guarda en el servidor | Se envía a Anthropic (Claude) para estimarla |
 | Pedido de sugerencias (momento del día, alimentación, alergias) | No se guarda | Se envía a Anthropic (Claude), sin el nombre |
 | Solicitud de acceso (nombre, correo, WhatsApp opcional) | Llega por correo al responsable | Pasa por FormSubmit |
 

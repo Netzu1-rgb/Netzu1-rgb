@@ -1,6 +1,20 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 2.3.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 12 de noviembre de 2026 (versión 3.0.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 3.0.0: las comidas se estiman escribiendo, y retoque de diseño
+
+**Estimar con IA a partir de texto.** Se quitó la foto del plato. Ahora la persona escribe lo que comió con sus palabras y toca "Estimar con IA": la app completa la porción, las calorías y los macronutrientes para revisar antes de guardar. La app ya no pide la cámara. Los planes, la página de inicio, la web, la política de privacidad y los términos hablan de "estimaciones con IA" en lugar de fotos.
+
+**Diseño**
+- **Mi día:** la energía del día pasa a una tarjeta verde con el número grande, y los macronutrientes del Modo Sport van en su propia tarjeta.
+- **Registrar:** el campo para escribir la comida es lo primero; las favoritas y frecuentes quedan debajo. Los valores van en una grilla compacta y, cuando la IA estima, se muestran en cuatro recuadros y los campos se ocultan hasta tocar "Corregir valores".
+
+**Test.** Se revisó con capturas la página de inicio, el ingreso, Mi día, Registrar, Semana y Aprender, en teléfono y escritorio, y se corrieron las pruebas automáticas (37 unitarias y 196 de navegador). La página de inicio y el ingreso no necesitaron cambios de diseño.
+
+**PWA.** La app ya es instalable (manifiesto, íconos, capturas y uso sin conexión, con sus pruebas). Para que la gente la instale falta publicarla: ver `lanzamiento.md`.
+
+**A decidir.** Los precios de Plus y Pro se pensaron para fotos (60 y 150 por mes). Con texto, cada estimación cuesta menos; conviene revisar si las cantidades y los precios siguen teniendo sentido.
 
 ## Versión 2.3.0: el muñeco de palitos pasa a ser un maniquí con volumen
 
@@ -245,7 +259,7 @@ Revisión pantalla por pantalla, con capturas y pruebas en navegador.
 
 **Limpieza.** Se eliminó la versión anterior de la app (Vite) y los componentes viejos de la página de inicio.
 
-**Pruebas guardadas en el proyecto.** `npm test` (37 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (187 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
+**Pruebas guardadas en el proyecto.** `npm test` (37 pruebas de los cálculos, el acceso, la lectura de datos y los entrenamientos) y `npm run test:e2e` (196 comprobaciones en un navegador, con revisión de accesibilidad en tema claro y oscuro). GitHub las corre en cada cambio.
 
 ## Versión 1.4.0: foto del plato con Gemini y solicitudes de acceso
 

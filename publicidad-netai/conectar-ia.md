@@ -1,15 +1,16 @@
-# Conectar NetAI a una IA para escanear la foto
+# Conectar NetAI a una IA para estimar las comidas
 
-> **Estado (versión 1.7.0): la app usa Claude, de Anthropic.** El código que conectaba con Google Gemini se quitó. Lo que sigue más abajo, desde "Hallazgo original", es el plan anterior y se conserva solo como referencia: las partes sobre Gemini y sobre la simulación ya no aplican. Siguen pendientes las cuentas, las cuotas por plan y los cobros.
+> **Estado (versión 3.0.0): la app estima las comidas a partir de texto, con Claude, de Anthropic.** Ya no usa fotos ni la cámara. Lo que sigue más abajo, desde "Hallazgo original", es el plan anterior (fotos con Gemini) y se conserva solo como referencia. Siguen pendientes las cuentas, las cuotas por plan y los cobros.
 
 ## Cómo quedó
 
-- **Modelo:** `claude-haiku-5-5`, el más económico de Claude que lee imágenes. Se puede cambiar con la variable `CLAUDE_MODEL`.
-- **Precio:** US$0,10 por millón de tokens de entrada y US$0,50 de salida. Una foto ronda los US$0,0003 (unas 3.000 fotos por dólar); es una estimación, el número exacto se ve en la consola de Anthropic después de las primeras fotos.
-- **Dónde está:** `netai-app/src/lib/ia.js` (conexión), `src/app/api/analizar-plato/` (foto) y `src/app/api/sugerir-comidas/` ("Ideas para hoy"). Usa el SDK oficial `@anthropic-ai/sdk` y pide la respuesta con un esquema fijo, así siempre llegan los mismos campos.
-- **Ajustes de costo:** esfuerzo de razonamiento bajo y la foto reducida a 1.024 px en el teléfono antes de enviarla.
-- **Límites:** 30 pedidos por hora por sesión y un tope por conexión (`PHOTO_ANALYSIS_PER_HOUR`). El tope real de gasto se pone en la consola de Anthropic.
-- **Privacidad:** la app pide permiso antes de la primera foto, la foto no se guarda y las sugerencias no llevan el nombre.
+- **Qué hace:** en "Registrar", la persona escribe lo que comió ("2 empanadas de carne y ensalada") y toca "Estimar con IA". Vuelven la porción, las calorías, las proteínas, los carbohidratos y las grasas, para revisar antes de guardar. En Modo Intuitivo muestra solo cómo quedó armado el plato, sin números.
+- **Modelo:** `claude-haiku-5-5`, el más económico de Claude. Se puede cambiar con la variable `CLAUDE_MODEL`.
+- **Precio:** US$0,10 por millón de tokens de entrada y US$0,50 de salida. Como ahora se envía texto y no una imagen, cada estimación cuesta bastante menos que con foto: una fracción de milésima de dólar. El número exacto se ve en la consola de Anthropic después de los primeros usos.
+- **Dónde está:** `netai-app/src/lib/ia.js` (conexión), `src/app/api/analizar-comida/` (estimación) y `src/app/api/sugerir-comidas/` ("Ideas para hoy").
+- **Límites:** texto de hasta 300 caracteres, 30 pedidos por hora por sesión y un tope por conexión (`PHOTO_ANALYSIS_PER_HOUR`). El tope real de gasto se pone en la consola de Anthropic.
+- **Cuidados:** el texto se trata solo como descripción de una comida; si alguien escribe otra cosa o intenta darle órdenes a la IA, la app responde que no reconoció una comida.
+- **Privacidad:** se envía solo el texto de la comida, sin el nombre. No se guarda en el servidor.
 
 ## Para vincularlo
 
@@ -17,7 +18,7 @@
 2. En la misma consola, poner un límite de gasto mensual.
 3. En Vercel (Project Settings, Environment Variables), agregar `ANTHROPIC_API_KEY` con la clave.
 4. Volver a publicar la app (Deployments, Redeploy).
-5. Probar: "Registrar", "Sacar foto del plato".
+5. Probar: "Registrar", escribir una comida, "Estimar con IA".
 
 La clave nunca va en el código ni en el chat. La conexión se probó con un servidor que imita a Claude; falta la primera prueba con una clave real.
 
