@@ -38,6 +38,16 @@ const ok = (c, m) => console.log((c ? 'OK   ' : 'FALLA') + ' ' + m);
   // Se puede guardar a mano igual
   await p.fill('#meal-name', 'Fruta'); await p.fill('#meal-energy', '80'); await p.click('button:has-text("Guardar")'); await p.waitForTimeout(300);
   ok((await p.textContent('main')).includes('Fruta'), 'registrar a mano sigue funcionando');
+  // Registro rápido desde Mi día: escribir el plato y Enter
+  ok(await p.locator('form:has(#rapido-comida) button[type=submit]').isDisabled(), 'registro rápido: el botón espera a que escribas');
+  await p.selectOption('#rapido-momento', 'cena');
+  await p.fill('#rapido-comida', 'una milanesa con pure y ensalada'); await p.press('#rapido-comida', 'Enter');
+  await p.waitForSelector('text=Estimación de la IA', { timeout: 15000 });
+  ok((await p.textContent('[role=dialog] h2')).toLowerCase().includes('cena'), 'registro rápido: abre la hoja en el momento elegido');
+  ok((await p.inputValue('#meal-energy')) === '720' && (await p.inputValue('#rapido-comida')) === '', 'registro rápido: trae la estimación lista y limpia el campo');
+  await p.click('[role=dialog] button:has-text("Guardar")'); await p.waitForTimeout(400);
+  const saved = await p.evaluate(() => { const l = JSON.parse(localStorage.getItem('netai_wellness_log_v1')); return Object.values(l).flatMap((d) => d.meals.cena || []); });
+  ok(saved.length === 1 && saved[0].energy === 720 && saved[0].source === 'ia', 'registro rápido: la comida queda guardada en la cena con la estimación');
   // Modo Intuitivo: la estimación no muestra números
   const q = await ctx.newPage();
   await q.goto(BASE + '/app', { waitUntil: 'networkidle' });

@@ -1,6 +1,12 @@
 # Estado de la app NetAI
 
-Revisión del 12 de noviembre de 2026 (versión 3.0.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+Revisión del 16 de noviembre de 2026 (versión 3.1.0). Vista previa: https://claude.ai/artifact/CrqyVV3rpWvrDZGzfhuWSo (privada; los registros se guardan en el navegador de quien la abre).
+
+## Versión 3.1.0: registrar solo escribiendo el plato
+
+**Registro rápido en Mi día.** Arriba de las comidas hay un campo "Escribí qué comiste". La persona escribe el plato, toca "Estimar" (o Enter) y se abre la hoja con la estimación de la IA ya completa para revisar y guardar. El momento del día (desayuno, almuerzo, etc.) se elige solo según la hora y los horarios configurados, y se puede cambiar. Si la IA no está disponible, la hoja queda abierta con el nombre para completar a mano.
+
+**Test.** 37 pruebas unitarias y 200 de navegador, todas correctas. La IA sigue probada contra un servidor simulado: falta la primera prueba real con la clave de Anthropic.
 
 ## Versión 3.0.0: las comidas se estiman escribiendo, y retoque de diseño
 

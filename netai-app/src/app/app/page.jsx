@@ -57,11 +57,23 @@ const MEAL_CATEGORIES = [
   { id: 'colacion', label: 'Colación', Icon: Apple, hint: 'Si tu cuerpo te pide energía extra' },
 ];
 
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 const STORAGE_KEY = 'netai_wellness_log_v1';
 const PREFS_KEY = 'netai_prefs_v1';
 const DEFAULT_SCHEDULE = { desayuno: '08:00', almuerzo: '13:00', merienda: '17:00', cena: '21:00', colacion: '' };
 const emptyPrefs = () => ({ favorites: [], schedule: { ...DEFAULT_SCHEDULE }, reminders: false, theme: 'claro' }); // theme: 'auto' | 'claro' | 'oscuro'. Empieza en claro; se cambia desde Ajustes
+// Momento del día que corresponde a la hora actual: el de horario más cercano
+const momentForNow = (schedule, now = new Date()) => {
+  const mins = now.getHours() * 60 + now.getMinutes();
+  let best = 'almuerzo'; let bestDiff = Infinity;
+  for (const [id, time] of Object.entries(schedule || {})) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(time || '');
+    if (!m) continue;
+    const diff = Math.abs(Number(m[1]) * 60 + Number(m[2]) - mins);
+    if (diff < bestDiff) { best = id; bestDiff = diff; }
+  }
+  return best;
+};
 const sameName = (a, b) => (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
 const INTUITIVE_KEY = 'netai_intuitive_mode';
 
@@ -137,6 +149,8 @@ export default function PwaAppPage() {
   const remindedRef = useRef('');
 
   const emptyForm = { name: '', energy: '', protein: '', carbs: '', fat: '', satietyBefore: 3, satietyAfter: 7, notes: '' };
+  const [quickText, setQuickText] = useState(''); // registro rápido en Mi día
+  const [quickMoment, setQuickMoment] = useState(''); // '' = el momento que corresponde a la hora
   const [showValues, setShowValues] = useState(false); // muestra los valores para corregirlos después de una estimación
   const [estimate, setEstimate] = useState({ status: 'idle' }); // estimación con IA a partir del texto: idle | loading | done | error
   const [newMealForm, setNewMealForm] = useState(emptyForm);
@@ -366,8 +380,8 @@ export default function PwaAppPage() {
   };
 
   // Estimación con IA: se envía lo que la persona escribió y vuelven energía y macronutrientes para revisar
-  const estimateMeal = async () => {
-    const text = newMealForm.name.trim();
+  const estimateMeal = async (typed) => {
+    const text = (typeof typed === 'string' ? typed : newMealForm.name).trim();
     if (text.length < 3) { setEstimate({ status: 'error', error: 'Escribí qué comiste para estimarlo.' }); return; }
     setEstimate({ status: 'loading' });
     try {
@@ -391,6 +405,18 @@ export default function PwaAppPage() {
     } catch (e) {
       setEstimate({ status: 'error', error: e.message });
     }
+  };
+
+  // Registro rápido desde Mi día: se escribe el plato, se elige el momento y se abre la hoja con la estimación lista para guardar.
+  // Si la IA no está disponible, la hoja queda abierta con el nombre para completar a mano.
+  const quickAdd = (e) => {
+    e.preventDefault();
+    const text = quickText.trim();
+    if (text.length < 3) return;
+    openNewMeal(quickMoment || momentForNow(prefs.schedule), { name: text });
+    setQuickText('');
+    setQuickMoment('');
+    estimateMeal(text);
   };
 
   // Favoritas: comidas guardadas a mano para registrarlas con un toque
@@ -874,6 +900,33 @@ export default function PwaAppPage() {
                 <h2 id="titulo-comidas" className="font-display text-xl font-bold text-loza-900">Comidas</h2>
                 <p className="text-sm text-loza-500 tabular">{mealCount === 1 ? '1 registro' : `${mealCount} registros`}</p>
               </div>
+
+              {/* Registro rápido: escribir el plato y listo */}
+              <form onSubmit={quickAdd} className="mt-4 rounded-[24px] bg-papel border border-loza-200 p-3.5">
+                <label htmlFor="rapido-comida" className="block text-sm font-bold text-loza-800">Escribí qué comiste</label>
+                <input
+                  id="rapido-comida"
+                  type="text"
+                  maxLength={300}
+                  enterKeyHint="send"
+                  placeholder="Por ejemplo: 2 empanadas de carne y ensalada"
+                  value={quickText}
+                  onChange={(e) => setQuickText(e.target.value)}
+                  className="mt-1.5 w-full px-4 py-3 rounded-2xl border border-loza-300 bg-loza-50 text-[16px] placeholder:text-loza-500 focus:outline-none focus:border-hoja-500"
+                />
+                <div className="mt-2.5 flex items-center gap-2">
+                  <label htmlFor="rapido-momento" className="sr-only">Momento del día</label>
+                  <select id="rapido-momento" value={quickMoment || momentForNow(prefs.schedule)} onChange={(e) => setQuickMoment(e.target.value)}
+                    className="min-h-[44px] flex-1 min-w-0 px-3 rounded-full border border-loza-300 bg-papel text-sm font-bold text-loza-800 focus:outline-none focus:border-hoja-500">
+                    {MEAL_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                  </select>
+                  <button type="submit" disabled={quickText.trim().length < 3}
+                    className="inline-flex items-center gap-2 px-5 min-h-[44px] rounded-full bg-hoja-600 hover:bg-hoja-500 text-white text-sm font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none">
+                    <Sparkles className="w-4 h-4" aria-hidden="true" /> Estimar
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-loza-600">{showNumbers ? 'La IA estima porción, calorías y macros. Revisás y guardás.' : 'La IA te muestra cómo quedó armado el plato. Revisás y guardás.'}</p>
+              </form>
 
               <ol className="mt-4 relative">
                 {MEAL_CATEGORIES.map((cat, i) => {
