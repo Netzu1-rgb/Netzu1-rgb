@@ -11,8 +11,7 @@
     "typecheck": "tsc -p .",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "db:test": "bash supabase/tests/run.sh",
-    "icons": "node scripts/make-icons.cjs"
+    "db:test": "bash supabase/tests/run.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

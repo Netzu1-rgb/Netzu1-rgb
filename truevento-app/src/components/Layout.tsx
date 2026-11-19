@@ -38,7 +38,7 @@ function SyncStatus({ compact = false }: { compact?: boolean }) {
 function Brand({ name }: { name: string }) {
   return (
     <Link to="/" className="flex items-center gap-3">
-      <img src="/icons/icon-192.png" alt="" className="h-10 w-10 rounded-xl" />
+      <img src="/icons/icon-192.png" alt="" className="h-10 w-10 rounded-full ring-1 ring-white/15" />
       <div className="leading-none">
         <div className="font-display text-lg font-extrabold tracking-[0.08em] text-white">{name.toUpperCase()}</div>
         <div className="mt-1 text-[10px] font-semibold tracking-[0.42em] text-sky-300">KITESCHOOL</div>

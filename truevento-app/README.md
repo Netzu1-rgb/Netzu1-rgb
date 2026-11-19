@@ -35,12 +35,16 @@ api/users.ts           función de servidor para accesos
 src/pages/             pantallas: Dashboard, Registrar clase, Alumnos, Instructores, Liquidaciones, Historial, Configuración
 src/components/        interfaz reutilizable
 src/lib/               datos, dinero, fechas, offline, CSV
-public/                íconos, fuentes y logo
+public/                logo de TRUEVENTO, íconos de la app (generados del logo) y fuentes
 ```
 
 ## Reglas de negocio
 
-1. Cada alumno tiene su precio por hora; se puede cambiar solo para una clase puntual.
+1. Cada alumno tiene su precio por hora en su ficha. Al registrar una clase se puede cobrar distinto según el alumno y la situación (ofertas, paquetes, descuentos, clase de prueba):
+   - **Por hora**: se cambia el precio por hora solo para esa clase.
+   - **Precio total**: se carga el monto total acordado por la clase, sin importar las horas.
+
+   En los dos casos se puede anotar el motivo (Oferta, Paquete, Descuento…), que aparece en el historial y en el CSV. El pago a un instructor externo sigue siendo por hora.
 2. Cada instructor externo tiene su pago por hora; un administrador puede ajustarlo en una clase puntual.
 3. Las clases de los dos dueños registran horas e ingresos, pero su pago de instructor es siempre 0.
 4. Cada clase conserva los precios y pagos vigentes al momento de guardarla.
@@ -114,7 +118,6 @@ Comandos:
 | `npm test` | pruebas de cálculos (dinero, fechas, CSV, usuarios) |
 | `npm run db:test` | pruebas de reglas y permisos en la base local |
 | `npm run db:reset` | reinicia la base local |
-| `npm run icons` | regenera los íconos desde `public/icons/*.svg` (requiere Playwright) |
 
 La base local arranca vacía. Los datos de prueba se cargan desde la app; en producción no hay datos ficticios.
 

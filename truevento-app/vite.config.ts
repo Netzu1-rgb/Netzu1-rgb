@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'prompt',
         injectRegister: false,
-        includeAssets: ['icons/*.png', 'icons/*.svg', 'fonts/*.woff2', 'logo-truevento.jpg'],
+        includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png'],
         manifest: {
           id: '/',
           name: 'TRUEVENTO · Gestión de la escuela',
@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // the app shell is cached so the app opens without connection;
           // data is cached by the app itself (IndexedDB), never by the service worker
-          globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,png,woff2,webmanifest}'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           cleanupOutdatedCaches: true,

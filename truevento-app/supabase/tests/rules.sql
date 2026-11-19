@@ -208,5 +208,29 @@ do $$ begin
   assert (select full_name from public.instructors where owner_slot = 2) = 'Socio 2';
 end $$;
 
+\echo '12. special price: a fixed total per class (offers, packages)'
+reset role;
+update public.instructors set hourly_pay = 50 where id = '00000000-0000-0000-0000-000000000e01';
+select tests.act_as('00000000-0000-0000-0000-0000000000b1');
+insert into public.classes (id, student_id, instructor_id, class_date, hours, student_rate, fixed_total, price_note)
+values ('00000000-0000-0000-0000-000000000c05', '00000000-0000-0000-0000-000000000d01',
+        '00000000-0000-0000-0000-000000000e01', '2026-12-05', 3, 200, 100, '  Oferta 3x1  ');
+do $$
+declare c public.classes;
+begin
+  select * into c from public.classes where id = '00000000-0000-0000-0000-000000000c05';
+  assert c.total_amount = 100, 'fixed total is what the student pays';
+  assert c.student_rate = 33.33, 'price per hour kept for reports';
+  assert c.instructor_pay = 150, 'instructor still paid per hour: 3 x 50';
+  assert c.school_profit = -50, 'profit can be negative on an offer';
+  assert c.price_note = 'Oferta 3x1', 'note trimmed';
+end $$;
+select tests.act_as('00000000-0000-0000-0000-0000000000a1');
+update public.classes set fixed_total = null, student_rate = 200 where id = '00000000-0000-0000-0000-000000000c05';
+do $$ begin
+  assert (select total_amount from public.classes where id = '00000000-0000-0000-0000-000000000c05') = 600,
+    'back to hourly: 3 x 200';
+end $$;
+
 \echo 'ALL TESTS PASSED'
 rollback;

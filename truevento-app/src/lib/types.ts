@@ -52,6 +52,10 @@ export interface ClassRow {
   total_amount: number
   instructor_pay: number
   school_profit: number
+  /** total agreed for this class (offer, package…); null = hours × student_rate */
+  fixed_total: number | null
+  /** why the price differs from the usual one */
+  price_note: string | null
   notes: string | null
   settlement_id: string | null
   created_at: string
@@ -82,6 +86,8 @@ export interface NewClassInput {
   hours: number
   student_rate: number
   instructor_rate?: number
+  fixed_total?: number | null
+  price_note?: string | null
   notes: string | null
 }
 

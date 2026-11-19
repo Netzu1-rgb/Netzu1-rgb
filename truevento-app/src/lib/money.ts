@@ -25,8 +25,9 @@ export interface ClassAmounts {
   profitCents: number
 }
 
-export function classAmounts(hours: number, studentRate: number, instructorRate: number): ClassAmounts {
-  const totalCents = lineTotalCents(hours, studentRate)
+/** With `fixedTotal` (offers, packages) the student pays that amount; the instructor is still paid per hour. */
+export function classAmounts(hours: number, studentRate: number, instructorRate: number, fixedTotal?: number | null): ClassAmounts {
+  const totalCents = fixedTotal !== null && fixedTotal !== undefined ? toCents(fixedTotal) : lineTotalCents(hours, studentRate)
   const instructorPayCents = lineTotalCents(hours, instructorRate)
   return { totalCents, instructorPayCents, profitCents: totalCents - instructorPayCents }
 }
