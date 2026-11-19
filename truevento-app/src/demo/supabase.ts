@@ -81,6 +81,12 @@ let session: any = null
 try { session = JSON.parse(localStorage.getItem('truevento-demo-session') ?? 'null') } catch { session = null }
 // a session from an older demo points to users that no longer exist
 if (session && !db.users.some((u) => u.id === session.user?.id)) session = null
+// the demo opens straight into the app as the administrator (no login screen);
+// signing out shows the login screen until the page is reloaded
+if (!session) {
+  const admin = db.users.find((u) => u.email.startsWith('victoria@'))
+  if (admin) session = { access_token: 'demo', user: { id: admin.id, email: admin.email } }
+}
 const listeners = new Set<(event: string, s: any) => void>()
 function setSession(s: any, event: string) {
   session = s

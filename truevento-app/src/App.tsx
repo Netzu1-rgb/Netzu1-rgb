@@ -20,11 +20,19 @@ const Settlements = lazy(() => import('./pages/Settlements'))
 const History = lazy(() => import('./pages/History'))
 const Settings = lazy(() => import('./pages/Settings'))
 
+// the launch screen (logo in the middle) stays at least this long so it reads as a
+// proper intro instead of a flash, then fades into the app
+const SPLASH_MIN_MS = 1800
+const startedAt = performance.now()
+
 function hideSplash() {
   const el = document.getElementById('splash')
   if (!el || el.classList.contains('hide')) return
-  el.classList.add('hide')
-  setTimeout(() => el.remove(), 400)
+  const wait = Math.max(0, SPLASH_MIN_MS - (performance.now() - startedAt))
+  setTimeout(() => {
+    el.classList.add('hide')
+    setTimeout(() => el.remove(), 550)
+  }, wait)
 }
 
 function AdminOnly({ children }: { children: ReactNode }) {
