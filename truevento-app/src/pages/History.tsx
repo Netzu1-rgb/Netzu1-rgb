@@ -36,9 +36,9 @@ export default function History() {
     .map((c) => {
       const ins = instructors.data?.find((i) => i.id === c.instructor_id)
       const rate = ins?.kind === 'owner' ? 0 : c.instructor_rate ?? ins?.hourly_pay ?? 0
-      const a = classAmounts(c.hours, c.student_rate, rate, c.fixed_total)
+      const a = classAmounts(c.hours, c.student_rate, rate)
       return {
-        ...c, fixed_total: c.fixed_total ?? null, price_note: c.price_note ?? null, instructor_rate: rate, instructor_kind: ins?.kind ?? 'external', total_amount: fromCents(a.totalCents),
+        ...c, instructor_rate: rate, instructor_kind: ins?.kind ?? 'external', total_amount: fromCents(a.totalCents),
         instructor_pay: fromCents(a.instructorPayCents), school_profit: fromCents(a.profitCents), settlement_id: null,
         created_at: '', pending: true,
         student: { full_name: students.data?.find((s) => s.id === c.student_id)?.full_name ?? 'Alumno' },
@@ -83,8 +83,6 @@ export default function History() {
       { header: 'Instructor', value: (r: ClassRow) => r.instructor?.full_name },
       { header: 'Horas', value: (r: ClassRow) => r.hours, numeric: true },
       { header: 'Precio por hora alumno', value: (r: ClassRow) => r.student_rate, numeric: true },
-      { header: 'Tipo de precio', value: (r: ClassRow) => (r.fixed_total !== null ? 'Precio total' : 'Por hora') },
-      { header: 'Motivo del precio', value: (r: ClassRow) => r.price_note },
       { header: 'Total cobrado', value: (r: ClassRow) => r.total_amount, numeric: true },
       { header: 'Pago por hora instructor', value: (r: ClassRow) => r.instructor_rate, numeric: true },
       { header: 'Pago al instructor', value: (r: ClassRow) => r.instructor_pay, numeric: true },
@@ -135,12 +133,11 @@ export default function History() {
                   </div>
                   <div className="text-right">
                     <div className="tabular font-display text-lg font-bold">{formatMoney(r.total_amount, currency)}</div>
-                    <div className="tabular text-sm text-ink-mute">{formatHours(r.hours)}{r.fixed_total !== null ? ' · precio total' : ` × ${formatMoney(r.student_rate, currency)}`}</div>
+                    <div className="tabular text-sm text-ink-mute">{formatHours(r.hours)} × {formatMoney(r.student_rate, currency)}</div>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   <StatusBadge r={r} />
-                  <PriceBadge r={r} />
                   {r.instructor_kind === 'external' && <span className="text-ink-mute">Instructor: {formatMoney(r.instructor_pay, currency)}</span>}
                   {isAdmin && <span className="text-ink-mute">· Ganancia: {formatMoney(r.school_profit, currency)}</span>}
                 </div>
@@ -181,10 +178,7 @@ export default function History() {
                     <td className="px-4 py-3 font-medium">{r.student?.full_name}</td>
                     <td className="px-4 py-3">{r.instructor?.full_name}</td>
                     <td className="px-4 py-3 text-right">{formatHours(r.hours)}</td>
-                    <td className="px-4 py-3 text-right">
-                      {formatMoney(r.student_rate, currency)}
-                      <div><PriceBadge r={r} /></div>
-                    </td>
+                    <td className="px-4 py-3 text-right">{formatMoney(r.student_rate, currency)}</td>
                     <td className="px-4 py-3 text-right font-semibold">{formatMoney(r.total_amount, currency)}</td>
                     <td className="px-4 py-3 text-right">{formatMoney(r.instructor_pay, currency)}</td>
                     {isAdmin && <td className="px-4 py-3 text-right font-semibold text-teal-700">{formatMoney(r.school_profit, currency)}</td>}
@@ -225,15 +219,6 @@ export default function History() {
         </>
       )}
     </div>
-  )
-}
-
-function PriceBadge({ r }: { r: ClassRow }) {
-  if (r.fixed_total === null && !r.price_note) return null
-  return (
-    <span className="badge bg-kite/10 text-[#9d174d]" title={r.fixed_total !== null ? 'Precio total acordado para la clase' : 'Precio por hora especial'}>
-      {r.price_note ?? 'Precio especial'}
-    </span>
   )
 }
 

@@ -8,25 +8,29 @@ import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals
 import { formatDate, today } from '../lib/dates'
 import { friendlyError } from '../lib/errors'
 import type { ClassRow, Instructor, NewClassInput, NewStudentInput, Student } from '../lib/types'
-import StudentPicker from '../components/StudentPicker'
 import { ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } from '../components/ui'
 
 const HOUR_CHIPS = ['1', '1,5', '2', '2,5', '3']
-const PRICE_REASONS = ['Oferta', 'Paquete', 'Descuento', 'Clase de prueba', 'Promoción']
-type PriceMode = 'hour' | 'total'
 
 const toInput = (n: number) => String(n).replace('.', ',')
+const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ')
 
 interface Errors { [k: string]: string | undefined }
 
 interface SavedInfo {
   queued: boolean
   student: string
+  newStudent: boolean
+  instructor: string
   hours: number
   total: number
-  note: string | null
 }
 
+/**
+ * Add a class. It asks, in this order: the student's name, the price per hour and
+ * who gives the class; then hours and date (prefilled). Typing a name that does
+ * not exist creates the student when saving.
+ */
 export default function RegisterClass() {
   const { id: editId } = useParams()
   const [params] = useSearchParams()
@@ -37,23 +41,22 @@ export default function RegisterClass() {
   const instructors = useInstructors()
   const editing = useData<ClassRow | null>(editId ? `class:${editId}` : null, () => fetchClass(editId!))
 
+  const [name, setName] = useState('')
   const [student, setStudent] = useState<Student | null>(null)
-  const [newStudent, setNewStudent] = useState<{ name: string; phone: string; rate: string } | null>(null)
-  const [instructorId, setInstructorId] = useState<string>('')
+  const [nameFocused, setNameFocused] = useState(false)
+  const [rate, setRate] = useState('')
+  const [instructorId, setInstructorId] = useState('')
   const [date, setDate] = useState(today())
   const [hours, setHours] = useState('1')
-  const [rate, setRate] = useState('')
   const [pay, setPay] = useState('')
-  const [priceMode, setPriceMode] = useState<PriceMode>('hour')
-  const [fixedTotal, setFixedTotal] = useState('')
-  const [priceNote, setPriceNote] = useState('')
+  const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<Errors>({})
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [saved, setSaved] = useState<SavedInfo | null>(null)
 
-  const activeInstructors = useMemo(
+  const choosable = useMemo(
     () => (instructors.data ?? []).filter((i) => i.active || i.id === instructorId),
     [instructors.data, instructorId],
   )
@@ -61,90 +64,88 @@ export default function RegisterClass() {
   const isExternal = instructor?.kind === 'external'
   const settled = Boolean(editing.data?.settlement_id)
 
-  // default instructor: yourself (instructors can only log their own classes)
-  useEffect(() => {
-    if (!instructorId && profile?.instructor_id && !editId) setInstructorId(profile.instructor_id)
-  }, [profile?.instructor_id, instructorId, editId])
+  // students whose name matches what is typed
+  const suggestions = useMemo(() => {
+    const q = normalize(name)
+    if (!q || student) return []
+    return (students.data ?? []).filter((s) => s.active && normalize(s.full_name).includes(q)).slice(0, 6)
+  }, [name, student, students.data])
+  const exactMatch = useMemo(
+    () => (students.data ?? []).find((s) => normalize(s.full_name) === normalize(name)) ?? null,
+    [name, students.data],
+  )
+  const isNewStudent = !student && name.trim().length > 0 && !exactMatch
 
-  // preselect a student from ?alumno=<id>
+  // instructors can only log their own classes
+  useEffect(() => {
+    if (!isAdmin && profile?.instructor_id && !instructorId) setInstructorId(profile.instructor_id)
+  }, [isAdmin, profile?.instructor_id, instructorId])
+
+  // ?alumno=<id> (from the student record) preselects the student
   useEffect(() => {
     const sid = params.get('alumno')
-    if (sid && !student && students.data && !editId) {
-      const s = students.data.find((x) => x.id === sid)
-      if (s) pickStudent(s)
-    }
+    if (!sid || student || editId || !students.data) return
+    const s = students.data.find((x) => x.id === sid)
+    if (s) pickStudent(s)
   }, [params, students.data])
 
   // load the class being edited
   useEffect(() => {
     const c = editing.data
     if (!c || !students.data) return
-    setStudent(students.data.find((s) => s.id === c.student_id) ?? {
-      id: c.student_id, full_name: c.student?.full_name ?? 'Alumno', phone: null, start_date: c.class_date,
-      hourly_rate: c.student_rate, default_instructor_id: null, notes: null, active: true,
-    })
+    const s = students.data.find((x) => x.id === c.student_id) ?? null
+    setStudent(s)
+    setName(s?.full_name ?? c.student?.full_name ?? '')
     setInstructorId(c.instructor_id)
     setDate(c.class_date)
     setHours(toInput(c.hours))
     setRate(toInput(c.student_rate))
     setPay(toInput(c.instructor_rate))
-    setPriceMode(c.fixed_total !== null ? 'total' : 'hour')
-    setFixedTotal(c.fixed_total !== null ? toInput(c.fixed_total) : '')
-    setPriceNote(c.price_note ?? '')
     setNotes(c.notes ?? '')
   }, [editing.data, students.data])
 
-  function pickStudent(s: Student | null) {
+  function pickStudent(s: Student) {
     setStudent(s)
-    setNewStudent(null)
-    setErrors((e) => ({ ...e, student: undefined }))
-    if (s) {
-      setRate(toInput(s.hourly_rate))
-      if (isAdmin && s.default_instructor_id && instructors.data?.some((i) => i.id === s.default_instructor_id && i.active)) {
-        changeInstructor(s.default_instructor_id)
-      }
+    setName(s.full_name)
+    setRate(toInput(s.hourly_rate))
+    setErrors((e) => ({ ...e, name: undefined, rate: undefined }))
+    if (isAdmin && !instructorId && s.default_instructor_id && instructors.data?.some((i) => i.id === s.default_instructor_id && i.active)) {
+      chooseInstructor(s.default_instructor_id)
     }
   }
 
-  function changeInstructor(id: string) {
+  function typeName(v: string) {
+    setName(v)
+    if (student && normalize(v) !== normalize(student.full_name)) setStudent(null)
+  }
+
+  function chooseInstructor(id: string) {
     setInstructorId(id)
+    setErrors((e) => ({ ...e, instructor: undefined }))
     const ins = instructors.data?.find((i) => i.id === id)
     setPay(ins && ins.kind === 'external' ? toInput(ins.hourly_pay) : '')
   }
 
-  // keep the instructor's pay in sync when their record loads
+  // an exact name match counts as choosing that student
+  const chosen = student ?? exactMatch
   useEffect(() => {
-    if (!editId && instructor?.kind === 'external' && pay === '') setPay(toInput(instructor.hourly_pay))
-  }, [instructor, editId, pay])
+    if (!student && exactMatch && !rate) setRate(toInput(exactMatch.hourly_rate))
+  }, [exactMatch, student, rate])
 
   const hoursN = parseDecimal(hours)
-  const rateN = newStudent ? parseDecimal(newStudent.rate) : parseDecimal(rate)
-  const fixedN = priceMode === 'total' ? parseDecimal(fixedTotal) : null
+  const rateN = parseDecimal(rate)
   const payN = isExternal ? (isAdmin ? parseDecimal(pay) : instructor?.hourly_pay ?? 0) : 0
-  const amounts = hoursN === null ? null
-    : priceMode === 'total' ? (fixedN === null ? null : classAmounts(hoursN, 0, payN ?? 0, fixedN))
-    : rateN === null ? null : classAmounts(hoursN, rateN, payN ?? 0)
-  // the usual price of the student, to tell when this class has a special one
-  const usualRate = newStudent ? null : student?.hourly_rate ?? null
-  const specialPrice = priceMode === 'total' || (usualRate !== null && rateN !== null && rateN !== usualRate)
+  const amounts = hoursN !== null && rateN !== null ? classAmounts(hoursN, rateN, payN ?? 0) : null
 
   function validate(): Errors {
     const e: Errors = {}
-    if (!student && !newStudent) e.student = 'Elegí un alumno o creá uno nuevo.'
-    if (newStudent && !newStudent.name.trim()) e.newName = 'Escribí el nombre y apellido.'
-    if (!instructorId) e.instructor = 'Elegí el instructor.'
-    if (!date) e.date = 'Elegí la fecha.'
+    if (!name.trim()) e.name = 'Escribí el nombre del alumno.'
+    if (rateN === null) e.rate = 'Ingresá el precio por hora.'
+    else if (!hasAtMostTwoDecimals(rateN)) e.rate = 'Usá como máximo 2 decimales.'
+    if (!instructorId) e.instructor = 'Elegí quién da la clase.'
     if (hoursN === null || hoursN <= 0 || hoursN > 24) e.hours = 'Ingresá las horas (por ejemplo 1,5).'
     else if (!hasAtMostTwoDecimals(hoursN)) e.hours = 'Usá como máximo 2 decimales.'
-    // per-hour price: needed in hourly mode, and always for a new student's record
-    if (priceMode === 'hour' || newStudent) {
-      if (rateN === null) e.rate = 'Ingresá el precio por hora.'
-      else if (!hasAtMostTwoDecimals(rateN)) e.rate = 'Usá como máximo 2 decimales.'
-    }
-    if (priceMode === 'total') {
-      if (fixedN === null) e.fixedTotal = 'Ingresá el precio total de la clase.'
-      else if (!hasAtMostTwoDecimals(fixedN)) e.fixedTotal = 'Usá como máximo 2 decimales.'
-    }
+    if (!date) e.date = 'Elegí la fecha.'
     if (isExternal && isAdmin) {
       if (payN === null) e.pay = 'El pago por hora del instructor es obligatorio.'
       else if (!hasAtMostTwoDecimals(payN)) e.pay = 'Usá como máximo 2 decimales.'
@@ -157,27 +158,19 @@ export default function RegisterClass() {
     setFormError(null)
     const e = validate()
     setErrors(e)
-    if (Object.values(e).some(Boolean)) return
-    if (!session) return
+    if (Object.values(e).some(Boolean) || !session) return
     setBusy(true)
     try {
-      let studentId = student?.id ?? ''
       let studentInput: NewStudentInput | undefined
-      if (newStudent) {
+      if (!chosen) {
         studentInput = {
-          id: crypto.randomUUID(), full_name: newStudent.name.trim(), phone: newStudent.phone.trim() || null,
+          id: crypto.randomUUID(), full_name: name.trim().replace(/\s+/g, ' '), phone: phone.trim() || null,
           start_date: date, hourly_rate: rateN!, default_instructor_id: instructorId, notes: null,
         }
-        studentId = studentInput.id
       }
       const payload: NewClassInput = {
-        id: editId ?? crypto.randomUUID(), student_id: studentId, instructor_id: instructorId, class_date: date,
-        hours: hoursN!,
-        // with a total price the database stores the resulting price per hour
-        student_rate: priceMode === 'total' ? rateN ?? usualRate ?? 0 : rateN!,
-        fixed_total: priceMode === 'total' ? fixedN : null,
-        price_note: specialPrice ? priceNote.trim() || null : null,
-        notes: notes.trim() || null,
+        id: editId ?? crypto.randomUUID(), student_id: chosen?.id ?? studentInput!.id, instructor_id: instructorId,
+        class_date: date, hours: hoursN!, student_rate: rateN!, notes: notes.trim() || null,
       }
       if (isExternal && isAdmin) payload.instructor_rate = payN!
       if (editId) {
@@ -190,18 +183,16 @@ export default function RegisterClass() {
       }
       const result = await createClass(payload, session.user.id, studentInput)
       setSaved({
-        queued: result === 'queued', student: studentInput?.full_name ?? student!.full_name,
-        hours: hoursN!, total: fromCents(amounts!.totalCents), note: payload.price_note ?? null,
+        queued: result === 'queued', student: chosen?.full_name ?? studentInput!.full_name, newStudent: Boolean(studentInput),
+        instructor: instructor?.full_name ?? '', hours: hoursN!, total: fromCents(amounts!.totalCents),
       })
       if (studentInput) students.reload()
-      // ready for the next class: keep instructor and date
+      // ready for the next class: keep who gives it and the date
+      setName('')
       setStudent(null)
-      setNewStudent(null)
-      setHours('1')
       setRate('')
-      setPriceMode('hour')
-      setFixedTotal('')
-      setPriceNote('')
+      setHours('1')
+      setPhone('')
       setNotes('')
       setErrors({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -230,8 +221,8 @@ export default function RegisterClass() {
             </p>
           </div>
           <div className="px-6 py-5">
-            <div className="text-lg font-semibold">{saved.student}</div>
-            <div className="tabular text-ink-mute">{formatHours(saved.hours)} · {formatMoney(saved.total, currency)}{saved.note ? ` · ${saved.note}` : ''}</div>
+            <div className="text-lg font-semibold">{saved.student}{saved.newStudent && <span className="badge ml-2 bg-sky-soft text-sky-deep align-middle">Alumno nuevo</span>}</div>
+            <div className="tabular text-ink-mute">{formatHours(saved.hours)} con {saved.instructor} · {formatMoney(saved.total, currency)}</div>
           </div>
           <div className="grid gap-3 px-6 pb-6">
             <button type="button" className="btn-primary text-lg" onClick={() => setSaved(null)}>
@@ -247,147 +238,121 @@ export default function RegisterClass() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title={editId ? 'Editar clase' : 'Registrar clase'}
-        subtitle={editId ? (editing.data ? formatDate(editing.data.class_date) : '') : 'Completá los datos y guardá. Lleva unos segundos.'} />
+        subtitle={editId ? (editing.data ? formatDate(editing.data.class_date) : '') : 'Alumno, precio por hora y quién da la clase.'} />
       {(students.offline || instructors.offline) && <OfflineNote savedAt={students.savedAt} />}
-      {settled && (
-        <div className="mb-4"><ErrorBox message="Esta clase ya fue liquidada y pagada: no se puede modificar." /></div>
-      )}
+      {settled && <div className="mb-4"><ErrorBox message="Esta clase ya fue liquidada y pagada: no se puede modificar." /></div>}
       {students.error && !students.data && <div className="mb-4"><ErrorBox message={students.error} onRetry={students.reload} /></div>}
 
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={settled || busy} className="space-y-5">
-          <section className="card space-y-5 p-4 sm:p-6">
-            <div>
-              <span className="field-label">Alumno</span>
-              {newStudent ? (
-                <div className="space-y-3 rounded-xl border border-dashed border-ocean-700/40 bg-sand/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-ocean-900">Nuevo alumno</span>
-                    <button type="button" className="text-sm font-semibold text-sky-deep" onClick={() => setNewStudent(null)}>Elegir existente</button>
-                  </div>
-                  <Field label="Nombre y apellido" error={errors.newName}>
-                    {(id) => <input id={id} className={errors.newName ? 'input-error' : 'input'} autoFocus value={newStudent.name}
-                      onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} />}
-                  </Field>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label="Teléfono (opcional)">
-                      {(id) => <input id={id} className="input" type="tel" inputMode="tel" value={newStudent.phone}
-                        onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })} />}
-                    </Field>
-                    <Field label="Precio por hora" error={errors.rate}>
-                      {(id) => <input id={id} className={errors.rate ? 'input-error' : 'input'} inputMode="decimal" placeholder="0,00"
-                        value={newStudent.rate} onChange={(e) => setNewStudent({ ...newStudent, rate: e.target.value })} />}
-                    </Field>
-                  </div>
-                  <p className="text-xs text-ink-mute">Se crea su ficha con este precio y fecha de inicio {formatDate(date)}.</p>
-                </div>
-              ) : students.data ? (
-                <StudentPicker students={students.data} value={student} onChange={pickStudent} currency={currency}
-                  invalid={Boolean(errors.student)}
-                  onCreateNew={(name) => { setStudent(null); setNewStudent({ name, phone: '', rate: '' }) }} />
-              ) : null}
-              {errors.student && <p className="mt-1.5 text-sm font-medium text-coral">{errors.student}</p>}
-            </div>
-
-            {isAdmin ? (
-              <Field label="Instructor" error={errors.instructor}>
+          <section className="card space-y-6 p-4 sm:p-6">
+            {/* 1. student */}
+            <div className="relative">
+              <Field label="1. Nombre del alumno" error={errors.name}>
                 {(id) => (
-                  <select id={id} className={errors.instructor ? 'input-error' : 'input'} value={instructorId}
-                    onChange={(e) => changeInstructor(e.target.value)}>
-                    <option value="">Elegí el instructor…</option>
-                    {activeInstructors.map((i) => (
-                      <option key={i.id} value={i.id}>{i.full_name}{i.kind === 'owner' ? ' (dueño)' : ''}</option>
-                    ))}
-                  </select>
+                  <input id={id} className={errors.name ? 'input-error' : 'input'} autoComplete="off" autoCapitalize="words"
+                    placeholder="Nombre y apellido" value={name} onChange={(e) => typeName(e.target.value)}
+                    onFocus={() => setNameFocused(true)} onBlur={() => setTimeout(() => setNameFocused(false), 150)} />
                 )}
               </Field>
-            ) : (
-              <div>
-                <span className="field-label">Instructor</span>
-                <div className="input flex items-center bg-slate-50">{instructor?.full_name ?? profile?.full_name ?? '—'}</div>
-              </div>
+              {nameFocused && suggestions.length > 0 && (
+                <ul className="absolute inset-x-0 z-20 mt-1 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+                  {suggestions.map((s) => (
+                    <li key={s.id}>
+                      <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pickStudent(s)}
+                        className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left active:bg-slate-50">
+                        <span className="truncate font-medium">{s.full_name}</span>
+                        <span className="shrink-0 text-sm text-ink-mute">{formatMoney(s.hourly_rate, currency)}/h</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {chosen && !editId && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-teal-700">
+                  <Icon name="check" className="h-4 w-4" /> Alumno existente{chosen.pending ? ' (sin sincronizar)' : ''}
+                </p>
+              )}
+              {isNewStudent && (
+                <div className="mt-2 rounded-xl bg-sky-soft px-3 py-2.5 text-sm text-ocean-800">
+                  <b>Alumno nuevo:</b> se crea su ficha al guardar.
+                  <input className="input mt-2 bg-white" type="tel" inputMode="tel" placeholder="Teléfono (opcional)"
+                    aria-label="Teléfono del alumno (opcional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+              )}
+            </div>
+
+            {/* 2. price per hour */}
+            <Field label="2. Precio por hora" error={errors.rate}
+              hint={chosen && rateN !== null && rateN !== chosen.hourly_rate
+                ? `Solo para esta clase. La ficha de ${chosen.full_name.split(' ')[0]} sigue en ${formatMoney(chosen.hourly_rate, currency)}.`
+                : chosen ? 'Completado desde la ficha del alumno. Podés cambiarlo para esta clase.' : 'Lo que paga este alumno por cada hora.'}>
+              {(id) => (
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-mute">
+                    {formatMoney(0, currency).replace(/[\d.,\s]/g, '')}
+                  </span>
+                  <input id={id} className={`${errors.rate ? 'input-error' : 'input'} pl-12 text-lg font-semibold`} inputMode="decimal"
+                    placeholder="0,00" value={rate} onChange={(e) => setRate(e.target.value)} />
+                </div>
+              )}
+            </Field>
+
+            {/* 3. who gives the class */}
+            <div>
+              <span className="field-label">3. ¿Quién da la clase?</span>
+              {isAdmin ? (
+                <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Quién da la clase">
+                  {choosable.map((i) => (
+                    <button key={i.id} type="button" role="radio" aria-checked={instructorId === i.id} onClick={() => chooseInstructor(i.id)}
+                      className={`flex min-h-14 items-center gap-3 rounded-xl border px-4 text-left transition active:scale-[0.99] ${
+                        instructorId === i.id ? 'border-ocean-900 bg-ocean-900 text-white' : errors.instructor ? 'border-coral bg-white' : 'border-line bg-white'}`}>
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display font-bold ${
+                        instructorId === i.id ? 'bg-white/15 text-white' : 'bg-sky-soft text-sky-deep'}`}>{i.full_name.charAt(0).toUpperCase()}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-semibold">{i.full_name}</span>
+                        <span className={`block text-xs ${instructorId === i.id ? 'text-sky-200' : 'text-ink-mute'}`}>
+                          {i.kind === 'owner' ? 'Dueño' : `Externo · ${formatMoney(i.hourly_pay, currency)}/h`}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="input flex items-center bg-slate-50 font-semibold">{instructor?.full_name ?? profile?.full_name ?? '—'}</div>
+              )}
+              {errors.instructor && <p className="mt-1.5 text-sm font-medium text-coral">{errors.instructor}</p>}
+            </div>
+
+            {isExternal && isAdmin && (
+              <Field label="Pago por hora del instructor" error={errors.pay}
+                hint={`Valor de su ficha: ${formatMoney(instructor!.hourly_pay, currency)}. Podés cambiarlo para esta clase.`}>
+                {(id) => <input id={id} className={errors.pay ? 'input-error' : 'input'} inputMode="decimal" value={pay}
+                  onChange={(e) => setPay(e.target.value)} />}
+              </Field>
             )}
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            {/* hours and date: prefilled, quick to adjust */}
+            <div className="space-y-5 border-t border-line pt-5">
+              <div>
+                <span className="field-label">Horas</span>
+                <div className="flex flex-wrap gap-2" aria-label="Horas rápidas">
+                  {HOUR_CHIPS.map((h) => (
+                    <button key={h} type="button" className={`${parseDecimal(h) === hoursN ? 'chip-on' : 'chip'} min-h-12 min-w-14`}
+                      onClick={() => setHours(h)}>
+                      {h} h
+                    </button>
+                  ))}
+                  <input className={`${errors.hours ? 'input-error' : 'input'} w-24 flex-none text-center`} inputMode="decimal"
+                    aria-label="Otra cantidad de horas" value={hours} onChange={(e) => setHours(e.target.value)} />
+                </div>
+                {errors.hours && <p className="mt-1.5 text-sm font-medium text-coral">{errors.hours}</p>}
+              </div>
               <Field label="Fecha" error={errors.date}>
                 {(id) => <input id={id} type="date" className={errors.date ? 'input-error' : 'input'} value={date}
                   max={editId ? undefined : today()} onChange={(e) => setDate(e.target.value)} />}
               </Field>
-              <Field label="Horas" error={errors.hours}>
-                {(id) => <input id={id} className={errors.hours ? 'input-error' : 'input'} inputMode="decimal" value={hours}
-                  onChange={(e) => setHours(e.target.value)} />}
-              </Field>
             </div>
-            <div className="-mt-2 flex flex-wrap gap-2" aria-label="Horas rápidas">
-              {HOUR_CHIPS.map((h) => (
-                <button key={h} type="button" className={parseDecimal(h) === hoursN ? 'chip-on' : 'chip'} onClick={() => setHours(h)}>
-                  {h} h
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-4 rounded-2xl border border-line bg-mist/60 p-4">
-              <div>
-                <span className="field-label">Precio de esta clase</span>
-                <div className="grid grid-cols-2 gap-1 rounded-xl bg-white p-1 ring-1 ring-line" role="radiogroup" aria-label="Tipo de precio">
-                  {([['hour', 'Por hora'], ['total', 'Precio total']] as const).map(([mode, label]) => (
-                    <button key={mode} type="button" role="radio" aria-checked={priceMode === mode}
-                      onClick={() => {
-                        setPriceMode(mode)
-                        if (mode === 'total' && !fixedTotal && amounts) setFixedTotal(toInput(fromCents(amounts.totalCents)))
-                      }}
-                      className={`min-h-11 rounded-lg text-sm font-semibold transition ${priceMode === mode ? 'bg-ocean-900 text-white' : 'text-ink-soft'}`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {priceMode === 'hour' ? (
-                !newStudent && (
-                  <Field label="Precio por hora cobrado al alumno" error={errors.rate}
-                    hint={specialPrice && usualRate !== null
-                      ? `Solo para esta clase. La ficha del alumno sigue en ${formatMoney(usualRate, currency)}.`
-                      : 'Se carga desde la ficha del alumno. Podés cambiarlo solo para esta clase.'}>
-                    {(id) => <input id={id} className={errors.rate ? 'input-error' : 'input'} inputMode="decimal" placeholder="0,00"
-                      value={rate} onChange={(e) => setRate(e.target.value)} />}
-                  </Field>
-                )
-              ) : (
-                <Field label="Precio total cobrado por la clase" error={errors.fixedTotal}
-                  hint={`Para ofertas, paquetes o descuentos: el alumno paga este monto en total${hoursN ? ` por las ${formatHours(hoursN)}` : ''}.${isExternal ? ' El instructor cobra igual por hora.' : ''}`}>
-                  {(id) => <input id={id} className={errors.fixedTotal ? 'input-error' : 'input'} inputMode="decimal" placeholder="0,00"
-                    value={fixedTotal} onChange={(e) => setFixedTotal(e.target.value)} />}
-                </Field>
-              )}
-
-              {specialPrice && (
-                <div>
-                  <Field label="Motivo del precio especial (opcional)">
-                    {(id) => <input id={id} className="input" maxLength={120} placeholder="Ej.: oferta de temporada, paquete de 5 clases"
-                      value={priceNote} onChange={(e) => setPriceNote(e.target.value)} />}
-                  </Field>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {PRICE_REASONS.map((r) => (
-                      <button key={r} type="button" className={priceNote === r ? 'chip-on' : 'chip'} onClick={() => setPriceNote(r)}>{r}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {isExternal && (isAdmin ? (
-              <Field label="Pago por hora del instructor" error={errors.pay}
-                hint={`Instructor externo. Valor de su ficha: ${formatMoney(instructor!.hourly_pay, currency)}.`}>
-                {(id) => <input id={id} className={errors.pay ? 'input-error' : 'input'} inputMode="decimal" value={pay}
-                  onChange={(e) => setPay(e.target.value)} />}
-              </Field>
-            ) : (
-              <div>
-                <span className="field-label">Tu pago por hora</span>
-                <div className="input flex items-center bg-slate-50 tabular">{formatMoney(instructor?.hourly_pay ?? 0, currency)}</div>
-              </div>
-            ))}
 
             <Field label="Observaciones (opcional)">
               {(id) => <textarea id={id} className="input min-h-20" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}

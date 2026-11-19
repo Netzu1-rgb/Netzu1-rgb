@@ -15,7 +15,7 @@ function check<T>(res: { data: T | null; error: unknown }): T {
 
 const CLASS_COLUMNS =
   'id, student_id, instructor_id, class_date, hours, student_rate, instructor_rate, instructor_kind, ' +
-  'total_amount, instructor_pay, school_profit, fixed_total, price_note, notes, settlement_id, created_at, ' +
+  'total_amount, instructor_pay, school_profit, notes, settlement_id, created_at, ' +
   'student:students(full_name), instructor:instructors(full_name)'
 
 const MAX_ROWS = 10000
@@ -107,7 +107,6 @@ function normalizeClass(r: ClassRow): ClassRow {
     ...r,
     hours: Number(r.hours), student_rate: Number(r.student_rate), instructor_rate: Number(r.instructor_rate),
     total_amount: Number(r.total_amount), instructor_pay: Number(r.instructor_pay), school_profit: Number(r.school_profit),
-    fixed_total: r.fixed_total === null || r.fixed_total === undefined ? null : Number(r.fixed_total),
   }
 }
 

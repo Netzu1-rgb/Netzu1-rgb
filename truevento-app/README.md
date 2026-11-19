@@ -40,11 +40,7 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
 
 ## Reglas de negocio
 
-1. Cada alumno tiene su precio por hora en su ficha. Al registrar una clase se puede cobrar distinto según el alumno y la situación (ofertas, paquetes, descuentos, clase de prueba):
-   - **Por hora**: se cambia el precio por hora solo para esa clase.
-   - **Precio total**: se carga el monto total acordado por la clase, sin importar las horas.
-
-   En los dos casos se puede anotar el motivo (Oferta, Paquete, Descuento…), que aparece en el historial y en el CSV. El pago a un instructor externo sigue siendo por hora.
+1. Al registrar una clase se indica el alumno, su precio por hora y quién la da. Cada alumno puede pagar un precio distinto. Para un alumno existente el precio se completa desde su ficha y se puede cambiar solo para esa clase; un alumno nuevo se crea automáticamente con ese precio.
 2. Cada instructor externo tiene su pago por hora; un administrador puede ajustarlo en una clase puntual.
 3. Las clases de los dos dueños registran horas e ingresos, pero su pago de instructor es siempre 0.
 4. Cada clase conserva los precios y pagos vigentes al momento de guardarla.

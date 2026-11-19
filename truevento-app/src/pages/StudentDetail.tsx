@@ -75,8 +75,7 @@ export default function StudentDetail() {
               <div className="min-w-0 flex-1">
                 <div className="font-semibold">{formatDate(c.class_date)}</div>
                 <div className="truncate text-sm text-ink-mute">
-                  {c.instructor?.full_name ?? '—'} · {c.fixed_total !== null ? 'precio total' : `${formatMoney(c.student_rate, currency)}/h`}
-                  {c.price_note ? ` · ${c.price_note}` : ''}
+                  {c.instructor?.full_name ?? '—'} · {formatMoney(c.student_rate, currency)}/h
                   {c.notes ? ` · ${c.notes}` : ''}
                 </div>
               </div>

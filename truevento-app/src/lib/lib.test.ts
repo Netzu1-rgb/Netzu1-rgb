@@ -16,9 +16,6 @@ describe('money', () => {
   it('computes class totals, instructor pay and school profit', () => {
     expect(classAmounts(1.5, 200, 50)).toEqual({ totalCents: 30000, instructorPayCents: 7500, profitCents: 22500 })
     expect(classAmounts(2, 180, 0)).toEqual({ totalCents: 36000, instructorPayCents: 0, profitCents: 36000 })
-    // special price: fixed total, instructor still paid per hour
-    expect(classAmounts(3, 200, 50, 100)).toEqual({ totalCents: 10000, instructorPayCents: 15000, profitCents: -5000 })
-    expect(classAmounts(2, 200, 0, 0)).toEqual({ totalCents: 0, instructorPayCents: 0, profitCents: 0 })
   })
 
   it('sums without floating point drift', () => {
