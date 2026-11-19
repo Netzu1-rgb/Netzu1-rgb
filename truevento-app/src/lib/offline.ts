@@ -1,18 +1,18 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import { supabase } from './supabase'
 import { isNetworkError } from './errors'
-import type { NewClassInput, NewStudentInput } from './types'
+import type { NewClassInput, NewInstructorInput, NewStudentInput } from './types'
 
 // IndexedDB is only an offline helper: a read cache of data already loaded and an
 // outbox of writes made without connection. Postgres stays the source of truth.
 
-export type OutboxKind = 'student' | 'class'
+export type OutboxKind = 'instructor' | 'student' | 'class'
 
 export interface OutboxItem {
   seq?: number
   entityId: string
   kind: OutboxKind
-  payload: NewStudentInput | NewClassInput
+  payload: NewInstructorInput | NewStudentInput | NewClassInput
   userId: string
   createdAt: string
   error?: string
@@ -98,7 +98,7 @@ export async function outboxItems(): Promise<OutboxItem[]> {
   }
 }
 
-export async function enqueue(kind: OutboxKind, payload: NewStudentInput | NewClassInput, userId: string) {
+export async function enqueue(kind: OutboxKind, payload: NewInstructorInput | NewStudentInput | NewClassInput, userId: string) {
   const d = await db()
   const existing = await d.getFromIndex('outbox', 'byEntity', payload.id)
   if (!existing) {
@@ -113,9 +113,11 @@ export async function discardOutboxItem(seq: number) {
 }
 
 async function send(item: OutboxItem): Promise<void> {
-  const { error } = item.kind === 'student'
-    ? await supabase.from('students').insert(item.payload as NewStudentInput)
-    : await supabase.from('classes').insert(item.payload as NewClassInput)
+  const { error } = item.kind === 'instructor'
+    ? await supabase.from('instructors').insert(item.payload as NewInstructorInput)
+    : item.kind === 'student'
+      ? await supabase.from('students').insert(item.payload as NewStudentInput)
+      : await supabase.from('classes').insert(item.payload as NewClassInput)
   // 23505 = the id already exists: it was sent before (e.g. the answer got lost)
   if (error && error.code !== '23505') throw error
 }
@@ -141,7 +143,8 @@ export function syncOutbox(userId: string): Promise<SyncResult> {
       const items = (await d.getAll('outbox')).filter((i) => i.userId === userId)
       const failedStudents = new Set<string>()
       for (const item of items) {
-        if (item.kind === 'class' && failedStudents.has((item.payload as NewClassInput).student_id)) {
+        const c = item.payload as NewClassInput
+        if (item.kind === 'class' && (failedStudents.has(c.student_id) || failedStudents.has(c.instructor_id))) {
           result.failed++
           continue
         }
@@ -156,7 +159,7 @@ export function syncOutbox(userId: string): Promise<SyncResult> {
           }
           const message = (err as { message?: string }).message ?? String(err)
           await d.put('outbox', { ...item, error: message })
-          if (item.kind === 'student') failedStudents.add(item.entityId)
+          if (item.kind !== 'class') failedStudents.add(item.entityId) // its classes cannot go either
           result.failed++
         }
       }

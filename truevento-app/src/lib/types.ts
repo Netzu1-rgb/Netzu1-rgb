@@ -85,6 +85,13 @@ export interface NewClassInput {
   notes: string | null
 }
 
+export interface NewInstructorInput {
+  id: string
+  full_name: string
+  hourly_pay: number
+  active: boolean
+}
+
 export interface NewStudentInput {
   id: string
   full_name: string

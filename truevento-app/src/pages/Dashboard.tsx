@@ -17,7 +17,7 @@ const SPLIT_PAY = '#f97362'
 const AXIS = { fontSize: 12, fill: '#64748b' }
 
 export default function Dashboard() {
-  const { isAdmin, session, currency, profile, schoolName } = useAuth()
+  const { isAdmin, session, currency, profile } = useAuth()
   const uid = session!.user.id
   const [period, setPeriod] = useState<Period>(() => periodFor('month'))
 
@@ -52,11 +52,11 @@ export default function Dashboard() {
 
   return (
     <div>
-      <PageHeader title={isAdmin ? schoolName.toUpperCase() : `Hola${firstName ? `, ${firstName}` : ''}`}
-        subtitle={isAdmin ? 'Resumen de la escuela' : 'Tu actividad en la escuela'}
+      <PageHeader title={isAdmin ? 'Resumen de la escuela' : `Hola${firstName ? `, ${firstName}` : ''}`}
+        subtitle={isAdmin ? undefined : 'Tu actividad en la escuela'}
         action={<Link to="/registrar" className="btn-primary hidden sm:inline-flex"><Icon name="plus" /> Registrar clase</Link>} />
 
-      <div className="mb-5"><PeriodFilter value={period} onChange={setPeriod} /></div>
+      <div className="mb-4"><PeriodFilter value={period} onChange={setPeriod} /></div>
       {classes.offline && <OfflineNote savedAt={classes.savedAt} />}
       {classes.error && <div className="mb-4"><ErrorBox message={classes.error} onRetry={classes.reload} /></div>}
 

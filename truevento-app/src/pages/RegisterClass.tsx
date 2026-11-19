@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { useInstructors, useStudents } from '../lib/hooks'
-import { createClass, fetchClass, updateClass } from '../lib/api'
+import { createClass, createInstructor, fetchClass, updateClass } from '../lib/api'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, hoursToInput, parseDecimal, parseHours } from '../lib/money'
 import { formatDate, today } from '../lib/dates'
 import { friendlyError } from '../lib/errors'
-import type { ClassRow, Instructor, NewClassInput, NewStudentInput, Student } from '../lib/types'
+import type { ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Student } from '../lib/types'
 import { ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } from '../components/ui'
 
 const HOUR_CHIPS = ['1', '1:30', '2', '2:30', '3']
@@ -49,6 +49,9 @@ export default function RegisterClass() {
   const [date, setDate] = useState(today())
   const [hours, setHours] = useState('1')
   const [pay, setPay] = useState('')
+  const [payTouched, setPayTouched] = useState(false)
+  // a new instructor typed in the form (admins): their name, and whether it is only for this class
+  const [newIns, setNewIns] = useState<{ name: string; oneOff: boolean } | null>(null)
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<Errors>({})
@@ -61,7 +64,8 @@ export default function RegisterClass() {
     [instructors.data, instructorId],
   )
   const instructor: Instructor | undefined = instructors.data?.find((i) => i.id === instructorId)
-  const isExternal = instructor?.kind === 'external'
+  const isExternal = newIns !== null || instructor?.kind === 'external'
+  const isOwner = newIns === null && instructor?.kind === 'owner'
   const settled = Boolean(editing.data?.settlement_id)
 
   // students whose name matches what is typed
@@ -121,9 +125,17 @@ export default function RegisterClass() {
 
   function chooseInstructor(id: string) {
     setInstructorId(id)
+    setNewIns(null)
     setErrors((e) => ({ ...e, instructor: undefined }))
     const ins = instructors.data?.find((i) => i.id === id)
-    setPay(ins && ins.kind === 'external' ? toInput(ins.hourly_pay) : '')
+    // keep a pay the admin already typed; otherwise use the instructor's usual pay
+    if (ins?.kind === 'external' && !payTouched) setPay(toInput(ins.hourly_pay))
+  }
+
+  function addInstructor() {
+    setInstructorId('')
+    setNewIns({ name: '', oneOff: true })
+    setErrors((e) => ({ ...e, instructor: undefined }))
   }
 
   // an exact name match counts as choosing that student
@@ -142,7 +154,9 @@ export default function RegisterClass() {
     if (!name.trim()) e.name = 'Escribí el nombre del alumno.'
     if (rateN === null) e.rate = 'Ingresá el precio por hora.'
     else if (!hasAtMostTwoDecimals(rateN)) e.rate = 'Usá como máximo 2 decimales.'
-    if (!instructorId) e.instructor = 'Elegí quién da la clase.'
+    if (newIns) {
+      if (!newIns.name.trim()) e.newIns = 'Escribí el nombre del instructor.'
+    } else if (!instructorId) e.instructor = 'Elegí quién da la clase.'
     if (hoursN === null || hoursN <= 0 || hoursN > 24) e.hours = 'Ingresá la duración, por ejemplo 1:30 (en cuartos de hora: 00, 15, 30 o 45 minutos).'
     if (!date) e.date = 'Elegí la fecha.'
     if (isExternal && isAdmin) {
@@ -160,15 +174,22 @@ export default function RegisterClass() {
     if (Object.values(e).some(Boolean) || !session) return
     setBusy(true)
     try {
+      let instructorInput: NewInstructorInput | undefined
+      let instructorQueued = false
+      if (newIns) {
+        instructorInput = { id: crypto.randomUUID(), full_name: newIns.name.trim().replace(/\s+/g, ' '), hourly_pay: payN!, active: !newIns.oneOff }
+        instructorQueued = (await createInstructor(instructorInput, session.user.id)) === 'queued'
+      }
+      const instructorIdToUse = instructorInput?.id ?? instructorId
       let studentInput: NewStudentInput | undefined
       if (!chosen) {
         studentInput = {
           id: crypto.randomUUID(), full_name: name.trim().replace(/\s+/g, ' '), phone: phone.trim() || null,
-          start_date: date, hourly_rate: rateN!, default_instructor_id: instructorId, notes: null,
+          start_date: date, hourly_rate: rateN!, default_instructor_id: instructorIdToUse, notes: null,
         }
       }
       const payload: NewClassInput = {
-        id: editId ?? crypto.randomUUID(), student_id: chosen?.id ?? studentInput!.id, instructor_id: instructorId,
+        id: editId ?? crypto.randomUUID(), student_id: chosen?.id ?? studentInput!.id, instructor_id: instructorIdToUse,
         class_date: date, hours: hoursN!, student_rate: rateN!, notes: notes.trim() || null,
       }
       if (isExternal && isAdmin) payload.instructor_rate = payN!
@@ -180,12 +201,18 @@ export default function RegisterClass() {
         navigate(-1)
         return
       }
-      const result = await createClass(payload, session.user.id, studentInput)
+      const result = await createClass(payload, session.user.id, studentInput, instructorQueued)
       setSaved({
         queued: result === 'queued', student: chosen?.full_name ?? studentInput!.full_name, newStudent: Boolean(studentInput),
-        instructor: instructor?.full_name ?? '', hours: hoursN!, total: fromCents(amounts!.totalCents),
+        instructor: instructorInput?.full_name ?? instructor?.full_name ?? '', hours: hoursN!, total: fromCents(amounts!.totalCents),
       })
       if (studentInput) students.reload()
+      if (instructorInput) {
+        instructors.reload()
+        setNewIns(null)
+        setInstructorId(instructorInput.active ? instructorInput.id : '')
+      }
+      setPayTouched(false)
       // ready for the next class: keep who gives it and the date
       setName('')
       setStudent(null)
@@ -297,6 +324,35 @@ export default function RegisterClass() {
               )}
             </Field>
 
+            {isAdmin && (
+              <div className="-mt-2 rounded-xl border border-line bg-mist/70 p-3">
+                {isOwner ? (
+                  <p className="text-sm text-ink-soft"><b>Pago al instructor:</b> la da un dueño, no se le paga por hora.</p>
+                ) : (
+                  <Field label="Pago al instructor por hora" error={errors.pay}
+                    hint={instructor && !newIns ? `Valor de su ficha: ${formatMoney(instructor.hourly_pay, currency)}. Podés cambiarlo para esta clase.`
+                      : newIns ? 'Lo que vas a pagarle por cada hora a este instructor.'
+                      : 'Se completa al elegir quién da la clase (si es externo). Podés escribirlo antes.'}>
+                    {(id) => (
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-mute">
+                          {formatMoney(0, currency).replace(/[\d.,\s]/g, '')}
+                        </span>
+                        <input id={id} className={`${errors.pay ? 'input-error' : 'input'} pl-12 font-semibold`} inputMode="decimal"
+                          placeholder="0,00" value={pay} onChange={(e) => { setPay(e.target.value); setPayTouched(true) }} />
+                      </div>
+                    )}
+                  </Field>
+                )}
+                {rateN !== null && (
+                  <p className="tabular mt-2 text-sm text-ink-soft">
+                    Por hora: alumno <b>{formatMoney(rateN, currency)}</b> − instructor <b>{formatMoney(isExternal ? payN ?? 0 : 0, currency)}</b> = queda
+                    {' '}<b className="text-teal-700">{formatMoney(fromCents(Math.round(rateN * 100) - Math.round((isExternal ? payN ?? 0 : 0) * 100)), currency)}</b>
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* 3. who gives the class */}
             <div>
               <span className="field-label">3. ¿Quién da la clase?</span>
@@ -316,20 +372,34 @@ export default function RegisterClass() {
                       </span>
                     </button>
                   ))}
+                  <button type="button" role="radio" aria-checked={newIns !== null} onClick={addInstructor}
+                    className={`flex min-h-14 items-center gap-3 rounded-xl border border-dashed px-4 text-left font-semibold transition ${
+                      newIns ? 'border-ocean-900 bg-ocean-900 text-white' : 'border-ocean-700/40 bg-white text-ocean-800'}`}>
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${newIns ? 'bg-white/15' : 'bg-sand'}`}>
+                      <Icon name="plus" className="h-5 w-5" />
+                    </span>
+                    Otro instructor
+                  </button>
                 </div>
               ) : (
                 <div className="input flex items-center bg-slate-50 font-semibold">{instructor?.full_name ?? profile?.full_name ?? '—'}</div>
               )}
               {errors.instructor && <p className="mt-1.5 text-sm font-medium text-coral">{errors.instructor}</p>}
+              {newIns && (
+                <div className="mt-3 space-y-3 rounded-xl bg-sky-soft p-3">
+                  <Field label="Nombre del instructor" error={errors.newIns}>
+                    {(id) => <input id={id} className={errors.newIns ? 'input-error' : 'input'} autoFocus autoCapitalize="words"
+                      placeholder="Nombre y apellido" value={newIns.name} onChange={(e) => setNewIns({ ...newIns, name: e.target.value })} />}
+                  </Field>
+                  <label className="flex items-start gap-3 text-sm text-ocean-800">
+                    <input type="checkbox" className="mt-0.5 h-5 w-5 accent-sky-600" checked={newIns.oneOff}
+                      onChange={(e) => setNewIns({ ...newIns, oneOff: e.target.checked })} />
+                    <span><b>Solo para esta clase.</b> No aparece en la lista la próxima vez, pero queda en Liquidaciones para pagarle.</span>
+                  </label>
+                  <p className="text-xs text-ink-mute">Su pago por hora es el que pusiste arriba, debajo del precio.</p>
+                </div>
+              )}
             </div>
-
-            {isExternal && isAdmin && (
-              <Field label="Pago por hora del instructor" error={errors.pay}
-                hint={`Valor de su ficha: ${formatMoney(instructor!.hourly_pay, currency)}. Podés cambiarlo para esta clase.`}>
-                {(id) => <input id={id} className={errors.pay ? 'input-error' : 'input'} inputMode="decimal" value={pay}
-                  onChange={(e) => setPay(e.target.value)} />}
-              </Field>
-            )}
 
             {/* hours and date: prefilled, quick to adjust */}
             <div className="space-y-5 border-t border-line pt-5">
@@ -359,25 +429,24 @@ export default function RegisterClass() {
             </Field>
           </section>
 
-          <section className="card sticky bottom-24 z-10 p-4 shadow-lg lg:bottom-4">
-            <div className={`grid gap-2 text-center ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <div>
-                <div className="text-xs font-semibold uppercase text-ink-mute">Total clase</div>
-                <div className="tabular font-display text-lg font-bold text-ocean-900">{amounts ? formatMoney(fromCents(amounts.totalCents), currency) : '—'}</div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase text-ink-mute">Pago instructor</div>
-                <div className="tabular font-display text-lg font-bold text-ocean-900">{amounts ? formatMoney(fromCents(amounts.instructorPayCents), currency) : '—'}</div>
-              </div>
-              {isAdmin && (
-                <div>
-                  <div className="text-xs font-semibold uppercase text-ink-mute">Ganancia</div>
-                  <div className="tabular font-display text-lg font-bold text-lagoon">{amounts ? formatMoney(fromCents(amounts.profitCents), currency) : '—'}</div>
+          {/* compact on phones so it does not cover the form */}
+          <section className="card sticky bottom-[88px] z-10 p-3 shadow-lg lg:bottom-4 lg:p-4">
+            <div className={`grid gap-1 text-center ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {[
+                ['Total', amounts?.totalCents, 'text-ocean-900'],
+                ['Instructor', amounts?.instructorPayCents, 'text-ocean-900'],
+                ...(isAdmin ? [['Ganancia', amounts?.profitCents, 'text-teal-700']] : []),
+              ].map(([label, cents, color]) => (
+                <div key={label as string}>
+                  <div className="text-[11px] font-semibold uppercase leading-tight text-ink-mute">{label}</div>
+                  <div className={`tabular font-display text-base font-bold leading-tight sm:text-lg ${color}`}>
+                    {cents === undefined ? '—' : formatMoney(fromCents(cents as number), currency)}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-            {formError && <div className="mt-3"><ErrorBox message={formError} /></div>}
-            <button type="submit" className="btn-primary mt-3 w-full text-lg">
+            {formError && <div className="mt-2"><ErrorBox message={formError} /></div>}
+            <button type="submit" className="btn-primary mt-2 w-full text-lg">
               {busy ? <Spinner /> : <Icon name="check" />} {editId ? 'Guardar cambios' : 'Guardar clase'}
             </button>
           </section>

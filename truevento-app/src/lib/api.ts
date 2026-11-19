@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { enqueue } from './offline'
 import { isNetworkError } from './errors'
 import type {
-  ClassRow, Instructor, NewClassInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
+  ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
 } from './types'
 
 // All reads and writes go through here. Every function throws on error so callers
@@ -66,6 +66,17 @@ export async function saveInstructor(input: Partial<Instructor> & { full_name: s
   }
   if (input.id) check(await supabase.from('instructors').update(payload).eq('id', input.id))
   else check(await supabase.from('instructors').insert(payload))
+}
+
+/** Creates an external instructor from the class form (admins). Queued when offline. */
+export async function createInstructor(input: NewInstructorInput, userId: string): Promise<SaveResult> {
+  const { error } = await supabase.from('instructors').insert(input)
+  if (!error || error.code === '23505') return 'saved'
+  if (isNetworkError(error)) {
+    await enqueue('instructor', input, userId)
+    return 'queued'
+  }
+  throw error
 }
 
 export async function fetchProfiles(): Promise<Profile[]> {
@@ -154,7 +165,15 @@ export async function fetchStudentTotals(): Promise<Pick<ClassRow, 'student_id' 
  * Saves a class. Without connection it is queued on the device with the same id and
  * sent later, so it is never stored twice.
  */
-export async function createClass(input: NewClassInput, userId: string, newStudent?: NewStudentInput): Promise<SaveResult> {
+export async function createClass(
+  input: NewClassInput, userId: string, newStudent?: NewStudentInput, queueAll = false,
+): Promise<SaveResult> {
+  // something it depends on is still waiting to sync: keep the order in the queue
+  if (queueAll) {
+    if (newStudent) await enqueue('student', newStudent, userId)
+    await enqueue('class', input, userId)
+    return 'queued'
+  }
   if (newStudent) {
     const r = await createStudent(newStudent, userId)
     if (r === 'queued') {

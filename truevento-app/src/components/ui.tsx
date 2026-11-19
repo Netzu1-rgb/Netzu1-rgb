@@ -44,10 +44,10 @@ export function Icon({ name, className = 'h-5 w-5', strokeWidth = 2 }: { name: k
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-3">
+    <div className="mb-4 flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="text-2xl font-bold text-ocean-900 sm:text-3xl">{title}</h1>
-        {subtitle && <div className="mt-1 text-sm text-ink-mute">{subtitle}</div>}
+        <h1 className="text-xl font-bold text-ocean-900 sm:text-3xl">{title}</h1>
+        {subtitle && <div className="mt-0.5 text-sm text-ink-mute">{subtitle}</div>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

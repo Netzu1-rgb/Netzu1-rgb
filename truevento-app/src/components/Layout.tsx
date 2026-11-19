@@ -83,14 +83,14 @@ export default function Layout({ children }: { children: ReactNode }) {
       <div className="flex min-h-dvh flex-1 flex-col">
         {/* mobile top bar */}
         <header className="safe-top sticky top-0 z-30 bg-ocean-900 lg:hidden">
-          <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex h-14 items-center justify-between px-4">
             <Brand name={schoolName} />
             <SyncStatus compact />
           </div>
         </header>
 
         {import.meta.env.VITE_DEMO === '1' && <DemoBar />}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-5 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-4 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
           {children}
         </main>
       </div>
@@ -144,11 +144,11 @@ function DemoBar() {
     window.location.reload()
   }
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-kite/10 px-4 py-2 text-center text-xs text-ink-soft">
-      <span><b className="text-[#9d174d]">Modo demo</b> · datos de ejemplo guardados solo en este navegador</span>
+    <div className="flex items-center justify-center gap-x-3 bg-kite/10 px-4 py-1.5 text-center text-xs text-ink-soft">
+      <span><b className="text-[#9d174d]">Modo demo</b><span className="hidden sm:inline"> · datos de ejemplo guardados solo en este navegador</span></span>
       {confirming ? (
         <span className="flex gap-2">
-          <button type="button" className="font-semibold text-coral" onClick={() => void reset()}>Sí, borrar y empezar de nuevo</button>
+          <button type="button" className="font-semibold text-coral" onClick={() => void reset()}>Sí, reiniciar</button>
           <button type="button" className="font-semibold" onClick={() => setConfirming(false)}>Cancelar</button>
         </span>
       ) : (
