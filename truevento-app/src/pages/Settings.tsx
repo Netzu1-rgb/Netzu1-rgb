@@ -8,6 +8,7 @@ import { useInstall } from '../lib/pwa'
 import { CURRENCIES } from '../lib/currencies'
 import { ErrorBox, Field, Icon, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { supabase } from '../lib/supabase'
+import { SINGLE_USER } from '../lib/singleUser'
 
 export default function Settings() {
   const { isAdmin, profile, session, signOut, pendingSync } = useAuth()
@@ -38,10 +39,14 @@ export default function Settings() {
           <dt className="text-ink-mute">Usuario</dt><dd className="font-medium">{profile?.username ?? session?.user.email}</dd>
           <dt className="text-ink-mute">Rol</dt><dd className="font-medium">{isAdmin ? 'Administrador' : 'Instructor'}</dd>
         </dl>
-        <ChangePassword />
-        <button type="button" className="btn-ghost mt-5 w-full text-coral" onClick={() => void logout()}>
-          <Icon name="logout" /> Cerrar sesión
-        </button>
+        {!SINGLE_USER && (
+          <>
+            <ChangePassword />
+            <button type="button" className="btn-ghost mt-5 w-full text-coral" onClick={() => void logout()}>
+              <Icon name="logout" /> Cerrar sesión
+            </button>
+          </>
+        )}
       </section>
       <p className="text-center text-xs text-ink-mute">TRUEVENTO · versión {__APP_VERSION__}</p>
     </div>

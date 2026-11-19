@@ -8,4 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_USERNAME_DOMAIN?: string
   /** '1' only in the self-contained demo build (npm run build:demo) */
   readonly VITE_DEMO?: string
+  /** single-person mode: no login screen (see src/lib/singleUser.ts) */
+  readonly VITE_AUTO_LOGIN_PASSWORD?: string
+  readonly VITE_AUTO_LOGIN_USER?: string
 }

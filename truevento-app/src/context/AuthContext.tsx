@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { fetchProfile, fetchSettings, fetchSetupStatus } from '../lib/api'
 import { cacheGet, cachePut, clearLocalData, onOutboxChange, syncOutbox, type SyncResult } from '../lib/offline'
 import { isNetworkError } from '../lib/errors'
+import { autoSignIn, SINGLE_USER } from '../lib/singleUser'
 import type { Profile, SchoolSettings } from '../lib/types'
 
 interface AuthState {
@@ -75,8 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return
+      // single-person mode: sign in silently; SIGNED_IN below then loads the app
+      if (!data.session && SINGLE_USER && (await autoSignIn().catch(() => false))) return
       setSession(data.session)
       void load(data.session)
     })

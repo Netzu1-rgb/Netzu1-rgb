@@ -87,6 +87,17 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
 
 3. Deploy. Vercel sirve todo por HTTPS, requisito para instalar la PWA.
 
+### Modo de una sola persona (sin pantalla de ingreso)
+
+Si la app la va a usar una sola persona con un enlace privado, agregá en Vercel la variable **`VITE_AUTO_LOGIN_PASSWORD`** con cualquier contraseña (8 caracteres o más) y volvé a publicar. Entonces:
+
+- No hay pantalla de ingreso: la app entra sola con una cuenta interna (usuario `escuela`).
+- La primera vez muestra solo la configuración inicial (escuela y dueños). Después abre directo, en cualquier dispositivo.
+- En Supabase, **Authentication → Sign In / Providers → Email**, desactivá **Confirm email** antes de abrirla por primera vez.
+- Cualquiera que tenga el enlace puede usar la app: no lo compartas.
+
+Para volver al ingreso con usuario y contraseña, borrá la variable y publicá de nuevo.
+
 ### 3. Primer ingreso
 
 1. Abrí la app: aparece **Bienvenido a TRUEVENTO** para crear la cuenta del administrador (email y contraseña). Si Supabase tiene activada la confirmación de email, confirmala desde el correo.

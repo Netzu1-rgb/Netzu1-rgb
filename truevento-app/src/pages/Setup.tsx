@@ -5,13 +5,14 @@ import { setupSchool } from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { useAuth } from '../context/AuthContext'
 import { CURRENCIES } from '../lib/currencies'
+import { SINGLE_USER } from '../lib/singleUser'
 
 /** First-run configuration: school name, the two owners and the currency. Runs once. */
 export default function Setup() {
   const { refresh, signOut } = useAuth()
   const [schoolName, setSchoolName] = useState('TRUEVENTO')
-  const [owner1, setOwner1] = useState('')
-  const [owner2, setOwner2] = useState('')
+  const [owner1, setOwner1] = useState('Victoria Linde')
+  const [owner2, setOwner2] = useState('Sebastián Comasco')
   const [currency, setCurrency] = useState('BRL')
   const [me, setMe] = useState<1 | 2>(1)
   const [busy, setBusy] = useState(false)
@@ -66,9 +67,11 @@ export default function Setup() {
         <button type="submit" className="btn-primary w-full text-lg" disabled={busy}>
           {busy && <Spinner />} Guardar y empezar
         </button>
-        <button type="button" className="w-full text-sm font-semibold text-ink-mute" onClick={() => void signOut()}>
-          Salir
-        </button>
+        {!SINGLE_USER && (
+          <button type="button" className="w-full text-sm font-semibold text-ink-mute" onClick={() => void signOut()}>
+            Salir
+          </button>
+        )}
       </form>
     </AuthShell>
   )
