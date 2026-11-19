@@ -90,23 +90,47 @@ export function describePeriod(p: Period): string {
   return `${formatShortDate(p.from)} – ${formatShortDate(p.to)}`
 }
 
-/** Buckets for charts: by day for short periods, by month otherwise. */
-export function chartBuckets(from: string, to: string): { key: string; label: string }[] {
+export interface ChartBucket {
+  key: string
+  label: string
+  /** full name for tooltips */
+  title: string
+}
+
+const weekday = new Intl.DateTimeFormat('es-AR', { weekday: 'short' })
+
+/**
+ * Groups a period for charts so bars stay readable:
+ * up to 7 days -> one bar per day, up to a month -> one bar per week (1–7, 8–14…),
+ * longer -> one bar per month. `keyOf` maps a class date to its bar.
+ */
+export function chartBuckets(from: string, to: string): { buckets: ChartBucket[]; keyOf: (iso: string) => string; unit: string } {
   const days = daysBetween(from, to)
-  if (days <= 31) {
-    const out = []
+  if (days < 7) {
+    const buckets = []
     for (let i = 0; i <= days; i++) {
       const iso = addDays(from, i)
-      out.push({ key: iso, label: iso.slice(8, 10) + '/' + iso.slice(5, 7) })
+      const wd = weekday.format(parseISODate(iso)).replace('.', '')
+      buckets.push({ key: iso, label: `${wd} ${Number(iso.slice(8, 10))}`, title: formatDate(iso) })
     }
-    return out
+    return { buckets, keyOf: (iso) => iso, unit: 'por día' }
   }
-  const out = []
+  if (days <= 31) {
+    const buckets = []
+    for (let start = 0; start <= days; start += 7) {
+      const a = addDays(from, start)
+      const b = addDays(from, Math.min(start + 6, days))
+      buckets.push({ key: String(start / 7), label: `${Number(a.slice(8, 10))}–${Number(b.slice(8, 10))}`, title: `${formatDate(a)} al ${formatDate(b)}` })
+    }
+    return { buckets, keyOf: (iso) => String(Math.floor(daysBetween(from, iso) / 7)), unit: 'por semana' }
+  }
+  const buckets = []
   const start = parseISODate(from)
   const end = parseISODate(to)
   for (let d = new Date(start.getFullYear(), start.getMonth(), 1); d <= end; d.setMonth(d.getMonth() + 1)) {
     const key = toISODate(d).slice(0, 7)
-    out.push({ key, label: formatMonth(key) })
+    const long = monthLong.format(d)
+    buckets.push({ key, label: formatMonth(key), title: long.charAt(0).toUpperCase() + long.slice(1) })
   }
-  return out
+  return { buckets, keyOf: (iso) => iso.slice(0, 7), unit: 'por mes' }
 }

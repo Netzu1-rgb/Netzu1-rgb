@@ -145,7 +145,7 @@ function DemoBar() {
   }
   return (
     <div className="flex items-center justify-center gap-x-3 bg-kite/10 px-4 py-1.5 text-center text-xs text-ink-soft">
-      <span><b className="text-[#9d174d]">Modo demo</b><span className="hidden sm:inline"> · datos de ejemplo guardados solo en este navegador</span></span>
+      <span><b className="text-[#9d174d]">Modo demo</b><span className="hidden sm:inline"> · lo que cargues se guarda solo en este navegador</span></span>
       {confirming ? (
         <span className="flex gap-2">
           <button type="button" className="font-semibold text-coral" onClick={() => void reset()}>Sí, reiniciar</button>

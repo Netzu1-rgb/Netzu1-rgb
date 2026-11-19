@@ -70,10 +70,14 @@ describe('dates', () => {
   })
 
   it('buckets charts by day or month', () => {
-    expect(chartBuckets('2026-11-01', '2026-11-30')).toHaveLength(30)
-    const months = chartBuckets('2026-01-01', '2026-12-31')
-    expect(months).toHaveLength(12)
-    expect(months[0].key).toBe('2026-01')
+    const week = chartBuckets('2026-11-16', '2026-11-22')
+    expect(week.buckets).toHaveLength(7)
+    const month = chartBuckets('2026-11-01', '2026-11-30')
+    expect(month.buckets.map((b) => b.label)).toEqual(['1–7', '8–14', '15–21', '22–28', '29–30'])
+    expect(month.keyOf('2026-11-15')).toBe('2')
+    const year = chartBuckets('2026-01-01', '2026-12-31')
+    expect(year.buckets).toHaveLength(12)
+    expect(year.keyOf('2026-03-09')).toBe('2026-03')
   })
 })
 

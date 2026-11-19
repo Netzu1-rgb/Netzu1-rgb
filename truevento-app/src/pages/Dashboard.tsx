@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAuth } from '../context/AuthContext'
 import PeriodFilter from '../components/PeriodFilter'
 import { ErrorBox, Icon, Loading, OfflineNote, PageHeader, Stat } from '../components/ui'
@@ -11,10 +11,10 @@ import { formatHours, formatMoney, formatNumber, sumAmounts, sumHours } from '..
 import type { ClassRow } from '../lib/types'
 
 const SKY = '#0284c7'
-const PROFIT = '#1b4a7a'
+const PROFIT = '#0f766e'
 const SPLIT_SCHOOL = '#0ea5e9'
 const SPLIT_PAY = '#f97362'
-const AXIS = { fontSize: 12, fill: '#64748b' }
+const AXIS = { fontSize: 13, fill: '#475569' }
 
 export default function Dashboard() {
   const { isAdmin, session, currency, profile } = useAuth()
@@ -92,58 +92,44 @@ export default function Dashboard() {
           </div>
 
           {rows.length === 0 ? (
-            <div className="card mt-5 p-6 text-center text-ink-mute">No hay clases en este período.</div>
+            <div className="card mt-4 flex flex-col items-center px-6 py-10 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-sky-soft text-sky-deep"><Icon name="trend" className="h-7 w-7" /></div>
+              <h2 className="mt-3 text-lg font-semibold text-ocean-900">Todavía no hay clases en {describePeriod(period).toLowerCase()}</h2>
+              <p className="mt-1 max-w-sm text-sm text-ink-mute">Cuando registres clases, acá vas a ver cuánto se cobró, cuánto le quedó a la escuela y las horas de cada instructor.</p>
+              <Link to="/registrar" className="btn-primary mt-5"><Icon name="plus" /> Registrar clase</Link>
+            </div>
           ) : (
-            <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              <ChartCard title={isAdmin ? 'Ingresos' : 'Ingresos generados'} subtitle={series.byDay ? 'por día' : 'por mes'}>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={series.data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke="#eef2f6" />
-                    <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
-                    <YAxis tick={AXIS} tickLine={false} axisLine={false} width={56} tickFormatter={compact} />
-                    <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }} formatter={(v) => [formatMoney(Number(v), currency), 'Ingresos']} />
-                    <Bar dataKey="revenue" fill={SKY} radius={[4, 4, 0, 0]} maxBarSize={28} />
-                  </BarChart>
-                </ResponsiveContainer>
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <ChartCard title={isAdmin ? '¿Cuánto se cobró?' : 'Ingresos que generaste'}
+                subtitle={`Total cobrado a alumnos ${series.unit} · ${describePeriod(period)}`}>
+                <MoneyBars data={series.data} dataKey="revenue" color={SKY} currency={currency} name="Cobrado" />
               </ChartCard>
 
               {isAdmin && (
-                <ChartCard title="Ganancia de la escuela" subtitle={series.byDay ? 'por día' : 'por mes'}>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={series.data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="profitFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0" stopColor={PROFIT} stopOpacity={0.22} />
-                          <stop offset="1" stopColor={PROFIT} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} stroke="#eef2f6" />
-                      <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
-                      <YAxis tick={AXIS} tickLine={false} axisLine={false} width={56} tickFormatter={compact} />
-                      <Tooltip formatter={(v) => [formatMoney(Number(v), currency), 'Ganancia']} />
-                      <Area dataKey="profit" type="linear" stroke={PROFIT} strokeWidth={2} fill="url(#profitFill)"
-                        dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff' }} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                <ChartCard title="¿Cuánto le quedó a la escuela?"
+                  subtitle={`Ganancia ${series.unit}: lo cobrado menos lo que se paga a instructores`}>
+                  <MoneyBars data={series.data} dataKey="profit" color={PROFIT} currency={currency} name="Ganancia" />
                 </ChartCard>
               )}
 
               {isAdmin && (
                 <ChartCard title="Horas por instructor" subtitle={describePeriod(period)}>
-                  <ResponsiveContainer width="100%" height={Math.max(120, byInstructor.length * 44)}>
-                    <BarChart data={byInstructor} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
+                  <ResponsiveContainer width="100%" height={Math.max(130, byInstructor.length * 52)}>
+                    <BarChart data={byInstructor} layout="vertical" margin={{ top: 0, right: 64, left: 0, bottom: 0 }}>
                       <XAxis type="number" hide />
-                      <YAxis type="category" dataKey="name" tick={{ ...AXIS, fill: '#0f172a' }} width={120} tickLine={false} axisLine={false} />
+                      <YAxis type="category" dataKey="name" tick={{ ...AXIS, fill: '#0f172a', fontWeight: 600 }} width={130} tickLine={false} axisLine={false} />
                       <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }} formatter={(v) => [formatHours(Number(v)), 'Horas']} />
-                      <Bar dataKey="hours" fill={SKY} radius={[0, 4, 4, 0]} maxBarSize={22}
-                        label={{ position: 'right', fontSize: 12, fill: '#475569', formatter: (v: unknown) => formatHours(Number(v)) }} />
+                      <Bar dataKey="hours" fill={SKY} radius={[0, 6, 6, 0]} barSize={26}>
+                        <LabelList dataKey="hours" position="right" formatter={(v: unknown) => formatHours(Number(v))}
+                          style={{ fontSize: 13, fontWeight: 700, fill: '#0f172a' }} />
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
               )}
 
               {isAdmin && (
-                <ChartCard title="Distribución de ingresos" subtitle="Qué queda en la escuela y qué se paga a instructores">
+                <ChartCard title="¿A dónde va lo cobrado?" subtitle="Parte que queda en la escuela y parte que se paga a instructores">
                   <RevenueSplit school={totals.profit} pay={totals.pay} currency={currency} />
                 </ChartCard>
               )}
@@ -159,11 +145,36 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
   return (
     <section className="card p-4 sm:p-5">
       <div className="mb-3">
-        <h2 className="text-base font-semibold text-ocean-900">{title}</h2>
-        {subtitle && <p className="text-xs text-ink-mute">{subtitle}</p>}
+        <h2 className="text-lg font-semibold text-ocean-900">{title}</h2>
+        {subtitle && <p className="text-sm text-ink-mute">{subtitle}</p>}
       </div>
       {children}
     </section>
+  )
+}
+
+interface SeriesPoint { label: string; title: string; revenue: number; profit: number }
+
+/** Bars with the amount written on top of each one, so the chart reads without hovering. */
+function MoneyBars({ data, dataKey, color, currency, name }: {
+  data: SeriesPoint[]; dataKey: 'revenue' | 'profit'; color: string; currency: string; name: string
+}) {
+  const short = (v: unknown) => (Number(v) === 0 ? '' : compactMoney(Number(v), currency))
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <BarChart data={data} margin={{ top: 24, right: 4, left: 0, bottom: 0 }}>
+        <CartesianGrid vertical={false} stroke="#e2e8f0" />
+        <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} interval={0} />
+        <YAxis tick={{ ...AXIS, fontSize: 12 }} tickLine={false} axisLine={false} width={62}
+          tickFormatter={(v: number) => compactMoney(v, currency)} />
+        <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }}
+          labelFormatter={(_l, p) => (p?.[0]?.payload as SeriesPoint | undefined)?.title ?? ''}
+          formatter={(v) => [formatMoney(Number(v), currency), name]} />
+        <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} maxBarSize={56}>
+          <LabelList dataKey={dataKey} position="top" formatter={short} style={{ fontSize: 12, fontWeight: 700, fill: '#0f172a' }} />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -176,10 +187,13 @@ function RevenueSplit({ school, pay, currency }: { school: number; pay: number; 
   ]
   return (
     <div>
-      <div className="flex h-5 w-full gap-0.5 overflow-hidden rounded-md" role="img"
+      <div className="flex h-10 w-full gap-0.5 overflow-hidden rounded-lg" role="img"
         aria-label={parts.map((p) => `${p.label} ${pct(p.value)}%`).join(', ')}>
         {parts.filter((p) => p.value > 0).map((p) => (
-          <div key={p.label} style={{ width: `${(p.value / total) * 100}%`, background: p.color }} title={`${p.label}: ${formatMoney(p.value, currency)}`} />
+          <div key={p.label} style={{ width: `${(p.value / total) * 100}%`, background: p.color }}
+            className="flex items-center justify-center text-sm font-bold text-white" title={`${p.label}: ${formatMoney(p.value, currency)}`}>
+            {pct(p.value) >= 12 ? `${pct(p.value)}%` : ''}
+          </div>
         ))}
       </div>
       <ul className="mt-4 space-y-3">
@@ -196,24 +210,24 @@ function RevenueSplit({ school, pay, currency }: { school: number; pay: number; 
   )
 }
 
-function compact(v: number) {
-  return new Intl.NumberFormat('es-AR', { notation: 'compact', maximumFractionDigits: 1 }).format(v)
+function compactMoney(v: number, currency: string) {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency', currency, currencyDisplay: 'narrowSymbol', notation: 'compact', maximumFractionDigits: 1,
+  }).format(v)
 }
 
 function buildSeries(rows: ClassRow[], period: Period) {
-  const buckets = chartBuckets(period.from, period.to)
-  const byDay = buckets.length > 0 && buckets[0].key.length === 10
-  const acc = new Map(buckets.map((b) => [b.key, { label: b.label, revenue: [] as number[], profit: [] as number[] }]))
+  const { buckets, keyOf, unit } = chartBuckets(period.from, period.to)
+  const acc = new Map(buckets.map((b) => [b.key, { label: b.label, title: b.title, revenue: [] as number[], profit: [] as number[] }]))
   for (const r of rows) {
-    const k = byDay ? r.class_date : r.class_date.slice(0, 7)
-    const b = acc.get(k)
+    const b = acc.get(keyOf(r.class_date))
     if (b) {
       b.revenue.push(r.total_amount)
       b.profit.push(r.school_profit)
     }
   }
   return {
-    byDay,
-    data: [...acc.values()].map((b) => ({ label: b.label, revenue: sumAmounts(b.revenue), profit: sumAmounts(b.profit) })),
+    unit,
+    data: [...acc.values()].map((b) => ({ label: b.label, title: b.title, revenue: sumAmounts(b.revenue), profit: sumAmounts(b.profit) })),
   }
 }

@@ -9,8 +9,8 @@ const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? '
 const DEMO = import.meta.env.VITE_DEMO === '1'
 const DEMO_LOGINS = DEMO
   ? [
-      { label: 'Entrar como administrador', who: 'Victoria Linde (dueña)', user: 'victoria', password: 'demo1234' },
-      { label: 'Entrar como instructor', who: 'Sebastián Comasco (externo)', user: 'sebastian', password: 'demo1234' },
+      { label: 'Entrar como Victoria', who: 'Dueña · administradora', user: 'victoria', password: 'demo1234' },
+      { label: 'Entrar como Sebastián', who: 'Dueño', user: 'sebastian', password: 'demo1234' },
     ]
   : []
 
@@ -46,7 +46,7 @@ export default function Login() {
       {DEMO && (
         <div className="mb-6 space-y-2">
           <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink-soft">
-            <b>Demo:</b> datos de ejemplo que se guardan solo en este navegador. Entrá con un toque:
+            <b>Demo:</b> empieza vacía; lo que cargues se guarda solo en este navegador. Entrá con un toque:
           </p>
           {DEMO_LOGINS.map((d) => (
             <button key={d.user} type="button" disabled={busy} onClick={() => void enter(d.user, d.password)}

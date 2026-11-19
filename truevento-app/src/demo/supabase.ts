@@ -1,6 +1,6 @@
 // Demo backend: a small in-browser stand-in for the Supabase client, used only by
 // `npm run build:demo` (vite.config.ts swaps it in for src/lib/supabase.ts).
-// It mirrors the database rules that matter on screen: money columns, owner pay = 0,
+// It starts empty (two owners, no data) and mirrors the database rules that matter on screen: money columns, owner pay = 0,
 // instructors see only their own data, settled classes are frozen, settlements.
 // Data lives in this browser's localStorage; nothing is sent anywhere.
 
@@ -19,75 +19,33 @@ interface DB {
 }
 type Table = Exclude<keyof DB, 'users'>
 
-const KEY = 'truevento-demo-v1'
+const KEY = 'truevento-demo-v2'
 export const DEMO_DOMAIN = 'usuarios.truevento.app'
-export const DEMO_LOGINS = [
-  { label: 'Administrador', who: 'Victoria Linde', user: 'victoria', password: 'demo1234' },
-  { label: 'Instructor', who: 'Sebastián Comasco', user: 'sebastian', password: 'demo1234' },
-]
 
-const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d) }
 const uid = () => crypto.randomUUID()
 
+// starts empty: the two owners and their logins, no students, classes or payments
 function seed(): DB {
-  const o1 = uid(), o2 = uid(), e1 = uid()
-  const uAdmin = uid(), uIns = uid()
-  const students = [
-    ['Ana Souza', 200], ['Pedro Gómez', 180], ['Lucas Ferreira', 220], ['Martina López', 200],
-    ['Joaquín Ruiz', 190], ['Camila Rocha', 210], ['Valentina Costa', 150], ['Diego Alves', 200],
-  ].map(([full_name, rate], i) => ({
-    id: uid(), full_name, phone: null, start_date: daysAgo(70 - i * 6), hourly_rate: rate,
-    default_instructor_id: [o1, e1, o2][i % 3], notes: i === 6 ? 'Clases para niños' : null, active: true,
-    created_at: new Date().toISOString(),
-  }))
-  const db: DB = {
+  const o1 = uid(), o2 = uid()
+  const u1 = uid(), u2 = uid()
+  return {
     school_settings: [{ id: 1, school_name: 'TRUEVENTO', currency: 'BRL', setup_completed_at: new Date().toISOString() }],
     instructors: [
       { id: o1, full_name: 'Victoria Linde', phone: null, kind: 'owner', owner_slot: 1, hourly_pay: 0, active: true },
-      { id: o2, full_name: 'Mika Musarra', phone: null, kind: 'owner', owner_slot: 2, hourly_pay: 0, active: true },
-      { id: e1, full_name: 'Sebastián Comasco', phone: null, kind: 'external', owner_slot: null, hourly_pay: 60, active: true },
+      { id: o2, full_name: 'Sebastián Comasco', phone: null, kind: 'owner', owner_slot: 2, hourly_pay: 0, active: true },
     ],
     profiles: [
-      { id: uAdmin, full_name: 'Victoria Linde', username: 'victoria', role: 'admin', instructor_id: o1, active: true, created_at: '' },
-      { id: uIns, full_name: 'Sebastián Comasco', username: 'sebastian', role: 'instructor', instructor_id: e1, active: true, created_at: '' },
+      { id: u1, full_name: 'Victoria Linde', username: 'victoria', role: 'admin', instructor_id: o1, active: true, created_at: '' },
+      { id: u2, full_name: 'Sebastián Comasco', username: 'sebastian', role: 'admin', instructor_id: o2, active: true, created_at: '' },
     ],
-    students,
+    students: [],
     classes: [],
     settlements: [],
     users: [
-      { id: uAdmin, email: `victoria@${DEMO_DOMAIN}`, password: 'demo1234' },
-      { id: uIns, email: `sebastian@${DEMO_DOMAIN}`, password: 'demo1234' },
+      { id: u1, email: `victoria@${DEMO_DOMAIN}`, password: 'demo1234' },
+      { id: u2, email: `sebastian@${DEMO_DOMAIN}`, password: 'demo1234' },
     ],
   }
-  // ~2 months of classes, deterministic
-  const hoursSet = [1, 1.5, 2, 1.5, 2.5, 1, 2, 3]
-  for (let i = 0; i < 38; i++) {
-    const st = students[(i * 5) % students.length]
-    const ins = db.instructors[(i * 7) % 3]
-    const cls = withMoney({
-      id: uid(), student_id: st.id, instructor_id: ins.id, class_date: daysAgo((i * 53) % 62),
-      hours: hoursSet[i % hoursSet.length], student_rate: st.hourly_rate,
-      instructor_rate: ins.kind === 'owner' ? 0 : ins.hourly_pay, instructor_kind: ins.kind,
-      notes: null, settlement_id: null, created_at: new Date(Date.now() - i * 3600_000).toISOString(),
-    })
-    db.classes.push(cls)
-  }
-  // last month's classes of the external instructor are already paid
-  const now = new Date()
-  const from = iso(new Date(now.getFullYear(), now.getMonth() - 1, 1))
-  const to = iso(new Date(now.getFullYear(), now.getMonth(), 0))
-  const paid = db.classes.filter((c) => c.instructor_id === e1 && c.class_date >= from && c.class_date <= to)
-  if (paid.length) {
-    const sid = uid()
-    db.settlements.push({
-      id: sid, instructor_id: e1, period_start: from, period_end: to, classes_count: paid.length,
-      total_hours: paid.reduce((a, c) => a + c.hours, 0), amount: cents(paid.reduce((a, c) => a + Math.round(c.instructor_pay * 100), 0)),
-      paid_at: to, notes: 'Pix', created_at: new Date().toISOString(),
-    })
-    paid.forEach((c) => { c.settlement_id = sid })
-  }
-  return db
 }
 
 const cents = (c: number) => c / 100
@@ -113,7 +71,7 @@ function save(d: DB = db) {
 }
 
 export function resetDemo() {
-  try { localStorage.removeItem(KEY); localStorage.removeItem('truevento-demo-session') } catch { /* ignore */ }
+  try { localStorage.removeItem(KEY); localStorage.removeItem('truevento-demo-v1'); localStorage.removeItem('truevento-demo-session') } catch { /* ignore */ }
   try { indexedDB.deleteDatabase('truevento') } catch { /* ignore */ }
 }
 
@@ -121,6 +79,8 @@ export function resetDemo() {
 
 let session: any = null
 try { session = JSON.parse(localStorage.getItem('truevento-demo-session') ?? 'null') } catch { session = null }
+// a session from an older demo points to users that no longer exist
+if (session && !db.users.some((u) => u.id === session.user?.id)) session = null
 const listeners = new Set<(event: string, s: any) => void>()
 function setSession(s: any, event: string) {
   session = s
