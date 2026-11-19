@@ -1,0 +1,81 @@
+import { describe, expect, it } from 'vitest'
+import { classAmounts, lineTotalCents, parseDecimal, sumAmounts, sumHours, hasAtMostTwoDecimals } from './money'
+import { chartBuckets, periodFor, shiftPeriod } from './dates'
+import { toCsv } from './csv'
+import { loginToEmail, normalizeUsername, USERNAME_PATTERN } from './username'
+
+describe('money', () => {
+  it('matches Postgres round(hours * rate, 2)', () => {
+    expect(lineTotalCents(1.5, 33.33)).toBe(5000) // 49.995 -> 50.00
+    expect(lineTotalCents(2.5, 120)).toBe(30000)
+    expect(lineTotalCents(0.25, 0.1)).toBe(3) // 0.025 -> 0.03
+    expect(lineTotalCents(1.1, 1.1)).toBe(121)
+    expect(lineTotalCents(3, 0)).toBe(0)
+  })
+
+  it('computes class totals, instructor pay and school profit', () => {
+    expect(classAmounts(1.5, 200, 50)).toEqual({ totalCents: 30000, instructorPayCents: 7500, profitCents: 22500 })
+    expect(classAmounts(2, 180, 0)).toEqual({ totalCents: 36000, instructorPayCents: 0, profitCents: 36000 })
+  })
+
+  it('sums without floating point drift', () => {
+    expect(sumAmounts([0.1, 0.2, 0.3])).toBe(0.6)
+    expect(sumAmounts(['10.05', 20.1, null])).toBe(30.15)
+    expect(sumHours([1.5, 2.5, 0.25])).toBe(4.25)
+  })
+
+  it('parses decimals typed with comma or dot', () => {
+    expect(parseDecimal('1,5')).toBe(1.5)
+    expect(parseDecimal('1.5')).toBe(1.5)
+    expect(parseDecimal('1.234,50')).toBe(1234.5)
+    expect(parseDecimal('1,234.50')).toBe(1234.5)
+    expect(parseDecimal('R$ 200')).toBe(200)
+    expect(parseDecimal('')).toBeNull()
+    expect(parseDecimal('abc')).toBeNull()
+    expect(parseDecimal('-3')).toBeNull()
+    expect(hasAtMostTwoDecimals(1.25)).toBe(true)
+    expect(hasAtMostTwoDecimals(1.255)).toBe(false)
+  })
+})
+
+describe('dates', () => {
+  it('builds periods', () => {
+    expect(periodFor('week', '2026-11-19')).toEqual({ kind: 'week', from: '2026-11-16', to: '2026-11-22' })
+    expect(periodFor('month', '2026-02-10')).toEqual({ kind: 'month', from: '2026-02-01', to: '2026-02-28' })
+    expect(periodFor('year', '2026-06-01')).toEqual({ kind: 'year', from: '2026-01-01', to: '2026-12-31' })
+    expect(shiftPeriod(periodFor('month', '2026-01-15'), -1)).toEqual({ kind: 'month', from: '2025-12-01', to: '2025-12-31' })
+    expect(shiftPeriod({ kind: 'custom', from: '2026-11-01', to: '2026-11-10' }, 1))
+      .toEqual({ kind: 'custom', from: '2026-11-11', to: '2026-11-20' })
+  })
+
+  it('buckets charts by day or month', () => {
+    expect(chartBuckets('2026-11-01', '2026-11-30')).toHaveLength(30)
+    const months = chartBuckets('2026-01-01', '2026-12-31')
+    expect(months).toHaveLength(12)
+    expect(months[0].key).toBe('2026-01')
+  })
+})
+
+describe('csv', () => {
+  it('writes Excel-friendly CSV', () => {
+    const csv = toCsv([{ a: 'Juan; "Pepe"', n: 1.5, f: '=SUM(A1)' }], [
+      { header: 'Nombre', value: (r) => r.a },
+      { header: 'Horas', value: (r) => r.n, numeric: true },
+      { header: 'Nota', value: (r) => r.f },
+    ])
+    expect(csv.startsWith('﻿')).toBe(true)
+    expect(csv).toContain('"Juan; ""Pepe"""')
+    expect(csv).toContain(';1,5;')
+    expect(csv).toContain("'=SUM(A1)")
+  })
+})
+
+describe('usernames', () => {
+  it('maps a username to an email', () => {
+    expect(normalizeUsername(' Sebastián Comasco ')).toBe('sebastian.comasco')
+    expect(loginToEmail('Sebastian', 'usuarios.truevento.app')).toBe('sebastian@usuarios.truevento.app')
+    expect(loginToEmail('Admin@Mail.com', 'x')).toBe('admin@mail.com')
+    expect(USERNAME_PATTERN.test('mika')).toBe(true)
+    expect(USERNAME_PATTERN.test('a b')).toBe(false)
+  })
+})

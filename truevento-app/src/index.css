@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Sea, wind and sand: deep ocean navy, sky blue (truevento.com), lagoon teal, sand, coral */
+@theme {
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-ocean-950: #061a2e;
+  --color-ocean-900: #0b2545;
+  --color-ocean-800: #12345c;
+  --color-ocean-700: #1b4a7a;
+  --color-sky-brand: #0ea5e9;
+  --color-sky-deep: #0284c7;
+  --color-sky-soft: #e0f2fe;
+  --color-lagoon: #14b8a6;
+  --color-lagoon-soft: #ccfbf1;
+  --color-sand: #f6f1e7;
+  --color-sand-deep: #e9dfc9;
+  --color-coral: #f97362;
+  --color-coral-soft: #ffe4df;
+  --color-kite: #ec4899;
+  --color-mist: #f3f7fa;
+  --color-line: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-ink-soft: #475569;
+  --color-ink-mute: #64748b;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-mist font-sans text-ink antialiased;
+    overscroll-behavior-y: none;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+  input, select, textarea, button {
+    font: inherit;
+  }
+  /* iOS zooms into inputs under 16px */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+}
+@utility field-label {
+  @apply mb-1.5 block text-sm font-semibold text-ink-soft;
+}
+@utility input {
+  @apply block min-h-12 w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none transition
+    placeholder:text-slate-400 focus:border-sky-brand focus:ring-4 focus:ring-sky-brand/15 disabled:bg-slate-50 disabled:text-ink-mute;
+}
+/* use instead of .input (not together) so the error colors always win */
+@utility input-error {
+  @apply input;
+  border-color: var(--color-coral);
+  --tw-ring-color: color-mix(in oklab, var(--color-coral) 15%, transparent);
+}
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition
+    active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-sky-brand text-white shadow-[0_6px_18px_-6px_rgba(14,165,233,0.6)] hover:bg-sky-deep;
+}
+@utility btn-dark {
+  @apply btn bg-ocean-900 text-white hover:bg-ocean-800;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-white text-ink hover:bg-slate-50;
+}
+@utility btn-danger {
+  @apply btn bg-coral text-white hover:brightness-95;
+}
+@utility chip {
+  @apply inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-white px-4 text-sm font-semibold
+    text-ink-soft transition active:scale-95;
+}
+/* selected chip: use instead of .chip */
+@utility chip-on {
+  @apply chip;
+  border-color: var(--color-ocean-900);
+  background-color: var(--color-ocean-900);
+  color: #fff;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+@utility brand-gradient {
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8 45%, #f472b6);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
