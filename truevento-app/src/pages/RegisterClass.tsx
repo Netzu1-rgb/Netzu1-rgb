@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext'
 import { useInstructors, useStudents } from '../lib/hooks'
 import { createClass, fetchClass, updateClass } from '../lib/api'
 import { useData } from '../lib/useData'
-import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
+import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, hoursToInput, parseDecimal, parseHours } from '../lib/money'
 import { formatDate, today } from '../lib/dates'
 import { friendlyError } from '../lib/errors'
 import type { ClassRow, Instructor, NewClassInput, NewStudentInput, Student } from '../lib/types'
 import { ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } from '../components/ui'
 
-const HOUR_CHIPS = ['1', '1,5', '2', '2,5', '3']
+const HOUR_CHIPS = ['1', '1:30', '2', '2:30', '3']
 
 const toInput = (n: number) => String(n).replace('.', ',')
 const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ')
@@ -98,7 +98,7 @@ export default function RegisterClass() {
     setName(s?.full_name ?? c.student?.full_name ?? '')
     setInstructorId(c.instructor_id)
     setDate(c.class_date)
-    setHours(toInput(c.hours))
+    setHours(hoursToInput(c.hours))
     setRate(toInput(c.student_rate))
     setPay(toInput(c.instructor_rate))
     setNotes(c.notes ?? '')
@@ -132,7 +132,7 @@ export default function RegisterClass() {
     if (!student && exactMatch && !rate) setRate(toInput(exactMatch.hourly_rate))
   }, [exactMatch, student, rate])
 
-  const hoursN = parseDecimal(hours)
+  const hoursN = parseHours(hours)
   const rateN = parseDecimal(rate)
   const payN = isExternal ? (isAdmin ? parseDecimal(pay) : instructor?.hourly_pay ?? 0) : 0
   const amounts = hoursN !== null && rateN !== null ? classAmounts(hoursN, rateN, payN ?? 0) : null
@@ -143,8 +143,7 @@ export default function RegisterClass() {
     if (rateN === null) e.rate = 'Ingresá el precio por hora.'
     else if (!hasAtMostTwoDecimals(rateN)) e.rate = 'Usá como máximo 2 decimales.'
     if (!instructorId) e.instructor = 'Elegí quién da la clase.'
-    if (hoursN === null || hoursN <= 0 || hoursN > 24) e.hours = 'Ingresá las horas (por ejemplo 1,5).'
-    else if (!hasAtMostTwoDecimals(hoursN)) e.hours = 'Usá como máximo 2 decimales.'
+    if (hoursN === null || hoursN <= 0 || hoursN > 24) e.hours = 'Ingresá la duración, por ejemplo 1:30 (en cuartos de hora: 00, 15, 30 o 45 minutos).'
     if (!date) e.date = 'Elegí la fecha.'
     if (isExternal && isAdmin) {
       if (payN === null) e.pay = 'El pago por hora del instructor es obligatorio.'
@@ -338,13 +337,13 @@ export default function RegisterClass() {
                 <span className="field-label">Horas</span>
                 <div className="flex flex-wrap gap-2" aria-label="Horas rápidas">
                   {HOUR_CHIPS.map((h) => (
-                    <button key={h} type="button" className={`${parseDecimal(h) === hoursN ? 'chip-on' : 'chip'} min-h-12 min-w-14`}
+                    <button key={h} type="button" className={`${parseHours(h) === hoursN ? 'chip-on' : 'chip'} min-h-12 min-w-14`}
                       onClick={() => setHours(h)}>
-                      {h} h
+                      {h} hs
                     </button>
                   ))}
                   <input className={`${errors.hours ? 'input-error' : 'input'} w-24 flex-none text-center`} inputMode="decimal"
-                    aria-label="Otra cantidad de horas" value={hours} onChange={(e) => setHours(e.target.value)} />
+                    aria-label="Otra duración (horas:minutos)" placeholder="1:45" value={hours} onChange={(e) => setHours(e.target.value)} />
                 </div>
                 {errors.hours && <p className="mt-1.5 text-sm font-medium text-coral">{errors.hours}</p>}
               </div>

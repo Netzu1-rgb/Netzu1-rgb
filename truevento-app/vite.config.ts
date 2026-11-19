@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -41,16 +42,38 @@ function devApi(): Plugin {
   }
 }
 
+/** Demo build only: replaces the Supabase client with the in-browser demo backend. */
+function demoBackend(): Plugin {
+  const real = fileURLToPath(new URL('./src/lib/supabase.ts', import.meta.url))
+  const demo = fileURLToPath(new URL('./src/demo/supabase.ts', import.meta.url))
+  return {
+    name: 'truevento-demo-backend',
+    enforce: 'pre',
+    async resolveId(source, importer, options) {
+      if (!importer || importer === demo || !/\/supabase(\.ts)?$/.test(source)) return null
+      const resolved = await this.resolve(source, importer, { ...options, skipSelf: true })
+      return resolved?.id === real ? demo : null
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
+  const demo = mode === 'demo'
   // make server-only variables (no VITE_ prefix) visible to the dev API
   Object.assign(process.env, loadEnv(mode, process.cwd(), ''))
   return {
-    define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+    // the demo is one self-contained page: relative paths, a single script
+    base: demo ? './' : '/',
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+      'import.meta.env.VITE_DEMO': JSON.stringify(demo ? '1' : ''),
+    },
     plugins: [
       react(),
       tailwindcss(),
-      devApi(),
+      demo ? demoBackend() : devApi(),
       VitePWA({
+        disable: demo,
         registerType: 'prompt',
         injectRegister: false,
         includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png'],
@@ -90,6 +113,8 @@ export default defineConfig(({ mode }) => {
         devOptions: { enabled: false },
       }),
     ],
-    build: { chunkSizeWarningLimit: 900 },
+    build: demo
+      ? { outDir: 'dist-demo', chunkSizeWarningLimit: 4000, rollupOptions: { output: { inlineDynamicImports: true } } }
+      : { chunkSizeWarningLimit: 900 },
   }
 })

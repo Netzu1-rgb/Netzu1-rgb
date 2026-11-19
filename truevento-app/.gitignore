@@ -8,3 +8,4 @@ dev-dist
 supabase/.branches
 supabase/.temp
 *.log
+dist-demo

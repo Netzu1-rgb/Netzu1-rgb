@@ -205,6 +205,10 @@ export async function cancelSettlement(id: string) {
 // ------------------------------------------------------------------ app logins (server function)
 
 async function callUsersApi(method: 'POST' | 'PATCH', body: unknown) {
+  if (import.meta.env.VITE_DEMO === '1') {
+    const demo = await import('../demo/supabase')
+    return demo.demoUsersApi(method, body)
+  }
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
   const res = await fetch('/api/users', {

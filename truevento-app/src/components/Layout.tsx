@@ -89,6 +89,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
+        {import.meta.env.VITE_DEMO === '1' && <DemoBar />}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-5 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
           {children}
         </main>
@@ -130,6 +131,28 @@ export default function Layout({ children }: { children: ReactNode }) {
             ))}
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+function DemoBar() {
+  const [confirming, setConfirming] = useState(false)
+  async function reset() {
+    const demo = await import('../demo/supabase')
+    demo.resetDemo()
+    window.location.reload()
+  }
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-kite/10 px-4 py-2 text-center text-xs text-ink-soft">
+      <span><b className="text-[#9d174d]">Modo demo</b> · datos de ejemplo guardados solo en este navegador</span>
+      {confirming ? (
+        <span className="flex gap-2">
+          <button type="button" className="font-semibold text-coral" onClick={() => void reset()}>Sí, borrar y empezar de nuevo</button>
+          <button type="button" className="font-semibold" onClick={() => setConfirming(false)}>Cancelar</button>
+        </span>
+      ) : (
+        <button type="button" className="font-semibold text-sky-deep underline underline-offset-2" onClick={() => setConfirming(true)}>Reiniciar demo</button>
       )}
     </div>
   )

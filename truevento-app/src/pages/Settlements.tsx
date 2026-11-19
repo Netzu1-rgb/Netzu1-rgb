@@ -42,7 +42,8 @@ export default function Settlements() {
     const csv = toCsv(rows, [
       { header: 'Fecha', value: (r) => r.class_date },
       { header: 'Alumno', value: (r) => r.student?.full_name },
-      { header: 'Horas', value: (r) => r.hours, numeric: true },
+      { header: 'Duración', value: (r) => formatHours(r.hours) },
+      { header: 'Horas (decimal)', value: (r) => r.hours, numeric: true },
       { header: 'Pago por hora', value: (r) => r.instructor_rate, numeric: true },
       { header: 'Pago', value: (r) => r.instructor_pay, numeric: true },
       { header: 'Estado', value: (r) => (r.settlement_id ? 'Pagada' : 'Pendiente') },

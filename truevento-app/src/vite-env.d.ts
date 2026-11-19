@@ -6,4 +6,6 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string
   readonly VITE_SUPABASE_ANON_KEY?: string
   readonly VITE_USERNAME_DOMAIN?: string
+  /** '1' only in the self-contained demo build (npm run build:demo) */
+  readonly VITE_DEMO?: string
 }

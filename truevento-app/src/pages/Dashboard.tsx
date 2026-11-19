@@ -136,7 +136,7 @@ export default function Dashboard() {
                       <YAxis type="category" dataKey="name" tick={{ ...AXIS, fill: '#0f172a' }} width={120} tickLine={false} axisLine={false} />
                       <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }} formatter={(v) => [formatHours(Number(v)), 'Horas']} />
                       <Bar dataKey="hours" fill={SKY} radius={[0, 4, 4, 0]} maxBarSize={22}
-                        label={{ position: 'right', fontSize: 12, fill: '#475569', formatter: (v: unknown) => formatNumber(Number(v)) }} />
+                        label={{ position: 'right', fontSize: 12, fill: '#475569', formatter: (v: unknown) => formatHours(Number(v)) }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>

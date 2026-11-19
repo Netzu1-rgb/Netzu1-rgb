@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classAmounts, lineTotalCents, parseDecimal, sumAmounts, sumHours, hasAtMostTwoDecimals } from './money'
+import { classAmounts, formatHours, hoursToInput, lineTotalCents, parseDecimal, parseHours, sumAmounts, sumHours, hasAtMostTwoDecimals } from './money'
 import { chartBuckets, periodFor, shiftPeriod } from './dates'
 import { toCsv } from './csv'
 import { loginToEmail, normalizeUsername, USERNAME_PATTERN } from './username'
@@ -35,6 +35,27 @@ describe('money', () => {
     expect(parseDecimal('-3')).toBeNull()
     expect(hasAtMostTwoDecimals(1.25)).toBe(true)
     expect(hasAtMostTwoDecimals(1.255)).toBe(false)
+  })
+})
+
+describe('hours', () => {
+  it('shows hours as h:mm', () => {
+    expect(formatHours(1.5)).toBe('1:30 hs')
+    expect(formatHours(2)).toBe('2 hs')
+    expect(formatHours(0.25)).toBe('0:15 hs')
+    expect(formatHours(7.75)).toBe('7:45 hs')
+    expect(hoursToInput(2.5)).toBe('2:30')
+  })
+
+  it('reads hours typed as h:mm or decimals, in quarter hours', () => {
+    expect(parseHours('1:30')).toBe(1.5)
+    expect(parseHours('1:30 hs')).toBe(1.5)
+    expect(parseHours('2')).toBe(2)
+    expect(parseHours('0:45')).toBe(0.75)
+    expect(parseHours('1,5')).toBe(1.5)
+    expect(parseHours('1:20')).toBeNull() // not a quarter hour
+    expect(parseHours('1:75')).toBeNull()
+    expect(parseHours('abc')).toBeNull()
   })
 })
 

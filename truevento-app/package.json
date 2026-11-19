@@ -11,7 +11,8 @@
     "typecheck": "tsc -p .",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "db:test": "bash supabase/tests/run.sh"
+    "db:test": "bash supabase/tests/run.sh",
+    "build:demo": "node scripts/build-demo.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

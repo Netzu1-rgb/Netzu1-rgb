@@ -114,8 +114,13 @@ Comandos:
 | `npm test` | pruebas de cálculos (dinero, fechas, CSV, usuarios) |
 | `npm run db:test` | pruebas de reglas y permisos en la base local |
 | `npm run db:reset` | reinicia la base local |
+| `npm run build:demo` | genera `dist-demo/truevento-demo.html`: la app completa en una sola página, con datos de ejemplo en el navegador y sin servidor (para mostrarla) |
 
 La base local arranca vacía. Los datos de prueba se cargan desde la app; en producción no hay datos ficticios.
+
+## Horas
+
+Las duraciones se escriben y se muestran como horas:minutos (`1:30 hs`), en cuartos de hora (00, 15, 30 o 45 minutos). En la base se guardan como horas decimales (1:30 = 1,5) para que los importes sean exactos. El CSV trae las dos columnas: "Duración" (1:30 hs) y "Horas (decimal)" para hacer cuentas en Excel.
 
 ## Exportación
 

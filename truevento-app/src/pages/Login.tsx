@@ -6,12 +6,27 @@ import { friendlyError } from '../lib/errors'
 import { loginToEmail } from '../lib/username'
 
 const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? 'usuarios.truevento.app'
+const DEMO = import.meta.env.VITE_DEMO === '1'
+const DEMO_LOGINS = DEMO
+  ? [
+      { label: 'Entrar como administrador', who: 'Victoria Linde (dueña)', user: 'victoria', password: 'demo1234' },
+      { label: 'Entrar como instructor', who: 'Sebastián Comasco (externo)', user: 'sebastian', password: 'demo1234' },
+    ]
+  : []
 
 export default function Login() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  async function enter(user: string, pass: string) {
+    setBusy(true)
+    setError(null)
+    const { error: err } = await supabase.auth.signInWithPassword({ email: loginToEmail(user, DOMAIN), password: pass })
+    setBusy(false)
+    if (err) setError(friendlyError(err))
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -28,6 +43,20 @@ export default function Login() {
 
   return (
     <AuthShell title="Ingresar" subtitle="Usá el usuario y la contraseña que te dio la escuela.">
+      {DEMO && (
+        <div className="mb-6 space-y-2">
+          <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink-soft">
+            <b>Demo:</b> datos de ejemplo que se guardan solo en este navegador. Entrá con un toque:
+          </p>
+          {DEMO_LOGINS.map((d) => (
+            <button key={d.user} type="button" disabled={busy} onClick={() => void enter(d.user, d.password)}
+              className="btn-dark w-full justify-between text-left">
+              <span>{d.label}</span><span className="text-sm font-medium text-sky-200">{d.who}</span>
+            </button>
+          ))}
+          <p className="pt-2 text-center text-xs text-ink-mute">o con usuario y contraseña (victoria / demo1234)</p>
+        </div>
+      )}
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Usuario o email">
           {(id) => (

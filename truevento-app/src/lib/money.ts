@@ -79,8 +79,41 @@ export function formatMoney(value: number | string | null | undefined, currency 
 
 const hoursFormat = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 })
 
+/** Hours as hours:minutes, the way the school says them: 1.5 -> "1:30 hs", 2 -> "2 hs". */
 export function formatHours(value: number | string | null | undefined): string {
-  return `${hoursFormat.format(Number(value ?? 0))} h`
+  return `${hoursToInput(Number(value ?? 0))} hs`
+}
+
+/** Hours for an input field: 1.5 -> "1:30", 2 -> "2". */
+export function hoursToInput(hours: number): string {
+  const totalMin = Math.round(hours * 60)
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  return m === 0 ? String(h) : `${h}:${String(m).padStart(2, '0')}`
+}
+
+/**
+ * Parses a duration typed as "1:30", "1.30 hs", "2" or "1,5". Lessons go in quarters of
+ * an hour (00, 15, 30, 45 minutes) so the amount stays exact. Returns decimal hours or null.
+ */
+export function parseHours(input: string): number | null {
+  const s = input.trim().toLowerCase().replace(/\s*(hs|h|horas?)\.?$/, '').trim()
+  if (!s) return null
+  const hm = /^(\d{1,2})[:.](\d{2})$/.exec(s)
+  let hours: number | null
+  if (hm) {
+    const m = Number(hm[2])
+    if (m >= 60) return null
+    hours = Number(hm[1]) + m / 60
+  } else {
+    hours = parseDecimal(s)
+  }
+  if (hours === null || !isQuarterHour(hours)) return null
+  return Math.round(hours * 100) / 100
+}
+
+export function isQuarterHour(hours: number): boolean {
+  return Math.abs(hours * 4 - Math.round(hours * 4)) < 1e-9
 }
 
 export function formatNumber(value: number | string | null | undefined): string {
