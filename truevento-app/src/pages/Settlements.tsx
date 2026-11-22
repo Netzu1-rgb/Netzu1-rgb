@@ -102,7 +102,7 @@ export default function Settlements() {
             </div>
           )}
 
-          <h2 className="mb-3 text-lg font-semibold text-night-900">Detalle de clases</h2>
+          <h2 className="mb-3 text-lg font-semibold text-heading">Detalle de clases</h2>
           {rows.length === 0 ? (
             <div className="card mb-8 p-6 text-center text-ink-mute">No hay clases en este período.</div>
           ) : (
@@ -113,7 +113,7 @@ export default function Settlements() {
         </>
       )}
 
-      <h2 className="mb-3 text-lg font-semibold text-night-900">{isAdmin ? 'Pagos registrados' : 'Pagos recibidos'}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-heading">{isAdmin ? 'Pagos registrados' : 'Pagos recibidos'}</h2>
       {history.error && <ErrorBox message={history.error} onRetry={history.reload} />}
       {history.loading && !history.data ? <Loading /> : (history.data ?? []).length === 0 ? (
         <div className="card p-6 text-center text-ink-mute">Todavía no hay pagos registrados.</div>
@@ -146,7 +146,7 @@ function DetailRow({ r, currency, owner }: { r: ClassRow; currency: string; owne
         <div className="tabular font-semibold">{owner ? formatMoney(r.total_amount, currency) : formatMoney(r.instructor_pay, currency)}</div>
         {!owner && (r.settlement_id
           ? <span className="badge bg-violet-soft text-violet-deep">Pagada</span>
-          : <span className="badge bg-coral-soft text-[#9d1c48]">Pendiente</span>)}
+          : <span className="badge bg-coral-soft text-coral-ink">Pendiente</span>)}
       </div>
     </li>
   )

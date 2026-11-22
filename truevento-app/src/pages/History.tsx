@@ -129,7 +129,7 @@ export default function History() {
               <li key={r.id} className="card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate font-semibold text-night-900">{r.student?.full_name}</div>
+                    <div className="truncate font-semibold text-heading">{r.student?.full_name}</div>
                     <div className="text-sm text-ink-mute">{formatShortDate(r.class_date)} · {r.instructor?.full_name}</div>
                   </div>
                   <div className="text-right">
@@ -188,7 +188,7 @@ export default function History() {
                       <td className="whitespace-nowrap px-2 py-2 text-right">
                         {!r.pending && !r.settlement_id && (
                           <>
-                            <Link to={`/clases/${r.id}/editar`} className="inline-grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-slate-100" aria-label="Editar"><Icon name="edit" className="h-4 w-4" /></Link>
+                            <Link to={`/clases/${r.id}/editar`} className="inline-grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-surface-2" aria-label="Editar"><Icon name="edit" className="h-4 w-4" /></Link>
                             <button type="button" onClick={() => void remove(r)} className="inline-grid h-9 w-9 place-items-center rounded-lg text-coral hover:bg-coral-soft" aria-label="Eliminar"><Icon name="trash" className="h-4 w-4" /></button>
                           </>
                         )}
@@ -227,5 +227,5 @@ function StatusBadge({ r }: { r: ClassRow }) {
   if (r.pending) return <span className="badge bg-sand text-ink-soft"><Icon name="cloudOff" className="h-3 w-3" /> Sin sincronizar</span>
   if (r.instructor_kind === 'owner') return <span className="badge bg-brand-soft text-brand-deep">Dueño</span>
   if (r.settlement_id) return <span className="badge bg-violet-soft text-violet-deep">Liquidada</span>
-  return <span className="badge bg-coral-soft text-[#9d1c48]">Pago pendiente</span>
+  return <span className="badge bg-coral-soft text-coral-ink">Pago pendiente</span>
 }

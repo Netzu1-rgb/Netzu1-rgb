@@ -13,6 +13,14 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon-64.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      // apply the saved theme before the first paint (see src/lib/theme.ts)
+      try {
+        var t = localStorage.getItem('truevento-theme')
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
     <style>
       /* Launch screen: the logo arrives, a ring in the logo's gradient draws around it,
          wind streaks pass behind and a comet keeps turning until the app is ready. */

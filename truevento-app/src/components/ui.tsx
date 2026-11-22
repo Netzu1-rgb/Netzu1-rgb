@@ -46,7 +46,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="text-xl font-bold text-night-900 sm:text-3xl">{title}</h1>
+        <h1 className="text-xl font-bold text-heading sm:text-3xl">{title}</h1>
         {subtitle && <div className="mt-0.5 text-sm text-ink-mute">{subtitle}</div>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -74,7 +74,7 @@ export function Loading({ label = 'Cargando…' }: { label?: string }) {
 
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-coral/30 bg-coral-soft px-4 py-3 text-sm text-[#9d1c48]" role="alert">
+    <div className="flex items-start gap-3 rounded-xl border border-coral/30 bg-coral-soft px-4 py-3 text-sm text-coral-ink" role="alert">
       <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0" />
       <div className="flex-1">{message}</div>
       {onRetry && (
@@ -102,7 +102,7 @@ export function EmptyState({ title, text, action }: { title: string; text?: stri
       <div className="mb-3 grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-deep">
         <Icon name="kite" className="h-7 w-7" />
       </div>
-      <h3 className="text-lg font-semibold text-night-900">{title}</h3>
+      <h3 className="text-lg font-semibold text-heading">{title}</h3>
       {text && <p className="mt-1 max-w-sm text-sm text-ink-mute">{text}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -135,8 +135,8 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
   return (
     <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
       className="flex min-h-12 items-center gap-3 text-left">
-      <span className={`relative h-7 w-12 shrink-0 rounded-full transition ${checked ? 'bg-violet' : 'bg-slate-300'}`}>
-        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'left-6' : 'left-1'}`} />
+      <span className={`relative h-7 w-12 shrink-0 rounded-full transition ${checked ? 'bg-violet' : 'bg-line-strong'}`}>
+        <span className={`absolute top-1 h-5 w-5 rounded-full bg-surface shadow transition ${checked ? 'left-6' : 'left-1'}`} />
       </span>
       <span className="font-medium">{label}</span>
     </button>
@@ -157,12 +157,12 @@ export function Modal({ open, title, onClose, children, footer }: {
   }, [open])
   return (
     <dialog ref={ref} onClose={onClose} onCancel={(e) => { e.preventDefault(); onClose() }}
-      className="m-0 mt-auto w-full max-w-none rounded-t-3xl bg-white p-0 text-ink shadow-2xl backdrop:bg-night-950/50 backdrop:backdrop-blur-[2px] sm:m-auto sm:max-w-lg sm:rounded-3xl">
+      className="m-0 mt-auto w-full max-w-none rounded-t-3xl bg-surface p-0 text-ink shadow-2xl backdrop:bg-night-950/50 backdrop:backdrop-blur-[2px] sm:m-auto sm:max-w-lg sm:rounded-3xl">
       {open && (
         <div className="flex max-h-[90dvh] flex-col">
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
-            <h2 className="text-lg font-semibold text-night-900">{title}</h2>
-            <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full hover:bg-slate-100" aria-label="Cerrar">
+            <h2 className="text-lg font-semibold text-heading">{title}</h2>
+            <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2" aria-label="Cerrar">
               <Icon name="x" />
             </button>
           </div>
@@ -228,7 +228,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const colors: Record<ToastKind, string> = {
     success: 'bg-night-900 text-white',
     error: 'bg-coral text-white',
-    info: 'bg-white text-ink border border-line',
+    info: 'bg-surface text-ink border border-line',
   }
   return (
     <ToastCtx.Provider value={push}>
@@ -253,7 +253,7 @@ export function Stat({ label, value, hint, tone = 'default' }: {
   label: string; value: ReactNode; hint?: ReactNode; tone?: 'default' | 'sky' | 'violet' | 'coral' | 'dark'
 }) {
   const tones = {
-    default: 'bg-white border-line',
+    default: 'bg-surface border-line',
     sky: 'bg-brand-soft border-brand/20',
     violet: 'bg-violet-soft border-violet/25',
     coral: 'bg-coral-soft border-coral/25',
@@ -262,7 +262,7 @@ export function Stat({ label, value, hint, tone = 'default' }: {
   return (
     <div className={`rounded-2xl border p-4 ${tones[tone]}`}>
       <div className={`text-xs font-semibold uppercase tracking-wide ${tone === 'dark' ? 'text-brand-200' : 'text-ink-mute'}`}>{label}</div>
-      <div className={`tabular mt-1.5 font-display text-2xl font-bold ${tone === 'dark' ? 'text-white' : 'text-night-900'}`}>{value}</div>
+      <div className={`tabular mt-1.5 font-display text-2xl font-bold ${tone === 'dark' ? 'text-white' : 'text-heading'}`}>{value}</div>
       {hint && <div className={`mt-1 text-xs ${tone === 'dark' ? 'text-brand-100/80' : 'text-ink-mute'}`}>{hint}</div>}
     </div>
   )

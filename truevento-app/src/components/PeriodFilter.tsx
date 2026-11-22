@@ -32,10 +32,10 @@ export default function PeriodFilter({ value, onChange }: { value: Period; onCha
             onChange={(e) => e.target.value && onChange({ ...value, to: e.target.value })} />
         </div>
       ) : (
-        <div className="flex items-center justify-between rounded-xl border border-line bg-white">
+        <div className="flex items-center justify-between rounded-xl border border-line bg-surface">
           <button type="button" className="grid h-12 w-12 place-items-center text-ink-soft" aria-label="Período anterior"
             onClick={() => onChange(shiftPeriod(value, -1))}><Icon name="chevronLeft" /></button>
-          <span className="font-semibold text-night-900">{describePeriod(value)}</span>
+          <span className="font-semibold text-heading">{describePeriod(value)}</span>
           <button type="button" className="grid h-12 w-12 place-items-center text-ink-soft" aria-label="Período siguiente"
             onClick={() => onChange(shiftPeriod(value, 1))}><Icon name="chevronRight" /></button>
         </div>

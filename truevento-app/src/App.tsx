@@ -60,7 +60,7 @@ function Screens() {
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div className="card max-w-md p-6">
-          <h1 className="text-xl font-bold text-night-900">Falta configurar Supabase</h1>
+          <h1 className="text-xl font-bold text-heading">Falta configurar Supabase</h1>
           <p className="mt-2 text-sm text-ink-mute">
             Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (ver README) y volvé a compilar la app.
           </p>

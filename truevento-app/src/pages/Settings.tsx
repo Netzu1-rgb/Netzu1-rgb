@@ -10,6 +10,7 @@ import { ErrorBox, Field, Icon, PageHeader, Spinner, useConfirm, useToast } from
 import { supabase } from '../lib/supabase'
 import { SINGLE_USER } from '../lib/singleUser'
 import { DemoReset } from '../components/Layout'
+import { useTheme, type ThemeChoice } from '../lib/theme'
 
 export default function Settings() {
   const { isAdmin, profile, session, signOut, pendingSync } = useAuth()
@@ -32,10 +33,11 @@ export default function Settings() {
       <PageHeader title="Configuración" />
       {isAdmin && <SchoolSettingsForm />}
       {import.meta.env.VITE_DEMO === '1' && <DemoReset />}
+      <ThemeCard />
       <PendingSyncCard />
       <InstallCard />
       <section className="card mb-5 p-5">
-        <h2 className="mb-3 text-lg font-semibold text-night-900">Mi cuenta</h2>
+        <h2 className="mb-3 text-lg font-semibold text-heading">Mi cuenta</h2>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
           <dt className="text-ink-mute">Nombre</dt><dd className="font-medium">{profile?.full_name ?? '—'}</dd>
           <dt className="text-ink-mute">Usuario</dt><dd className="font-medium">{profile?.username ?? session?.user.email}</dd>
@@ -52,6 +54,33 @@ export default function Settings() {
       </section>
       <p className="text-center text-xs text-ink-mute">TRUEVENTO · versión {__APP_VERSION__}</p>
     </div>
+  )
+}
+
+function ThemeCard() {
+  const { choice, setChoice } = useTheme()
+  const options: [ThemeChoice, string, string][] = [
+    ['light', 'Claro', 'Fondo blanco'],
+    ['dark', 'Oscuro', 'Fondo negro, cansa menos la vista de noche'],
+    ['system', 'Automático', 'Igual que el celular'],
+  ]
+  return (
+    <section className="card mb-5 p-5">
+      <h2 className="text-lg font-semibold text-heading">Tema</h2>
+      <div className="mt-3 grid gap-2" role="radiogroup" aria-label="Tema de la app">
+        {options.map(([value, label, hint]) => (
+          <button key={value} type="button" role="radio" aria-checked={choice === value} onClick={() => setChoice(value)}
+            className={`flex min-h-14 items-center justify-between gap-3 rounded-xl border px-4 text-left transition ${
+              choice === value ? 'border-selected bg-selected text-white' : 'border-line bg-surface'}`}>
+            <span>
+              <span className="block font-semibold">{label}</span>
+              <span className={`block text-xs ${choice === value ? 'text-white/80' : 'text-ink-mute'}`}>{hint}</span>
+            </span>
+            {choice === value && <Icon name="check" />}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -94,7 +123,7 @@ function SchoolSettingsForm() {
 
   return (
     <section className="card mb-5 space-y-4 p-5">
-      <h2 className="text-lg font-semibold text-night-900">Escuela</h2>
+      <h2 className="text-lg font-semibold text-heading">Escuela</h2>
       <Field label="Nombre de la escuela">
         {(id) => <input id={id} className="input" value={school} onChange={(e) => setSchool(e.target.value)} />}
       </Field>
@@ -129,7 +158,7 @@ function PendingSyncCard() {
 
   return (
     <section className="card mb-5 p-5">
-      <h2 className="text-lg font-semibold text-night-900">Pendientes de sincronizar</h2>
+      <h2 className="text-lg font-semibold text-heading">Pendientes de sincronizar</h2>
       <p className="mt-1 text-sm text-ink-mute">Registros guardados sin conexión. Se envían solos al volver internet.</p>
       <ul className="mt-3 divide-y divide-line text-sm">
         {items.map((i) => (
@@ -162,7 +191,7 @@ function InstallCard() {
   if (install.installed) return null
   return (
     <section className="card mb-5 p-5">
-      <h2 className="text-lg font-semibold text-night-900">Instalar la app</h2>
+      <h2 className="text-lg font-semibold text-heading">Instalar la app</h2>
       {install.canPrompt ? (
         <>
           <p className="mt-1 text-sm text-ink-mute">Instalá TRUEVENTO para abrirla como una app, con ícono propio y pantalla completa.</p>

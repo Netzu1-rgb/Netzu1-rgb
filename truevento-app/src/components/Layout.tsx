@@ -96,7 +96,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </div>
 
       {/* mobile bottom navigation */}
-      <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur lg:hidden">
+      <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
         <div className="mx-auto grid h-[68px] max-w-lg grid-cols-5 items-center">
           {[
             { to: '/', label: 'Inicio', icon: 'home' },
@@ -104,7 +104,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           ].map((n) => <TabLink key={n.to} {...n} />)}
           <div className="flex justify-center">
             <NavLink to="/registrar" aria-label="Registrar clase"
-              className="brand-gradient -mt-7 grid h-16 w-16 place-items-center rounded-full text-white shadow-[0_10px_24px_-6px_rgba(109,75,233,0.7)] ring-4 ring-white active:scale-95">
+              className="brand-gradient -mt-7 grid h-16 w-16 place-items-center rounded-full text-white shadow-[0_10px_24px_-6px_rgba(109,75,233,0.7)] ring-4 ring-surface active:scale-95">
               <Icon name="plus" className="h-8 w-8" strokeWidth={2.6} />
             </NavLink>
           </div>
@@ -120,11 +120,11 @@ export default function Layout({ children }: { children: ReactNode }) {
       {moreOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setMoreOpen(false)}>
           <div className="absolute inset-0 bg-night-950/50" />
-          <div className="safe-bottom absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4" onClick={(e) => e.stopPropagation()}>
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
+          <div className="safe-bottom absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-line" />
             {more.map((n) => (
               <NavLink key={n.to} to={n.to} onClick={() => setMoreOpen(false)}
-                className="flex min-h-14 items-center gap-4 rounded-2xl px-4 text-lg font-semibold text-night-900 active:bg-slate-50">
+                className="flex min-h-14 items-center gap-4 rounded-2xl px-4 text-lg font-semibold text-heading active:bg-surface-2">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand-deep"><Icon name={n.icon} /></span>
                 {n.label}
               </NavLink>
@@ -146,7 +146,7 @@ export function DemoReset() {
   }
   return (
     <section className="card mb-5 p-5">
-      <h2 className="text-lg font-semibold text-night-900">Demo</h2>
+      <h2 className="text-lg font-semibold text-heading">Demo</h2>
       <p className="mt-1 text-sm text-ink-mute">Lo que cargues se guarda solo en este navegador.</p>
       {confirming ? (
         <div className="mt-3 grid grid-cols-2 gap-3">

@@ -8,8 +8,8 @@ export default function AuthShell({ title, subtitle, children }: { title: string
         <div className="mb-5 flex flex-col items-center text-center text-white">
           <img src="/logo-truevento.png" alt="TRUEVENTO kiteschool" className="h-20 w-20 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.45)] sm:h-24 sm:w-24" />
         </div>
-        <div className="rounded-3xl bg-white p-5 shadow-2xl sm:p-8">
-          <h1 className="text-2xl font-bold text-night-900">{title}</h1>
+        <div className="rounded-3xl bg-surface p-5 shadow-2xl sm:p-8">
+          <h1 className="text-2xl font-bold text-heading">{title}</h1>
           {subtitle && <div className="mt-1.5 text-sm text-ink-mute">{subtitle}</div>}
           <div className="mt-5">{children}</div>
         </div>

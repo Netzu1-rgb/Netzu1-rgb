@@ -47,6 +47,40 @@
   --color-ink: #16132b;
   --color-ink-soft: #4a4666;
   --color-ink-mute: #6c6887;
+  /* roles that change with the theme */
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f1f9;
+  --color-line-strong: #d3cee5;
+  --color-heading: #110d24;
+  --color-selected: #110d24;
+  --color-coral-ink: #9d1c48;
+}
+
+/* Dark theme: same logo palette on night surfaces. Applied with data-theme="dark" on <html>
+   (Configuración → Tema, or the phone's setting when the theme is automatic). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-mist: #0c0a1a;
+  --color-surface: #17132d;
+  --color-surface-2: #211b3e;
+  --color-line: #2d2650;
+  --color-line-strong: #463d73;
+  --color-heading: #f4f2ff;
+  --color-ink: #ece9fb;
+  --color-ink-soft: #bfbad9;
+  --color-ink-mute: #9690b8;
+  --color-brand: #6372f0;
+  --color-brand-deep: #aab2ff;
+  --color-brand-soft: #23214f;
+  --color-violet: #8f5bf0;
+  --color-violet-deep: #c9adff;
+  --color-violet-soft: #2a1d4f;
+  --color-coral: #f0567f;
+  --color-coral-soft: #3b1a2c;
+  --color-coral-ink: #ffb3c9;
+  --color-sand: #1e1939;
+  --color-sand-deep: #2b2452;
+  --color-selected: #5b5fe8;
 }
 
 @layer base {
@@ -71,14 +105,14 @@
 }
 
 @utility card {
-  @apply rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(22,19,43,0.05)];
+  @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(22,19,43,0.05)];
 }
 @utility field-label {
   @apply mb-1.5 block text-sm font-semibold text-ink-soft;
 }
 @utility input {
-  @apply block min-h-12 w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none transition
-    placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:bg-slate-50 disabled:text-ink-mute;
+  @apply block min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-ink outline-none transition
+    placeholder:text-ink-mute/70 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:bg-surface-2 disabled:text-ink-mute;
 }
 /* use instead of .input (not together) so the error colors always win */
 @utility input-error {
@@ -96,23 +130,23 @@
   background-image: linear-gradient(100deg, #4f5fe6, #6d4be9 55%, #8a3fdc);
 }
 @utility btn-dark {
-  @apply btn bg-night-900 text-white hover:bg-night-800;
+  @apply btn bg-selected text-white hover:brightness-110;
 }
 @utility btn-ghost {
-  @apply btn border border-line bg-white text-ink hover:bg-slate-50;
+  @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
 }
 @utility btn-danger {
   @apply btn bg-coral text-white hover:brightness-95;
 }
 @utility chip {
-  @apply inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-white px-4 text-sm font-semibold
+  @apply inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-surface px-4 text-sm font-semibold
     text-ink-soft transition active:scale-95;
 }
 /* selected chip: use instead of .chip */
 @utility chip-on {
   @apply chip;
-  border-color: var(--color-night-900);
-  background-color: var(--color-night-900);
+  border-color: var(--color-selected);
+  background-color: var(--color-selected);
   color: #fff;
 }
 @utility badge {

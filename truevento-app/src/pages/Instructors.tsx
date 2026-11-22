@@ -77,9 +77,9 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-night-900">{i.full_name}</span>
+            <span className="font-semibold text-heading">{i.full_name}</span>
             {i.kind === 'owner' ? <span className="badge bg-night-900 text-white">Dueño</span>
-              : <span className={`badge ${i.active ? 'bg-violet-soft text-violet-deep' : 'bg-slate-100 text-ink-mute'}`}>{i.active ? 'Activo' : 'Inactivo'}</span>}
+              : <span className={`badge ${i.active ? 'bg-violet-soft text-violet-deep' : 'bg-surface-2 text-ink-mute'}`}>{i.active ? 'Activo' : 'Inactivo'}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-mute">
             {i.kind === 'owner' ? 'Sin pago por hora' : `${formatMoney(i.hourly_pay, currency)} por hora`}
@@ -87,7 +87,7 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
           </div>
         </div>
         {onEdit && (
-          <button type="button" onClick={onEdit} className="grid h-10 w-10 place-items-center rounded-full text-ink-soft hover:bg-slate-100" aria-label="Editar">
+          <button type="button" onClick={onEdit} className="grid h-10 w-10 place-items-center rounded-full text-ink-soft hover:bg-surface-2" aria-label="Editar">
             <Icon name="edit" />
           </button>
         )}

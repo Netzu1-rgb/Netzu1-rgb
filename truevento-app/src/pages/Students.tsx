@@ -76,8 +76,8 @@ export default function Students() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate font-semibold text-night-900">{s.full_name}</span>
-                      {!s.active && <span className="badge bg-slate-100 text-ink-mute">Inactivo</span>}
+                      <span className="truncate font-semibold text-heading">{s.full_name}</span>
+                      {!s.active && <span className="badge bg-surface-2 text-ink-mute">Inactivo</span>}
                       {s.pending && <span className="badge bg-sand text-ink-soft">Sin sincronizar</span>}
                     </div>
                     <div className="mt-0.5 truncate text-sm text-ink-mute">

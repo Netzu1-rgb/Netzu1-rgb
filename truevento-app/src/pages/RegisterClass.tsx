@@ -8,12 +8,12 @@ import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals
 import { formatDate, today } from '../lib/dates'
 import { friendlyError } from '../lib/errors'
 import type { ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Student } from '../lib/types'
-import { ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } from '../components/ui'
+import { ErrorBox, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } from '../components/ui'
 
 const HOUR_CHIPS = ['1', '1:30', '2', '2:30', '3']
 
 const toInput = (n: number) => String(n).replace('.', ',')
-const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ')
+const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ')
 
 interface Errors { [k: string]: string | undefined }
 
@@ -54,6 +54,11 @@ export default function RegisterClass() {
   const [newIns, setNewIns] = useState<{ name: string; oneOff: boolean } | null>(null)
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
+  // optional parts stay hidden until asked for, so the form shows only what is needed
+  const [showPhone, setShowPhone] = useState(false)
+  const [showOtherHours, setShowOtherHours] = useState(false)
+  const [showDate, setShowDate] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -106,6 +111,8 @@ export default function RegisterClass() {
     setRate(toInput(c.student_rate))
     setPay(toInput(c.instructor_rate))
     setNotes(c.notes ?? '')
+    setShowDate(true)
+    setShowNotes(Boolean(c.notes))
   }, [editing.data, students.data])
 
   function pickStudent(s: Student) {
@@ -220,6 +227,9 @@ export default function RegisterClass() {
       setHours('1')
       setPhone('')
       setNotes('')
+      setShowPhone(false)
+      setShowOtherHours(false)
+      setShowNotes(false)
       setErrors({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
@@ -241,7 +251,7 @@ export default function RegisterClass() {
             <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-white ${saved.queued ? 'bg-night-700' : 'bg-violet'}`}>
               <Icon name={saved.queued ? 'cloudOff' : 'check'} className="h-8 w-8" strokeWidth={2.6} />
             </div>
-            <h1 className="mt-4 text-2xl font-bold text-night-900">{saved.queued ? 'Guardada en el dispositivo' : 'Clase registrada'}</h1>
+            <h1 className="mt-4 text-2xl font-bold text-heading">{saved.queued ? 'Guardada en el dispositivo' : 'Clase registrada'}</h1>
             <p className="mt-1 text-sm text-ink-soft">
               {saved.queued ? 'No hay conexión. Se va a enviar sola cuando vuelva internet.' : 'Ya quedó guardada en el sistema.'}
             </p>
@@ -261,32 +271,37 @@ export default function RegisterClass() {
     )
   }
 
+  const durationIsChip = HOUR_CHIPS.some((h) => parseHours(h) === hoursN)
+  const step1Done = Boolean(name.trim())
+  const step2Done = rateN !== null && (!isAdmin || !isExternal || payN !== null)
+  const step3Done = Boolean(instructorId || newIns?.name.trim())
+  const step4Done = hoursN !== null && hoursN > 0 && Boolean(date)
+  const money = (c?: number) => (c === undefined ? '—' : formatMoney(fromCents(c), currency))
+  const symbol = formatMoney(0, currency).replace(/[\d.,\s]/g, '')
+
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title={editId ? 'Editar clase' : 'Registrar clase'}
-        subtitle={editId ? (editing.data ? formatDate(editing.data.class_date) : '') : 'Alumno, precio por hora y quién da la clase.'} />
+        subtitle={editId ? (editing.data ? formatDate(editing.data.class_date) : '') : 'Completá los 4 pasos y tocá “Guardar clase”.'} />
       {(students.offline || instructors.offline) && <OfflineNote savedAt={students.savedAt} />}
       {settled && <div className="mb-4"><ErrorBox message="Esta clase ya fue liquidada y pagada: no se puede modificar." /></div>}
       {students.error && !students.data && <div className="mb-4"><ErrorBox message={students.error} onRetry={students.reload} /></div>}
 
-      <form onSubmit={submit} noValidate className="space-y-5">
-        <fieldset disabled={settled || busy} className="space-y-5">
-          <section className="card space-y-6 p-4 sm:p-6">
-            {/* 1. student */}
+      <form onSubmit={submit} noValidate>
+        <fieldset disabled={settled || busy} className="space-y-4">
+          {/* 1. student */}
+          <Step n={1} done={step1Done} title="Alumno" hint="Escribí su nombre. Si ya vino antes, tocalo en la lista.">
             <div className="relative">
-              <Field label="1. Nombre del alumno" error={errors.name}>
-                {(id) => (
-                  <input id={id} className={errors.name ? 'input-error' : 'input'} autoComplete="off" autoCapitalize="words"
-                    placeholder="Nombre y apellido" value={name} onChange={(e) => typeName(e.target.value)}
-                    onFocus={() => setNameFocused(true)} onBlur={() => setTimeout(() => setNameFocused(false), 150)} />
-                )}
-              </Field>
+              <input id="f-name" aria-label="Nombre del alumno" aria-invalid={Boolean(errors.name)}
+                className={`${errors.name ? 'input-error' : 'input'} text-lg`} autoComplete="off" autoCapitalize="words"
+                placeholder="Nombre y apellido" value={name} onChange={(e) => typeName(e.target.value)}
+                onFocus={() => setNameFocused(true)} onBlur={() => setTimeout(() => setNameFocused(false), 150)} />
               {nameFocused && suggestions.length > 0 && (
-                <ul className="absolute inset-x-0 z-20 mt-1 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+                <ul className="absolute inset-x-0 z-20 mt-1 overflow-hidden rounded-xl border border-line bg-surface shadow-lg">
                   {suggestions.map((s) => (
                     <li key={s.id}>
                       <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pickStudent(s)}
-                        className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left active:bg-slate-50">
+                        className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left active:bg-surface-2">
                         <span className="truncate font-medium">{s.full_name}</span>
                         <span className="shrink-0 text-sm text-ink-mute">{formatMoney(s.hourly_rate, currency)}/h</span>
                       </button>
@@ -294,157 +309,183 @@ export default function RegisterClass() {
                   ))}
                 </ul>
               )}
-              {chosen && !editId && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-violet-deep">
-                  <Icon name="check" className="h-4 w-4" /> Alumno existente{chosen.pending ? ' (sin sincronizar)' : ''}
-                </p>
-              )}
-              {isNewStudent && (
-                <div className="mt-2 rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-night-800">
-                  <b>Alumno nuevo:</b> se crea su ficha al guardar.
-                  <input className="input mt-2 bg-white" type="tel" inputMode="tel" placeholder="Teléfono (opcional)"
-                    aria-label="Teléfono del alumno (opcional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                </div>
-              )}
             </div>
-
-            {/* 2. price per hour */}
-            <Field label="2. Precio por hora" error={errors.rate}
-              hint={chosen && rateN !== null && rateN !== chosen.hourly_rate
-                ? `Solo para esta clase. La ficha de ${chosen.full_name.split(' ')[0]} sigue en ${formatMoney(chosen.hourly_rate, currency)}.`
-                : chosen ? 'Completado desde la ficha del alumno. Podés cambiarlo para esta clase.' : 'Lo que paga este alumno por cada hora.'}>
-              {(id) => (
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-mute">
-                    {formatMoney(0, currency).replace(/[\d.,\s]/g, '')}
-                  </span>
-                  <input id={id} className={`${errors.rate ? 'input-error' : 'input'} pl-12 text-lg font-semibold`} inputMode="decimal"
-                    placeholder="0,00" value={rate} onChange={(e) => setRate(e.target.value)} />
-                </div>
-              )}
-            </Field>
-
-            {isAdmin && (
-              <div className="-mt-2 rounded-xl border border-line bg-mist/70 p-3">
-                {isOwner ? (
-                  <p className="text-sm text-ink-soft"><b>Pago al instructor:</b> la da un dueño, no se le paga por hora.</p>
+            <FieldError text={errors.name} />
+            {chosen && !editId && (
+              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-violet-deep">
+                <Icon name="check" className="h-4 w-4" /> Alumno ya registrado{chosen.pending ? ' (sin sincronizar)' : ''}
+              </p>
+            )}
+            {isNewStudent && (
+              <div className="mt-2 rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-heading">
+                <b>Alumno nuevo:</b> se crea su ficha al guardar.
+                {showPhone ? (
+                  <input className="input mt-2" type="tel" inputMode="tel" placeholder="Teléfono (opcional)"
+                    aria-label="Teléfono del alumno (opcional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 ) : (
-                  <Field label="Pago al instructor por hora" error={errors.pay}
-                    hint={instructor && !newIns ? `Valor de su ficha: ${formatMoney(instructor.hourly_pay, currency)}. Podés cambiarlo para esta clase.`
-                      : newIns ? 'Lo que vas a pagarle por cada hora a este instructor.'
-                      : 'Se completa al elegir quién da la clase (si es externo). Podés escribirlo antes.'}>
-                    {(id) => (
-                      <div className="relative">
-                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-mute">
-                          {formatMoney(0, currency).replace(/[\d.,\s]/g, '')}
-                        </span>
-                        <input id={id} className={`${errors.pay ? 'input-error' : 'input'} pl-12 font-semibold`} inputMode="decimal"
-                          placeholder="0,00" value={pay} onChange={(e) => { setPay(e.target.value); setPayTouched(true) }} />
-                      </div>
-                    )}
-                  </Field>
+                  <button type="button" className="ml-1 font-semibold text-brand-deep underline underline-offset-2" onClick={() => setShowPhone(true)}>
+                    Agregar teléfono
+                  </button>
+                )}
+              </div>
+            )}
+          </Step>
+
+          {/* 2. price */}
+          <Step n={2} done={step2Done} title="Precio por hora" hint={chosen && rateN !== null && rateN !== chosen.hourly_rate
+            ? `Solo para esta clase. Su ficha sigue en ${formatMoney(chosen.hourly_rate, currency)}.`
+            : 'Lo que paga el alumno por cada hora de clase.'}>
+            <MoneyInput id="f-rate" label="Precio por hora que paga el alumno" symbol={symbol} value={rate} onChange={setRate}
+              invalid={Boolean(errors.rate)} big />
+            <FieldError text={errors.rate} />
+            {isAdmin && (
+              <div className="mt-4 border-t border-line pt-4">
+                {isOwner ? (
+                  <p className="text-sm text-ink-soft"><b className="text-heading">Pago al instructor:</b> la da un dueño, no se le paga por hora.</p>
+                ) : (
+                  <>
+                    <label htmlFor="f-pay" className="mb-1.5 block font-semibold text-heading">Pago al instructor por hora</label>
+                    <MoneyInput id="f-pay" label="Pago al instructor por hora" symbol={symbol} value={pay} invalid={Boolean(errors.pay)}
+                      onChange={(v) => { setPay(v); setPayTouched(true) }} />
+                    <FieldError text={errors.pay} />
+                    <p className="mt-1.5 text-sm text-ink-mute">
+                      {instructor && !newIns ? `Su valor habitual: ${formatMoney(instructor.hourly_pay, currency)}.` : 'Se completa al elegir un instructor externo.'}
+                    </p>
+                  </>
                 )}
                 {rateN !== null && (
-                  <p className="tabular mt-2 text-sm text-ink-soft">
-                    Por hora: alumno <b>{formatMoney(rateN, currency)}</b> − instructor <b>{formatMoney(isExternal ? payN ?? 0 : 0, currency)}</b> = queda
-                    {' '}<b className="text-violet-deep">{formatMoney(fromCents(Math.round(rateN * 100) - Math.round((isExternal ? payN ?? 0 : 0) * 100)), currency)}</b>
+                  <p className="tabular mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-soft">
+                    Por cada hora: alumno <b className="text-heading">{formatMoney(rateN, currency)}</b> − instructor{' '}
+                    <b className="text-heading">{formatMoney(isExternal ? payN ?? 0 : 0, currency)}</b> = escuela{' '}
+                    <b className="text-violet-deep">{formatMoney(fromCents(Math.round(rateN * 100) - Math.round((isExternal ? payN ?? 0 : 0) * 100)), currency)}</b>
                   </p>
                 )}
               </div>
             )}
+          </Step>
 
-            {/* 3. who gives the class */}
-            <div>
-              <span className="field-label">3. ¿Quién da la clase?</span>
-              {isAdmin ? (
-                <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Quién da la clase">
-                  {choosable.map((i) => (
-                    <button key={i.id} type="button" role="radio" aria-checked={instructorId === i.id} onClick={() => chooseInstructor(i.id)}
-                      className={`flex min-h-14 items-center gap-3 rounded-xl border px-4 text-left transition active:scale-[0.99] ${
-                        instructorId === i.id ? 'border-night-900 bg-night-900 text-white' : errors.instructor ? 'border-coral bg-white' : 'border-line bg-white'}`}>
-                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display font-bold ${
-                        instructorId === i.id ? 'bg-white/15 text-white' : 'bg-brand-soft text-brand-deep'}`}>{i.full_name.charAt(0).toUpperCase()}</span>
-                      <span className="min-w-0 flex-1">
+          {/* 3. instructor */}
+          <Step n={3} done={step3Done} title="Instructor" hint={isAdmin ? '¿Quién da la clase?' : 'La clase queda a tu nombre.'}>
+            {isAdmin ? (
+              <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Quién da la clase">
+                {choosable.map((i) => {
+                  const on = instructorId === i.id && !newIns
+                  return (
+                    <button key={i.id} type="button" role="radio" aria-checked={on} onClick={() => chooseInstructor(i.id)}
+                      className={`flex min-h-14 items-center gap-3 rounded-xl border-2 px-3 text-left transition active:scale-[0.99] ${
+                        on ? 'border-selected bg-selected text-white' : errors.instructor ? 'border-coral bg-surface' : 'border-line bg-surface'}`}>
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display font-bold ${on ? 'bg-white/20' : 'bg-brand-soft text-brand-deep'}`}>
+                        {on ? <Icon name="check" className="h-5 w-5" /> : i.full_name.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="min-w-0">
                         <span className="block truncate font-semibold">{i.full_name}</span>
-                        <span className={`block text-xs ${instructorId === i.id ? 'text-brand-200' : 'text-ink-mute'}`}>
+                        <span className={`block text-xs ${on ? 'text-white/80' : 'text-ink-mute'}`}>
                           {i.kind === 'owner' ? 'Dueño' : `Externo · ${formatMoney(i.hourly_pay, currency)}/h`}
                         </span>
                       </span>
                     </button>
-                  ))}
-                  <button type="button" role="radio" aria-checked={newIns !== null} onClick={addInstructor}
-                    className={`flex min-h-14 items-center gap-3 rounded-xl border border-dashed px-4 text-left font-semibold transition ${
-                      newIns ? 'border-night-900 bg-night-900 text-white' : 'border-night-700/40 bg-white text-night-800'}`}>
-                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${newIns ? 'bg-white/15' : 'bg-sand'}`}>
-                      <Icon name="plus" className="h-5 w-5" />
-                    </span>
-                    Otro instructor
-                  </button>
-                </div>
-              ) : (
-                <div className="input flex items-center bg-slate-50 font-semibold">{instructor?.full_name ?? profile?.full_name ?? '—'}</div>
-              )}
-              {errors.instructor && <p className="mt-1.5 text-sm font-medium text-coral">{errors.instructor}</p>}
-              {newIns && (
-                <div className="mt-3 space-y-3 rounded-xl bg-brand-soft p-3">
-                  <Field label="Nombre del instructor" error={errors.newIns}>
-                    {(id) => <input id={id} className={errors.newIns ? 'input-error' : 'input'} autoFocus autoCapitalize="words"
-                      placeholder="Nombre y apellido" value={newIns.name} onChange={(e) => setNewIns({ ...newIns, name: e.target.value })} />}
-                  </Field>
-                  <label className="flex items-start gap-3 text-sm text-night-800">
-                    <input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand" checked={newIns.oneOff}
-                      onChange={(e) => setNewIns({ ...newIns, oneOff: e.target.checked })} />
-                    <span><b>Solo para esta clase.</b> No aparece en la lista la próxima vez, pero queda en Liquidaciones para pagarle.</span>
-                  </label>
-                  <p className="text-xs text-ink-mute">Su pago por hora es el que pusiste arriba, debajo del precio.</p>
-                </div>
-              )}
-            </div>
-
-            {/* hours and date: prefilled, quick to adjust */}
-            <div className="space-y-5 border-t border-line pt-5">
-              <div>
-                <span className="field-label">Horas</span>
-                <div className="flex flex-wrap gap-2" aria-label="Horas rápidas">
-                  {HOUR_CHIPS.map((h) => (
-                    <button key={h} type="button" className={`${parseHours(h) === hoursN ? 'chip-on' : 'chip'} min-h-12 min-w-14`}
-                      onClick={() => setHours(h)}>
-                      {h} hs
-                    </button>
-                  ))}
-                  <input className={`${errors.hours ? 'input-error' : 'input'} w-24 flex-none text-center`} inputMode="decimal"
-                    aria-label="Otra duración (horas:minutos)" placeholder="1:45" value={hours} onChange={(e) => setHours(e.target.value)} />
-                </div>
-                {errors.hours && <p className="mt-1.5 text-sm font-medium text-coral">{errors.hours}</p>}
+                  )
+                })}
+                <button type="button" role="radio" aria-checked={newIns !== null} onClick={addInstructor}
+                  className={`flex min-h-14 items-center gap-3 rounded-xl border-2 border-dashed px-3 text-left font-semibold transition ${
+                    newIns ? 'border-selected bg-selected text-white' : 'border-line-strong bg-surface text-heading'}`}>
+                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${newIns ? 'bg-white/20' : 'bg-surface-2'}`}>
+                    <Icon name="plus" className="h-5 w-5" />
+                  </span>
+                  Otro instructor
+                </button>
               </div>
-              <Field label="Fecha" error={errors.date}>
-                {(id) => <input id={id} type="date" className={errors.date ? 'input-error' : 'input'} value={date}
-                  max={editId ? undefined : today()} onChange={(e) => setDate(e.target.value)} />}
-              </Field>
+            ) : (
+              <div className="input flex items-center bg-surface-2 font-semibold">{instructor?.full_name ?? profile?.full_name ?? '—'}</div>
+            )}
+            <FieldError text={errors.instructor} />
+            {newIns && (
+              <div className="mt-3 space-y-3 rounded-xl bg-brand-soft p-3">
+                <label htmlFor="f-newins" className="block font-semibold text-heading">Nombre del nuevo instructor</label>
+                <input id="f-newins" className={errors.newIns ? 'input-error' : 'input'} autoFocus autoCapitalize="words"
+                  placeholder="Nombre y apellido" value={newIns.name} onChange={(e) => setNewIns({ ...newIns, name: e.target.value })} />
+                <FieldError text={errors.newIns} />
+                <label className="flex items-start gap-3 text-sm text-heading">
+                  <input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand" checked={newIns.oneOff}
+                    onChange={(e) => setNewIns({ ...newIns, oneOff: e.target.checked })} />
+                  <span><b>Solo para esta clase.</b> No aparece la próxima vez, pero queda en Liquidaciones para pagarle.</span>
+                </label>
+              </div>
+            )}
+          </Step>
+
+          {/* 4. duration and date */}
+          <Step n={4} done={step4Done} title="Duración y fecha" hint="Cuánto duró la clase.">
+            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Duración de la clase">
+              {HOUR_CHIPS.map((h) => {
+                const on = !showOtherHours && parseHours(h) === hoursN
+                return (
+                  <button key={h} type="button" role="radio" aria-checked={on}
+                    onClick={() => { setHours(h); setShowOtherHours(false) }}
+                    className={`min-h-14 rounded-xl border-2 text-lg font-bold transition active:scale-95 ${on ? 'border-selected bg-selected text-white' : 'border-line bg-surface text-heading'}`}>
+                    {h} <span className="text-sm font-semibold">hs</span>
+                  </button>
+                )
+              })}
+              <button type="button" role="radio" aria-checked={showOtherHours || !durationIsChip}
+                onClick={() => setShowOtherHours(true)}
+                className={`min-h-14 rounded-xl border-2 text-base font-semibold transition active:scale-95 ${showOtherHours || !durationIsChip ? 'border-selected bg-selected text-white' : 'border-line bg-surface text-heading'}`}>
+                Otra
+              </button>
             </div>
+            {(showOtherHours || !durationIsChip) && (
+              <div className="mt-3">
+                <label htmlFor="f-hours" className="mb-1.5 block font-semibold text-heading">Duración (horas:minutos)</label>
+                <input id="f-hours" className={`${errors.hours ? 'input-error' : 'input'} text-lg`} inputMode="decimal" placeholder="1:45"
+                  autoFocus={showOtherHours} value={hours} onChange={(e) => setHours(e.target.value)} />
+              </div>
+            )}
+            <FieldError text={errors.hours} />
 
-            <Field label="Observaciones (opcional)">
-              {(id) => <textarea id={id} className="input min-h-20" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}
-                placeholder="Viento, equipo, progreso…" />}
-            </Field>
-          </section>
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-4 py-3">
+              <span className="flex items-center gap-2 text-heading">
+                <Icon name="calendar" className="h-5 w-5 text-brand-deep" />
+                <span><span className="text-sm text-ink-mute">Fecha: </span><b>{date === today() ? `Hoy, ${formatDate(date)}` : formatDate(date)}</b></span>
+              </span>
+              {!showDate && (
+                <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setShowDate(true)}>
+                  Cambiar
+                </button>
+              )}
+            </div>
+            {showDate && (
+              <input id="f-date" type="date" aria-label="Fecha de la clase" className={`${errors.date ? 'input-error' : 'input'} mt-2`}
+                value={date} max={editId ? undefined : today()} onChange={(e) => setDate(e.target.value)} />
+            )}
+            <FieldError text={errors.date} />
 
-          {/* compact on phones so it does not cover the form */}
-          <section className="card sticky bottom-[88px] z-10 p-3 shadow-lg lg:bottom-4 lg:p-4">
-            <div className={`grid gap-1 text-center ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            {showNotes ? (
+              <div className="mt-4">
+                <label htmlFor="f-notes" className="mb-1.5 block font-semibold text-heading">Nota (opcional)</label>
+                <textarea id="f-notes" className="input min-h-20" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Viento, equipo, progreso…" />
+              </div>
+            ) : (
+              <button type="button" className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-brand-deep" onClick={() => setShowNotes(true)}>
+                <Icon name="plus" className="h-4 w-4" /> Agregar una nota (opcional)
+              </button>
+            )}
+          </Step>
+
+          {/* summary and the only main action */}
+          <section className="card sticky bottom-[88px] z-10 p-3 shadow-lg lg:bottom-4 lg:p-4" aria-label="Resumen de la clase">
+            <dl className={`grid gap-1 text-center ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
               {[
-                ['Total', amounts?.totalCents, 'text-night-900'],
-                ['Instructor', amounts?.instructorPayCents, 'text-night-900'],
-                ...(isAdmin ? [['Ganancia', amounts?.profitCents, 'text-violet-deep']] : []),
+                ['Cobrás', amounts?.totalCents, 'text-heading'],
+                ['Instructor', amounts?.instructorPayCents, 'text-heading'],
+                ...(isAdmin ? [['Queda escuela', amounts?.profitCents, 'text-violet-deep']] : []),
               ].map(([label, cents, color]) => (
                 <div key={label as string}>
-                  <div className="text-[11px] font-semibold uppercase leading-tight text-ink-mute">{label}</div>
-                  <div className={`tabular font-display text-base font-bold leading-tight sm:text-lg ${color}`}>
-                    {cents === undefined ? '—' : formatMoney(fromCents(cents as number), currency)}
-                  </div>
+                  <dt className="text-[11px] font-semibold uppercase leading-tight text-ink-mute">{label}</dt>
+                  <dd className={`tabular font-display text-base font-bold leading-tight sm:text-lg ${color}`}>{money(cents as number | undefined)}</dd>
                 </div>
               ))}
-            </div>
+            </dl>
             {formError && <div className="mt-2"><ErrorBox message={formError} /></div>}
             <button type="submit" className="btn-primary mt-2 w-full text-lg">
               {busy ? <Spinner /> : <Icon name="check" />} {editId ? 'Guardar cambios' : 'Guardar clase'}
@@ -454,4 +495,40 @@ export default function RegisterClass() {
       </form>
     </div>
   )
+}
+
+/** One numbered step: a clear title that says what to do, a short hint, and its fields. */
+function Step({ n, title, hint, done, children }: { n: number; title: string; hint?: string; done: boolean; children: React.ReactNode }) {
+  const id = `step-${n}`
+  return (
+    <section className="card p-4 sm:p-5" aria-labelledby={id}>
+      <div className="mb-3 flex items-start gap-3">
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display text-base font-bold text-white ${done ? 'bg-violet' : 'brand-gradient'}`}
+          aria-hidden="true">
+          {done ? <Icon name="check" className="h-5 w-5" strokeWidth={3} /> : n}
+        </span>
+        <div className="min-w-0">
+          <h2 id={id} className="text-lg font-bold leading-tight text-heading">{title}</h2>
+          {hint && <p className="mt-0.5 text-sm text-ink-mute">{hint}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function MoneyInput({ id, label, symbol, value, onChange, invalid, big }: {
+  id: string; label: string; symbol: string; value: string; onChange: (v: string) => void; invalid?: boolean; big?: boolean
+}) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-mute" aria-hidden="true">{symbol}</span>
+      <input id={id} aria-label={label} aria-invalid={invalid} className={`${invalid ? 'input-error' : 'input'} pl-12 font-semibold ${big ? 'text-xl' : ''}`}
+        inputMode="decimal" placeholder="0,00" value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  )
+}
+
+function FieldError({ text }: { text?: string }) {
+  return text ? <p className="mt-1.5 text-sm font-medium text-coral" role="alert">{text}</p> : null
 }
