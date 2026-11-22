@@ -98,7 +98,7 @@ describe('csv', () => {
 describe('usernames', () => {
   it('maps a username to an email', () => {
     expect(normalizeUsername(' Sebastián Comasco ')).toBe('sebastian.comasco')
-    expect(loginToEmail('Sebastian', 'usuarios.truevento.app')).toBe('sebastian@usuarios.truevento.app')
+    expect(loginToEmail('Sebastian', 'truevento.com')).toBe('sebastian@truevento.com')
     expect(loginToEmail('Admin@Mail.com', 'x')).toBe('admin@mail.com')
     expect(USERNAME_PATTERN.test('mika')).toBe(true)
     expect(USERNAME_PATTERN.test('a b')).toBe(false)

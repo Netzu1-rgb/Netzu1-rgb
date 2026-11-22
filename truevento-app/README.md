@@ -80,7 +80,7 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
    |---|---|
    | `VITE_SUPABASE_URL` | URL del proyecto Supabase |
    | `VITE_SUPABASE_ANON_KEY` | clave anon / publishable |
-   | `VITE_USERNAME_DOMAIN` | `usuarios.truevento.app` (o el que prefieras) |
+   | `VITE_USERNAME_DOMAIN` | `truevento.com` (un dominio que exista: Supabase rechaza correos de dominios inventados; no se envía ningún correo) |
    | `SUPABASE_URL` | URL del proyecto Supabase |
    | `SUPABASE_SERVICE_ROLE_KEY` | clave service_role / secret |
    | `USERNAME_DOMAIN` | el mismo valor que `VITE_USERNAME_DOMAIN` |

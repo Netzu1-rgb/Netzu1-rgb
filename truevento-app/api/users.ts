@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
   const { data: linked } = await db.from('profiles').select('id').eq('instructor_id', instructorId).maybeSingle()
   if (linked) return json(409, { error: 'Este instructor ya tiene acceso.' })
 
-  const domain = process.env.USERNAME_DOMAIN ?? process.env.VITE_USERNAME_DOMAIN ?? 'usuarios.truevento.app'
+  const domain = process.env.USERNAME_DOMAIN ?? process.env.VITE_USERNAME_DOMAIN ?? 'truevento.com'
   const { data: created, error } = await db.auth.admin.createUser({
     email: `${username}@${domain}`,
     password,

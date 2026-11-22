@@ -8,7 +8,7 @@ import { loginToEmail } from './username'
 
 const PASSWORD = import.meta.env.VITE_AUTO_LOGIN_PASSWORD
 const USER = import.meta.env.VITE_AUTO_LOGIN_USER || 'escuela'
-const DOMAIN = import.meta.env.VITE_USERNAME_DOMAIN || 'usuarios.truevento.app'
+const DOMAIN = import.meta.env.VITE_USERNAME_DOMAIN || 'truevento.com'
 
 export const SINGLE_USER = Boolean(PASSWORD) && import.meta.env.VITE_DEMO !== '1'
 

@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { friendlyError } from '../lib/errors'
 import { loginToEmail } from '../lib/username'
 
-const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? 'usuarios.truevento.app'
+const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? 'truevento.com'
 const DEMO = import.meta.env.VITE_DEMO === '1'
 const DEMO_LOGINS = DEMO
   ? [
