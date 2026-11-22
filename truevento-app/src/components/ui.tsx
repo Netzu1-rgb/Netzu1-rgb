@@ -257,13 +257,14 @@ export function Stat({ label, value, hint, tone = 'default' }: {
     sky: 'bg-brand-soft border-brand/20',
     violet: 'bg-violet-soft border-violet/25',
     coral: 'bg-coral-soft border-coral/25',
-    dark: 'bg-night-900 border-night-900 text-white',
+    // the headline figure: night in the light theme, brand violet-blue in the dark one
+    dark: 'bg-selected border-selected text-white',
   }
   return (
     <div className={`rounded-2xl border p-4 ${tones[tone]}`}>
-      <div className={`text-xs font-semibold uppercase tracking-wide ${tone === 'dark' ? 'text-brand-200' : 'text-ink-mute'}`}>{label}</div>
-      <div className={`tabular mt-1.5 font-display text-2xl font-bold ${tone === 'dark' ? 'text-white' : 'text-heading'}`}>{value}</div>
-      {hint && <div className={`mt-1 text-xs ${tone === 'dark' ? 'text-brand-100/80' : 'text-ink-mute'}`}>{hint}</div>}
+      <div className={`text-xs font-semibold uppercase tracking-wide ${tone === 'dark' ? 'text-white' : 'text-ink-mute'}`}>{label}</div>
+      <div className={`tabular mt-1.5 break-words font-display text-xl font-bold sm:text-2xl ${tone === 'dark' ? 'text-white' : 'text-heading'}`}>{value}</div>
+      {hint && <div className={`mt-1 text-xs ${tone === 'dark' ? 'text-white' : 'text-ink-mute'}`}>{hint}</div>}
     </div>
   )
 }

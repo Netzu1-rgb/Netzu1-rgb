@@ -178,7 +178,7 @@ export default function History() {
                     <td className="whitespace-nowrap px-4 py-3">{formatShortDate(r.class_date)}</td>
                     <td className="px-4 py-3 font-medium">{r.student?.full_name}</td>
                     <td className="px-4 py-3">{r.instructor?.full_name}</td>
-                    <td className="px-4 py-3 text-right">{formatHours(r.hours)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">{formatHours(r.hours)}</td>
                     <td className="px-4 py-3 text-right">{formatMoney(r.student_rate, currency)}</td>
                     <td className="px-4 py-3 text-right font-semibold">{formatMoney(r.total_amount, currency)}</td>
                     <td className="px-4 py-3 text-right">{formatMoney(r.instructor_pay, currency)}</td>
@@ -200,7 +200,7 @@ export default function History() {
               <tfoot className="tabular border-t-2 border-line bg-mist font-semibold">
                 <tr>
                   <td className="px-4 py-3" colSpan={3}>Totales</td>
-                  <td className="px-4 py-3 text-right">{formatHours(totals.hours)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">{formatHours(totals.hours)}</td>
                   <td />
                   <td className="px-4 py-3 text-right">{formatMoney(totals.total, currency)}</td>
                   <td className="px-4 py-3 text-right">{formatMoney(totals.pay, currency)}</td>

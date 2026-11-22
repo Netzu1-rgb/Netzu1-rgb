@@ -70,7 +70,7 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
   onEdit?: () => void; onAccess: () => void
 }) {
   return (
-    <div className={`card p-4 ${i.active ? '' : 'opacity-70'}`}>
+    <div className={`card p-4 ${i.active ? '' : 'border-dashed border-line-strong'}`}>
       <div className="flex items-start gap-3">
         <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-bold ${i.kind === 'owner' ? 'bg-night-900 text-white' : 'bg-brand-soft text-brand-deep'}`}>
           {i.full_name.charAt(0).toUpperCase()}

@@ -38,7 +38,7 @@
   --color-violet-deep: #5a28b5;
   --color-violet-soft: #f1eafd;
   --color-pink: #e64e86;
-  --color-coral: #dc3f6a;
+  --color-coral: #c22f59;
   --color-coral-soft: #fde8ee;
   --color-sand: #f2f0f9;
   --color-sand-deep: #e4e0f2;
@@ -54,6 +54,8 @@
   --color-heading: #110d24;
   --color-selected: #110d24;
   --color-coral-ink: #9d1c48;
+  /* destructive buttons: white text needs a deep red in both themes */
+  --color-danger: #c22f59;
 }
 
 /* Dark theme: same logo palette on night surfaces. Applied with data-theme="dark" on <html>
@@ -136,7 +138,7 @@
   @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
 }
 @utility btn-danger {
-  @apply btn bg-coral text-white hover:brightness-95;
+  @apply btn bg-danger text-white hover:brightness-110;
 }
 @utility chip {
   @apply inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-surface px-4 text-sm font-semibold

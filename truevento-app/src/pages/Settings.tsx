@@ -60,7 +60,7 @@ export default function Settings() {
 function ThemeCard() {
   const { choice, setChoice } = useTheme()
   const options: [ThemeChoice, string, string][] = [
-    ['light', 'Claro', 'Fondo blanco'],
+    ['light', 'Claro', 'Fondo blanco (recomendado)'],
     ['dark', 'Oscuro', 'Fondo negro, cansa menos la vista de noche'],
     ['system', 'Automático', 'Igual que el celular'],
   ]
@@ -74,7 +74,7 @@ function ThemeCard() {
               choice === value ? 'border-selected bg-selected text-white' : 'border-line bg-surface'}`}>
             <span>
               <span className="block font-semibold">{label}</span>
-              <span className={`block text-xs ${choice === value ? 'text-white/80' : 'text-ink-mute'}`}>{hint}</span>
+              <span className={`block text-xs ${choice === value ? 'text-white' : 'text-ink-mute'}`}>{hint}</span>
             </span>
             {choice === value && <Icon name="check" />}
           </button>

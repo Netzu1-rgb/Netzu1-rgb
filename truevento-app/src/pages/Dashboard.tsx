@@ -197,7 +197,8 @@ function RevenueSplit({ school, pay, currency }: { school: number; pay: number; 
         aria-label={parts.map((p) => `${p.label} ${pct(p.value)}%`).join(', ')}>
         {parts.filter((p) => p.value > 0).map((p) => (
           <div key={p.label} style={{ width: `${(p.value / total) * 100}%`, background: p.color }}
-            className="flex items-center justify-center text-sm font-bold text-white" title={`${p.label}: ${formatMoney(p.value, currency)}`}>
+            className={`flex items-center justify-center text-sm font-bold ${p.color === SPLIT_PAY ? 'text-[#110d24]' : 'text-white'}`}
+            title={`${p.label}: ${formatMoney(p.value, currency)}`}>
             {pct(p.value) >= 12 ? `${pct(p.value)}%` : ''}
           </div>
         ))}

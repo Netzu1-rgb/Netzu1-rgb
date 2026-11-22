@@ -58,10 +58,10 @@ export default function StudentDetail() {
         </div>
       </div>
 
-      <div className="mb-5 grid grid-cols-3 gap-3">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat label="Clases" value={rows.length} />
         <Stat label="Horas" value={formatHours(sumHours(rows.map((r) => r.hours)))} />
-        <Stat label="Total cobrado" value={formatMoney(sumAmounts(rows.map((r) => r.total_amount)), currency)} />
+        <div className="col-span-2 sm:col-span-1"><Stat label="Total cobrado" value={formatMoney(sumAmounts(rows.map((r) => r.total_amount)), currency)} /></div>
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-heading">Historial de clases</h2>

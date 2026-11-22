@@ -173,6 +173,11 @@ export default function RegisterClass() {
     return e
   }
 
+  // once errors are shown, recheck as the user types so a fixed field stops showing its message
+  useEffect(() => {
+    setErrors((prev) => (Object.values(prev).some(Boolean) ? validate() : prev))
+  }, [name, rate, pay, instructorId, newIns, hours, date])
+
   async function submit(ev: FormEvent) {
     ev.preventDefault()
     setFormError(null)
@@ -379,7 +384,7 @@ export default function RegisterClass() {
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{i.full_name}</span>
-                        <span className={`block text-xs ${on ? 'text-white/80' : 'text-ink-mute'}`}>
+                        <span className={`block text-xs ${on ? 'text-white' : 'text-ink-mute'}`}>
                           {i.kind === 'owner' ? 'Dueño' : `Externo · ${formatMoney(i.hourly_pay, currency)}/h`}
                         </span>
                       </span>

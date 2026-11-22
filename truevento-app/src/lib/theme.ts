@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-// Light / dark / automatic (follows the phone). The choice is a per-device preference,
+// Light (the default) / dark / automatic (follows the phone). A per-device preference,
 // so it lives in localStorage; index.html applies it before the first paint.
 
 export type ThemeChoice = 'light' | 'dark' | 'system'
@@ -10,9 +10,9 @@ const media = () => window.matchMedia('(prefers-color-scheme: dark)')
 export function getThemeChoice(): ThemeChoice {
   try {
     const v = localStorage.getItem(KEY)
-    return v === 'light' || v === 'dark' ? v : 'system'
+    return v === 'dark' || v === 'system' ? v : 'light'
   } catch {
-    return 'system'
+    return 'light'
   }
 }
 
