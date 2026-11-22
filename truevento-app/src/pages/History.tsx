@@ -129,7 +129,7 @@ export default function History() {
               <li key={r.id} className="card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate font-semibold text-ocean-900">{r.student?.full_name}</div>
+                    <div className="truncate font-semibold text-night-900">{r.student?.full_name}</div>
                     <div className="text-sm text-ink-mute">{formatShortDate(r.class_date)} · {r.instructor?.full_name}</div>
                   </div>
                   <div className="text-right">
@@ -182,7 +182,7 @@ export default function History() {
                     <td className="px-4 py-3 text-right">{formatMoney(r.student_rate, currency)}</td>
                     <td className="px-4 py-3 text-right font-semibold">{formatMoney(r.total_amount, currency)}</td>
                     <td className="px-4 py-3 text-right">{formatMoney(r.instructor_pay, currency)}</td>
-                    {isAdmin && <td className="px-4 py-3 text-right font-semibold text-teal-700">{formatMoney(r.school_profit, currency)}</td>}
+                    {isAdmin && <td className="px-4 py-3 text-right font-semibold text-violet-deep">{formatMoney(r.school_profit, currency)}</td>}
                     <td className="px-4 py-3"><StatusBadge r={r} /></td>
                     {isAdmin && (
                       <td className="whitespace-nowrap px-2 py-2 text-right">
@@ -204,7 +204,7 @@ export default function History() {
                   <td />
                   <td className="px-4 py-3 text-right">{formatMoney(totals.total, currency)}</td>
                   <td className="px-4 py-3 text-right">{formatMoney(totals.pay, currency)}</td>
-                  {isAdmin && <td className="px-4 py-3 text-right text-teal-700">{formatMoney(totals.profit, currency)}</td>}
+                  {isAdmin && <td className="px-4 py-3 text-right text-violet-deep">{formatMoney(totals.profit, currency)}</td>}
                   <td colSpan={isAdmin ? 2 : 1} />
                 </tr>
               </tfoot>
@@ -225,7 +225,7 @@ export default function History() {
 
 function StatusBadge({ r }: { r: ClassRow }) {
   if (r.pending) return <span className="badge bg-sand text-ink-soft"><Icon name="cloudOff" className="h-3 w-3" /> Sin sincronizar</span>
-  if (r.instructor_kind === 'owner') return <span className="badge bg-sky-soft text-sky-deep">Dueño</span>
-  if (r.settlement_id) return <span className="badge bg-lagoon-soft text-teal-800">Liquidada</span>
-  return <span className="badge bg-coral-soft text-[#9a2f22]">Pago pendiente</span>
+  if (r.instructor_kind === 'owner') return <span className="badge bg-brand-soft text-brand-deep">Dueño</span>
+  if (r.settlement_id) return <span className="badge bg-violet-soft text-violet-deep">Liquidada</span>
+  return <span className="badge bg-coral-soft text-[#9d1c48]">Pago pendiente</span>
 }

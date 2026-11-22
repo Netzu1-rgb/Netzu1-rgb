@@ -27,7 +27,7 @@ function SyncStatus({ compact = false }: { compact?: boolean }) {
   if (online && pendingSync === 0) return null
   return (
     <button type="button" onClick={() => void syncNow()}
-      className={`badge ${online ? 'bg-sky-soft text-sky-deep' : 'bg-sand text-ink-soft'} ${compact ? '' : 'py-1'}`}
+      className={`badge ${online ? 'bg-brand-soft text-brand-deep' : 'bg-sand text-ink-soft'} ${compact ? '' : 'py-1'}`}
       title={online ? 'Sincronizar ahora' : 'Sin conexión'}>
       <Icon name={online ? 'refresh' : 'cloudOff'} className="h-3.5 w-3.5" />
       {online ? `${pendingSync} por sincronizar` : pendingSync > 0 ? `Sin conexión · ${pendingSync} pendientes` : 'Sin conexión'}
@@ -41,7 +41,7 @@ function Brand({ name }: { name: string }) {
       <img src="/icons/icon-192.png" alt="" className="h-10 w-10 rounded-full ring-1 ring-white/15" />
       <div className="leading-none">
         <div className="font-display text-lg font-extrabold tracking-[0.08em] text-white">{name.toUpperCase()}</div>
-        <div className="mt-1 text-[10px] font-semibold tracking-[0.42em] text-sky-300">KITESCHOOL</div>
+        <div className="mt-1 text-[10px] font-semibold tracking-[0.42em] text-brand-300">KITESCHOOL</div>
       </div>
     </Link>
   )
@@ -59,13 +59,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh lg:flex">
       {/* desktop sidebar */}
-      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-ocean-900 px-4 py-6 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-night-900 px-4 py-6 lg:flex">
         <div className="px-2"><Brand name={schoolName} /></div>
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {items.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'}
               className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${
-                isActive ? 'bg-white/10 text-white' : 'text-sky-100/70 hover:bg-white/5 hover:text-white'}`}>
+                isActive ? 'bg-white/10 text-white' : 'text-brand-100/70 hover:bg-white/5 hover:text-white'}`}>
               <Icon name={n.icon} />
               {n.label}
             </NavLink>
@@ -73,23 +73,23 @@ export default function Layout({ children }: { children: ReactNode }) {
         </nav>
         <div className="space-y-3 px-2">
           <SyncStatus />
-          <div className="text-sm text-sky-100/70">
+          <div className="text-sm text-brand-100/70">
             {profile?.full_name ?? profile?.username}
-            <div className="text-xs text-sky-100/50">{isAdmin ? 'Administrador' : 'Instructor'}</div>
+            <div className="text-xs text-brand-100/50">{isAdmin ? 'Administrador' : 'Instructor'}</div>
           </div>
         </div>
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
         {/* mobile top bar */}
-        <header className="safe-top sticky top-0 z-30 bg-ocean-900 lg:hidden">
+        <header className="safe-top sticky top-0 z-30 bg-night-900 lg:hidden">
           <div className="flex h-14 items-center justify-between px-4">
             <Brand name={schoolName} />
             <SyncStatus compact />
           </div>
+          <div className="brand-gradient h-0.5" />
         </header>
 
-        {import.meta.env.VITE_DEMO === '1' && <DemoBar />}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 pt-4 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
           {children}
         </main>
@@ -104,13 +104,13 @@ export default function Layout({ children }: { children: ReactNode }) {
           ].map((n) => <TabLink key={n.to} {...n} />)}
           <div className="flex justify-center">
             <NavLink to="/registrar" aria-label="Registrar clase"
-              className="-mt-7 grid h-16 w-16 place-items-center rounded-full bg-sky-brand text-white shadow-[0_10px_24px_-6px_rgba(14,165,233,0.7)] ring-4 ring-white active:scale-95">
+              className="brand-gradient -mt-7 grid h-16 w-16 place-items-center rounded-full text-white shadow-[0_10px_24px_-6px_rgba(109,75,233,0.7)] ring-4 ring-white active:scale-95">
               <Icon name="plus" className="h-8 w-8" strokeWidth={2.6} />
             </NavLink>
           </div>
           <TabLink to="/historial" label="Historial" icon="list" />
           <button type="button" onClick={() => setMoreOpen(true)}
-            className={`flex flex-col items-center gap-1 text-[11px] font-semibold ${moreActive ? 'text-sky-deep' : 'text-ink-mute'}`}>
+            className={`flex flex-col items-center gap-1 text-[11px] font-semibold ${moreActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
             <Icon name="menu" className="h-6 w-6" />
             Más
           </button>
@@ -119,13 +119,13 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {moreOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setMoreOpen(false)}>
-          <div className="absolute inset-0 bg-ocean-950/50" />
+          <div className="absolute inset-0 bg-night-950/50" />
           <div className="safe-bottom absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
             {more.map((n) => (
               <NavLink key={n.to} to={n.to} onClick={() => setMoreOpen(false)}
-                className="flex min-h-14 items-center gap-4 rounded-2xl px-4 text-lg font-semibold text-ocean-900 active:bg-slate-50">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky-soft text-sky-deep"><Icon name={n.icon} /></span>
+                className="flex min-h-14 items-center gap-4 rounded-2xl px-4 text-lg font-semibold text-night-900 active:bg-slate-50">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand-deep"><Icon name={n.icon} /></span>
                 {n.label}
               </NavLink>
             ))}
@@ -136,7 +136,8 @@ export default function Layout({ children }: { children: ReactNode }) {
   )
 }
 
-function DemoBar() {
+/** Demo only (shown in Configuración): erase what was loaded and start empty again. */
+export function DemoReset() {
   const [confirming, setConfirming] = useState(false)
   async function reset() {
     const demo = await import('../demo/supabase')
@@ -144,24 +145,25 @@ function DemoBar() {
     window.location.reload()
   }
   return (
-    <div className="flex items-center justify-center gap-x-3 bg-kite/10 px-4 py-1.5 text-center text-xs text-ink-soft">
-      <span><b className="text-[#9d174d]">Modo demo</b><span className="hidden sm:inline"> · lo que cargues se guarda solo en este navegador</span></span>
+    <section className="card mb-5 p-5">
+      <h2 className="text-lg font-semibold text-night-900">Demo</h2>
+      <p className="mt-1 text-sm text-ink-mute">Lo que cargues se guarda solo en este navegador.</p>
       {confirming ? (
-        <span className="flex gap-2">
-          <button type="button" className="font-semibold text-coral" onClick={() => void reset()}>Sí, reiniciar</button>
-          <button type="button" className="font-semibold" onClick={() => setConfirming(false)}>Cancelar</button>
-        </span>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <button type="button" className="btn-ghost" onClick={() => setConfirming(false)}>Cancelar</button>
+          <button type="button" className="btn-danger" onClick={() => void reset()}>Borrar todo</button>
+        </div>
       ) : (
-        <button type="button" className="font-semibold text-sky-deep underline underline-offset-2" onClick={() => setConfirming(true)}>Reiniciar demo</button>
+        <button type="button" className="btn-ghost mt-3 w-full" onClick={() => setConfirming(true)}>Reiniciar demo (dejar todo en 0)</button>
       )}
-    </div>
+    </section>
   )
 }
 
 function TabLink({ to, label, icon }: { to: string; label: string; icon: string }) {
   return (
     <NavLink to={to} end={to === '/'}
-      className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold ${isActive ? 'text-sky-deep' : 'text-ink-mute'}`}>
+      className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
       <Icon name={icon} className="h-6 w-6" />
       {label}
     </NavLink>

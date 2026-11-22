@@ -40,7 +40,7 @@ const headStyle = html.match(/<style>[\s\S]*?<\/style>/)[0]
 
 const page = [
   title,
-  '<meta name="theme-color" content="#0b2545">',
+  '<meta name="theme-color" content="#07060f">',
   inlineAssets(headStyle),
   `<style>${styles}</style>`,
   inlineAssets(body).trim(),

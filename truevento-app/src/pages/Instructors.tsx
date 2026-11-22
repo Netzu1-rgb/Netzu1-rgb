@@ -72,14 +72,14 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
   return (
     <div className={`card p-4 ${i.active ? '' : 'opacity-70'}`}>
       <div className="flex items-start gap-3">
-        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-bold ${i.kind === 'owner' ? 'bg-ocean-900 text-white' : 'bg-sky-soft text-sky-deep'}`}>
+        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-bold ${i.kind === 'owner' ? 'bg-night-900 text-white' : 'bg-brand-soft text-brand-deep'}`}>
           {i.full_name.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-ocean-900">{i.full_name}</span>
-            {i.kind === 'owner' ? <span className="badge bg-ocean-900 text-white">Dueño</span>
-              : <span className={`badge ${i.active ? 'bg-lagoon-soft text-teal-800' : 'bg-slate-100 text-ink-mute'}`}>{i.active ? 'Activo' : 'Inactivo'}</span>}
+            <span className="font-semibold text-night-900">{i.full_name}</span>
+            {i.kind === 'owner' ? <span className="badge bg-night-900 text-white">Dueño</span>
+              : <span className={`badge ${i.active ? 'bg-violet-soft text-violet-deep' : 'bg-slate-100 text-ink-mute'}`}>{i.active ? 'Activo' : 'Inactivo'}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-mute">
             {i.kind === 'owner' ? 'Sin pago por hora' : `${formatMoney(i.hourly_pay, currency)} por hora`}
@@ -107,7 +107,7 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
           <Icon name="key" className="h-4 w-4" />
           {login ? <>Acceso: <b className="text-ink">{login.username ?? 'con su email'}</b>{!login.active && ' (desactivado)'}</> : 'Sin acceso a la app'}
         </span>
-        <span className="font-semibold text-sky-deep">{login ? 'Gestionar' : 'Crear acceso'}</span>
+        <span className="font-semibold text-brand-deep">{login ? 'Gestionar' : 'Crear acceso'}</span>
       </button>
     </div>
   )

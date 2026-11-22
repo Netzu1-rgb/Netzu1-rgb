@@ -54,7 +54,7 @@ export default function Students() {
           <input className="input pl-12" placeholder="Buscar por nombre o teléfono…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <label className="flex items-center gap-2 text-sm font-medium text-ink-soft">
-          <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
+          <input type="checkbox" className="h-5 w-5 accent-brand" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
           Mostrar inactivos
         </label>
       </div>
@@ -70,13 +70,13 @@ export default function Students() {
             const st = stats.get(s.id)
             return (
               <li key={s.id}>
-                <Link to={`/alumnos/${s.id}`} className="card flex items-center gap-4 p-4 transition hover:border-sky-brand/40 active:scale-[0.99]">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky-soft font-display text-lg font-bold text-sky-deep">
+                <Link to={`/alumnos/${s.id}`} className="card flex items-center gap-4 p-4 transition hover:border-brand/40 active:scale-[0.99]">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-soft font-display text-lg font-bold text-brand-deep">
                     {s.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate font-semibold text-ocean-900">{s.full_name}</span>
+                      <span className="truncate font-semibold text-night-900">{s.full_name}</span>
                       {!s.active && <span className="badge bg-slate-100 text-ink-mute">Inactivo</span>}
                       {s.pending && <span className="badge bg-sand text-ink-soft">Sin sincronizar</span>}
                     </div>

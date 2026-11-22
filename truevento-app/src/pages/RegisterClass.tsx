@@ -237,17 +237,17 @@ export default function RegisterClass() {
     return (
       <div className="mx-auto max-w-lg">
         <div className="card overflow-hidden text-center">
-          <div className={`px-6 py-8 ${saved.queued ? 'bg-sand' : 'bg-lagoon-soft'}`}>
-            <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-white ${saved.queued ? 'bg-ocean-700' : 'bg-lagoon'}`}>
+          <div className={`px-6 py-8 ${saved.queued ? 'bg-sand' : 'bg-violet-soft'}`}>
+            <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-white ${saved.queued ? 'bg-night-700' : 'bg-violet'}`}>
               <Icon name={saved.queued ? 'cloudOff' : 'check'} className="h-8 w-8" strokeWidth={2.6} />
             </div>
-            <h1 className="mt-4 text-2xl font-bold text-ocean-900">{saved.queued ? 'Guardada en el dispositivo' : 'Clase registrada'}</h1>
+            <h1 className="mt-4 text-2xl font-bold text-night-900">{saved.queued ? 'Guardada en el dispositivo' : 'Clase registrada'}</h1>
             <p className="mt-1 text-sm text-ink-soft">
               {saved.queued ? 'No hay conexión. Se va a enviar sola cuando vuelva internet.' : 'Ya quedó guardada en el sistema.'}
             </p>
           </div>
           <div className="px-6 py-5">
-            <div className="text-lg font-semibold">{saved.student}{saved.newStudent && <span className="badge ml-2 bg-sky-soft text-sky-deep align-middle">Alumno nuevo</span>}</div>
+            <div className="text-lg font-semibold">{saved.student}{saved.newStudent && <span className="badge ml-2 bg-brand-soft text-brand-deep align-middle">Alumno nuevo</span>}</div>
             <div className="tabular text-ink-mute">{formatHours(saved.hours)} con {saved.instructor} · {formatMoney(saved.total, currency)}</div>
           </div>
           <div className="grid gap-3 px-6 pb-6">
@@ -295,12 +295,12 @@ export default function RegisterClass() {
                 </ul>
               )}
               {chosen && !editId && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-teal-700">
+                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-violet-deep">
                   <Icon name="check" className="h-4 w-4" /> Alumno existente{chosen.pending ? ' (sin sincronizar)' : ''}
                 </p>
               )}
               {isNewStudent && (
-                <div className="mt-2 rounded-xl bg-sky-soft px-3 py-2.5 text-sm text-ocean-800">
+                <div className="mt-2 rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-night-800">
                   <b>Alumno nuevo:</b> se crea su ficha al guardar.
                   <input className="input mt-2 bg-white" type="tel" inputMode="tel" placeholder="Teléfono (opcional)"
                     aria-label="Teléfono del alumno (opcional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -347,7 +347,7 @@ export default function RegisterClass() {
                 {rateN !== null && (
                   <p className="tabular mt-2 text-sm text-ink-soft">
                     Por hora: alumno <b>{formatMoney(rateN, currency)}</b> − instructor <b>{formatMoney(isExternal ? payN ?? 0 : 0, currency)}</b> = queda
-                    {' '}<b className="text-teal-700">{formatMoney(fromCents(Math.round(rateN * 100) - Math.round((isExternal ? payN ?? 0 : 0) * 100)), currency)}</b>
+                    {' '}<b className="text-violet-deep">{formatMoney(fromCents(Math.round(rateN * 100) - Math.round((isExternal ? payN ?? 0 : 0) * 100)), currency)}</b>
                   </p>
                 )}
               </div>
@@ -361,12 +361,12 @@ export default function RegisterClass() {
                   {choosable.map((i) => (
                     <button key={i.id} type="button" role="radio" aria-checked={instructorId === i.id} onClick={() => chooseInstructor(i.id)}
                       className={`flex min-h-14 items-center gap-3 rounded-xl border px-4 text-left transition active:scale-[0.99] ${
-                        instructorId === i.id ? 'border-ocean-900 bg-ocean-900 text-white' : errors.instructor ? 'border-coral bg-white' : 'border-line bg-white'}`}>
+                        instructorId === i.id ? 'border-night-900 bg-night-900 text-white' : errors.instructor ? 'border-coral bg-white' : 'border-line bg-white'}`}>
                       <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display font-bold ${
-                        instructorId === i.id ? 'bg-white/15 text-white' : 'bg-sky-soft text-sky-deep'}`}>{i.full_name.charAt(0).toUpperCase()}</span>
+                        instructorId === i.id ? 'bg-white/15 text-white' : 'bg-brand-soft text-brand-deep'}`}>{i.full_name.charAt(0).toUpperCase()}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{i.full_name}</span>
-                        <span className={`block text-xs ${instructorId === i.id ? 'text-sky-200' : 'text-ink-mute'}`}>
+                        <span className={`block text-xs ${instructorId === i.id ? 'text-brand-200' : 'text-ink-mute'}`}>
                           {i.kind === 'owner' ? 'Dueño' : `Externo · ${formatMoney(i.hourly_pay, currency)}/h`}
                         </span>
                       </span>
@@ -374,7 +374,7 @@ export default function RegisterClass() {
                   ))}
                   <button type="button" role="radio" aria-checked={newIns !== null} onClick={addInstructor}
                     className={`flex min-h-14 items-center gap-3 rounded-xl border border-dashed px-4 text-left font-semibold transition ${
-                      newIns ? 'border-ocean-900 bg-ocean-900 text-white' : 'border-ocean-700/40 bg-white text-ocean-800'}`}>
+                      newIns ? 'border-night-900 bg-night-900 text-white' : 'border-night-700/40 bg-white text-night-800'}`}>
                     <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${newIns ? 'bg-white/15' : 'bg-sand'}`}>
                       <Icon name="plus" className="h-5 w-5" />
                     </span>
@@ -386,13 +386,13 @@ export default function RegisterClass() {
               )}
               {errors.instructor && <p className="mt-1.5 text-sm font-medium text-coral">{errors.instructor}</p>}
               {newIns && (
-                <div className="mt-3 space-y-3 rounded-xl bg-sky-soft p-3">
+                <div className="mt-3 space-y-3 rounded-xl bg-brand-soft p-3">
                   <Field label="Nombre del instructor" error={errors.newIns}>
                     {(id) => <input id={id} className={errors.newIns ? 'input-error' : 'input'} autoFocus autoCapitalize="words"
                       placeholder="Nombre y apellido" value={newIns.name} onChange={(e) => setNewIns({ ...newIns, name: e.target.value })} />}
                   </Field>
-                  <label className="flex items-start gap-3 text-sm text-ocean-800">
-                    <input type="checkbox" className="mt-0.5 h-5 w-5 accent-sky-600" checked={newIns.oneOff}
+                  <label className="flex items-start gap-3 text-sm text-night-800">
+                    <input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand" checked={newIns.oneOff}
                       onChange={(e) => setNewIns({ ...newIns, oneOff: e.target.checked })} />
                     <span><b>Solo para esta clase.</b> No aparece en la lista la próxima vez, pero queda en Liquidaciones para pagarle.</span>
                   </label>
@@ -433,9 +433,9 @@ export default function RegisterClass() {
           <section className="card sticky bottom-[88px] z-10 p-3 shadow-lg lg:bottom-4 lg:p-4">
             <div className={`grid gap-1 text-center ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
               {[
-                ['Total', amounts?.totalCents, 'text-ocean-900'],
-                ['Instructor', amounts?.instructorPayCents, 'text-ocean-900'],
-                ...(isAdmin ? [['Ganancia', amounts?.profitCents, 'text-teal-700']] : []),
+                ['Total', amounts?.totalCents, 'text-night-900'],
+                ['Instructor', amounts?.instructorPayCents, 'text-night-900'],
+                ...(isAdmin ? [['Ganancia', amounts?.profitCents, 'text-violet-deep']] : []),
               ].map(([label, cents, color]) => (
                 <div key={label as string}>
                   <div className="text-[11px] font-semibold uppercase leading-tight text-ink-mute">{label}</div>

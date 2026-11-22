@@ -88,8 +88,8 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           display_override: ['standalone', 'minimal-ui'],
           orientation: 'portrait',
-          theme_color: '#0b2545',
-          background_color: '#0b2545',
+          theme_color: '#07060f',
+          background_color: '#07060f',
           categories: ['business', 'productivity', 'sports'],
           icons: [
             { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

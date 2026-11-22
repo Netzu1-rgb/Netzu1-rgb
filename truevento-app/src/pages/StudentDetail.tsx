@@ -26,18 +26,18 @@ export default function StudentDetail() {
 
   return (
     <div>
-      <Link to="/alumnos" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-deep">
+      <Link to="/alumnos" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-deep">
         <Icon name="chevronLeft" className="h-4 w-4" /> Alumnos
       </Link>
       {(student.offline || classes.offline) && <OfflineNote savedAt={student.savedAt} />}
 
       <div className="card mb-5 p-5">
         <div className="flex items-start gap-4">
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-ocean-900 font-display text-xl font-bold text-white">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-night-900 font-display text-xl font-bold text-white">
             {s.full_name.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-ocean-900">{s.full_name}</h1>
+            <h1 className="text-2xl font-bold text-night-900">{s.full_name}</h1>
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-mute">
               <span>{formatMoney(s.hourly_rate, currency)} por hora</span>
               <span>Desde {formatDate(s.start_date)}</span>
@@ -45,7 +45,7 @@ export default function StudentDetail() {
               {!s.active && <span className="badge bg-slate-100">Inactivo</span>}
             </div>
             {s.phone && (
-              <a href={`tel:${s.phone}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-deep">
+              <a href={`tel:${s.phone}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
                 <Icon name="phone" className="h-4 w-4" /> {s.phone}
               </a>
             )}
@@ -64,7 +64,7 @@ export default function StudentDetail() {
         <Stat label="Total cobrado" value={formatMoney(sumAmounts(rows.map((r) => r.total_amount)), currency)} />
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold text-ocean-900">Historial de clases</h2>
+      <h2 className="mb-3 text-lg font-semibold text-night-900">Historial de clases</h2>
       {classes.error && <ErrorBox message={classes.error} onRetry={classes.reload} />}
       {classes.loading && !classes.data ? <Loading /> : rows.length === 0 ? (
         <div className="card p-6 text-center text-ink-mute">Todavía no tiene clases registradas.</div>

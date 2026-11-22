@@ -8,6 +8,8 @@ import { ConfirmProvider, ToastProvider } from './components/ui'
 
 // the demo runs inside a sandboxed page without its own URL, so it keeps routes in memory
 const Router = import.meta.env.VITE_DEMO === '1' ? MemoryRouter : BrowserRouter
+// the demo viewer already pads the page for the phone's status bar
+if (import.meta.env.VITE_DEMO === '1') document.documentElement.classList.add('in-viewer')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

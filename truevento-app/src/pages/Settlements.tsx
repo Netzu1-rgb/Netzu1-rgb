@@ -85,7 +85,7 @@ export default function Settlements() {
             ) : (
               <>
                 <Stat tone="coral" label="Pendiente de pago" value={formatMoney(pendingAmount, currency)} hint={`${pending.length} clases`} />
-                <Stat tone="lagoon" label="Ya pagado" value={formatMoney(sumAmounts(paid.map((r) => r.instructor_pay)), currency)} hint={`${paid.length} clases`} />
+                <Stat tone="violet" label="Ya pagado" value={formatMoney(sumAmounts(paid.map((r) => r.instructor_pay)), currency)} hint={`${paid.length} clases`} />
               </>
             )}
           </div>
@@ -102,7 +102,7 @@ export default function Settlements() {
             </div>
           )}
 
-          <h2 className="mb-3 text-lg font-semibold text-ocean-900">Detalle de clases</h2>
+          <h2 className="mb-3 text-lg font-semibold text-night-900">Detalle de clases</h2>
           {rows.length === 0 ? (
             <div className="card mb-8 p-6 text-center text-ink-mute">No hay clases en este período.</div>
           ) : (
@@ -113,7 +113,7 @@ export default function Settlements() {
         </>
       )}
 
-      <h2 className="mb-3 text-lg font-semibold text-ocean-900">{isAdmin ? 'Pagos registrados' : 'Pagos recibidos'}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-night-900">{isAdmin ? 'Pagos registrados' : 'Pagos recibidos'}</h2>
       {history.error && <ErrorBox message={history.error} onRetry={history.reload} />}
       {history.loading && !history.data ? <Loading /> : (history.data ?? []).length === 0 ? (
         <div className="card p-6 text-center text-ink-mute">Todavía no hay pagos registrados.</div>
@@ -145,8 +145,8 @@ function DetailRow({ r, currency, owner }: { r: ClassRow; currency: string; owne
       <div className="shrink-0 text-right">
         <div className="tabular font-semibold">{owner ? formatMoney(r.total_amount, currency) : formatMoney(r.instructor_pay, currency)}</div>
         {!owner && (r.settlement_id
-          ? <span className="badge bg-lagoon-soft text-teal-800">Pagada</span>
-          : <span className="badge bg-coral-soft text-[#9a2f22]">Pendiente</span>)}
+          ? <span className="badge bg-violet-soft text-violet-deep">Pagada</span>
+          : <span className="badge bg-coral-soft text-[#9d1c48]">Pendiente</span>)}
       </div>
     </li>
   )
@@ -188,10 +188,10 @@ function PayDialog({ open, onClose, instructorName, instructorId, period, classe
         <button type="button" className="btn-dark flex-1" disabled={busy || !paidAt} onClick={() => void pay()}>{busy && <Spinner />} Confirmar pago</button>
       </>}>
       <div className="space-y-4">
-        <div className="rounded-2xl bg-ocean-900 p-5 text-white">
-          <div className="text-sm text-sky-200">{instructorName}</div>
+        <div className="rounded-2xl bg-night-900 p-5 text-white">
+          <div className="text-sm text-brand-200">{instructorName}</div>
           <div className="tabular mt-1 font-display text-3xl font-bold">{formatMoney(amount, currency)}</div>
-          <div className="mt-1 text-sm text-sky-100/80">
+          <div className="mt-1 text-sm text-brand-100/80">
             {classes.length} clases · {formatHours(sumHours(classes.map((c) => c.hours)))} · {formatShortDate(period.from)} – {formatShortDate(period.to)}
           </div>
         </div>
@@ -234,7 +234,7 @@ function SettlementItem({ s, currency, canCancel, onChanged }: { s: Settlement; 
   return (
     <li className="card overflow-hidden">
       <button type="button" className="flex w-full items-center gap-3 px-4 py-3 text-left" onClick={() => setOpen(!open)}>
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-lagoon-soft text-teal-700"><Icon name="check" /></div>
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-violet-soft text-violet-deep"><Icon name="check" /></div>
         <div className="min-w-0 flex-1">
           <div className="font-semibold">{s.instructor?.full_name ?? '—'}</div>
           <div className="text-sm text-ink-mute">

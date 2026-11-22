@@ -19,30 +19,34 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Sea, wind and sand: deep ocean navy, sky blue (truevento.com), lagoon teal, sand, coral */
+/* TRUEVENTO logo palette: blue #5278ec -> violet #6d4be9 -> purple #9d41d9 -> pink #e64e86, on night black */
 @theme {
   --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --color-ocean-950: #061a2e;
-  --color-ocean-900: #0b2545;
-  --color-ocean-800: #12345c;
-  --color-ocean-700: #1b4a7a;
-  --color-sky-brand: #0ea5e9;
-  --color-sky-deep: #0284c7;
-  --color-sky-soft: #e0f2fe;
-  --color-lagoon: #14b8a6;
-  --color-lagoon-soft: #ccfbf1;
-  --color-sand: #f6f1e7;
-  --color-sand-deep: #e9dfc9;
-  --color-coral: #f97362;
-  --color-coral-soft: #ffe4df;
-  --color-kite: #ec4899;
-  --color-mist: #f3f7fa;
-  --color-line: #e2e8f0;
-  --color-ink: #0f172a;
-  --color-ink-soft: #475569;
-  --color-ink-mute: #64748b;
+  --color-night-950: #07060f;
+  --color-night-900: #110d24;
+  --color-night-800: #1c1638;
+  --color-night-700: #2b2255;
+  --color-brand: #4f5fe6;
+  --color-brand-deep: #3c45c4;
+  --color-brand-soft: #eceefd;
+  --color-brand-100: #e4e6ff;
+  --color-brand-200: #c5c8ff;
+  --color-brand-300: #a6a9ff;
+  --color-violet: #7a3fe0;
+  --color-violet-deep: #5a28b5;
+  --color-violet-soft: #f1eafd;
+  --color-pink: #e64e86;
+  --color-coral: #dc3f6a;
+  --color-coral-soft: #fde8ee;
+  --color-sand: #f2f0f9;
+  --color-sand-deep: #e4e0f2;
+  --color-mist: #f7f6fb;
+  --color-line: #e7e4f1;
+  --color-ink: #16132b;
+  --color-ink-soft: #4a4666;
+  --color-ink-mute: #6c6887;
 }
 
 @layer base {
@@ -67,14 +71,14 @@
 }
 
 @utility card {
-  @apply rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+  @apply rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(22,19,43,0.05)];
 }
 @utility field-label {
   @apply mb-1.5 block text-sm font-semibold text-ink-soft;
 }
 @utility input {
   @apply block min-h-12 w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none transition
-    placeholder:text-slate-400 focus:border-sky-brand focus:ring-4 focus:ring-sky-brand/15 disabled:bg-slate-50 disabled:text-ink-mute;
+    placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:bg-slate-50 disabled:text-ink-mute;
 }
 /* use instead of .input (not together) so the error colors always win */
 @utility input-error {
@@ -86,11 +90,13 @@
   @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition
     active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
 }
+/* main action: the logo's blue-to-violet */
 @utility btn-primary {
-  @apply btn bg-sky-brand text-white shadow-[0_6px_18px_-6px_rgba(14,165,233,0.6)] hover:bg-sky-deep;
+  @apply btn text-white shadow-[0_8px_20px_-8px_rgba(109,75,233,0.7)] hover:brightness-110;
+  background-image: linear-gradient(100deg, #4f5fe6, #6d4be9 55%, #8a3fdc);
 }
 @utility btn-dark {
-  @apply btn bg-ocean-900 text-white hover:bg-ocean-800;
+  @apply btn bg-night-900 text-white hover:bg-night-800;
 }
 @utility btn-ghost {
   @apply btn border border-line bg-white text-ink hover:bg-slate-50;
@@ -105,15 +111,16 @@
 /* selected chip: use instead of .chip */
 @utility chip-on {
   @apply chip;
-  border-color: var(--color-ocean-900);
-  background-color: var(--color-ocean-900);
+  border-color: var(--color-night-900);
+  background-color: var(--color-night-900);
   color: #fff;
 }
 @utility badge {
   @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
 }
+/* the full logo gradient, for thin accents */
 @utility brand-gradient {
-  background: linear-gradient(90deg, #0ea5e9, #38bdf8 45%, #f472b6);
+  background: linear-gradient(90deg, #5278ec, #6d4be9 40%, #9d41d9 70%, #e64e86);
 }
 
 .safe-bottom {
@@ -121,6 +128,10 @@
 }
 .safe-top {
   padding-top: env(safe-area-inset-top);
+}
+/* inside a host that already pads the page for the status bar (the demo viewer) */
+.in-viewer .safe-top {
+  padding-top: 0;
 }
 .tabular {
   font-variant-numeric: tabular-nums;

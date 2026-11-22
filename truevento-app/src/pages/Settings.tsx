@@ -9,6 +9,7 @@ import { CURRENCIES } from '../lib/currencies'
 import { ErrorBox, Field, Icon, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { supabase } from '../lib/supabase'
 import { SINGLE_USER } from '../lib/singleUser'
+import { DemoReset } from '../components/Layout'
 
 export default function Settings() {
   const { isAdmin, profile, session, signOut, pendingSync } = useAuth()
@@ -30,10 +31,11 @@ export default function Settings() {
     <div className="max-w-2xl">
       <PageHeader title="Configuración" />
       {isAdmin && <SchoolSettingsForm />}
+      {import.meta.env.VITE_DEMO === '1' && <DemoReset />}
       <PendingSyncCard />
       <InstallCard />
       <section className="card mb-5 p-5">
-        <h2 className="mb-3 text-lg font-semibold text-ocean-900">Mi cuenta</h2>
+        <h2 className="mb-3 text-lg font-semibold text-night-900">Mi cuenta</h2>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
           <dt className="text-ink-mute">Nombre</dt><dd className="font-medium">{profile?.full_name ?? '—'}</dd>
           <dt className="text-ink-mute">Usuario</dt><dd className="font-medium">{profile?.username ?? session?.user.email}</dd>
@@ -92,7 +94,7 @@ function SchoolSettingsForm() {
 
   return (
     <section className="card mb-5 space-y-4 p-5">
-      <h2 className="text-lg font-semibold text-ocean-900">Escuela</h2>
+      <h2 className="text-lg font-semibold text-night-900">Escuela</h2>
       <Field label="Nombre de la escuela">
         {(id) => <input id={id} className="input" value={school} onChange={(e) => setSchool(e.target.value)} />}
       </Field>
@@ -127,7 +129,7 @@ function PendingSyncCard() {
 
   return (
     <section className="card mb-5 p-5">
-      <h2 className="text-lg font-semibold text-ocean-900">Pendientes de sincronizar</h2>
+      <h2 className="text-lg font-semibold text-night-900">Pendientes de sincronizar</h2>
       <p className="mt-1 text-sm text-ink-mute">Registros guardados sin conexión. Se envían solos al volver internet.</p>
       <ul className="mt-3 divide-y divide-line text-sm">
         {items.map((i) => (
@@ -160,7 +162,7 @@ function InstallCard() {
   if (install.installed) return null
   return (
     <section className="card mb-5 p-5">
-      <h2 className="text-lg font-semibold text-ocean-900">Instalar la app</h2>
+      <h2 className="text-lg font-semibold text-night-900">Instalar la app</h2>
       {install.canPrompt ? (
         <>
           <p className="mt-1 text-sm text-ink-mute">Instalá TRUEVENTO para abrirla como una app, con ícono propio y pantalla completa.</p>
@@ -188,7 +190,7 @@ function ChangePassword() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   if (!open) {
-    return <button type="button" className="mt-4 text-sm font-semibold text-sky-deep" onClick={() => setOpen(true)}>Cambiar mi contraseña</button>
+    return <button type="button" className="mt-4 text-sm font-semibold text-brand-deep" onClick={() => setOpen(true)}>Cambiar mi contraseña</button>
   }
   return (
     <div className="mt-4 space-y-3">

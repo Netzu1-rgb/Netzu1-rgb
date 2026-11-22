@@ -22,7 +22,7 @@ const Settings = lazy(() => import('./pages/Settings'))
 
 // the launch screen (logo in the middle) stays at least this long so it reads as a
 // proper intro instead of a flash, then fades into the app
-const SPLASH_MIN_MS = 1800
+const SPLASH_MIN_MS = 2400
 const startedAt = performance.now()
 
 function hideSplash() {
@@ -31,7 +31,7 @@ function hideSplash() {
   const wait = Math.max(0, SPLASH_MIN_MS - (performance.now() - startedAt))
   setTimeout(() => {
     el.classList.add('hide')
-    setTimeout(() => el.remove(), 550)
+    setTimeout(() => el.remove(), 700)
   }, wait)
 }
 
@@ -60,7 +60,7 @@ function Screens() {
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div className="card max-w-md p-6">
-          <h1 className="text-xl font-bold text-ocean-900">Falta configurar Supabase</h1>
+          <h1 className="text-xl font-bold text-night-900">Falta configurar Supabase</h1>
           <p className="mt-2 text-sm text-ink-mute">
             Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (ver README) y volvé a compilar la app.
           </p>

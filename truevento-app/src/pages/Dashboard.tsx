@@ -10,11 +10,12 @@ import { chartBuckets, describePeriod, periodFor, type Period } from '../lib/dat
 import { formatHours, formatMoney, formatNumber, sumAmounts, sumHours } from '../lib/money'
 import type { ClassRow } from '../lib/types'
 
-const SKY = '#0284c7'
-const PROFIT = '#0f766e'
-const SPLIT_SCHOOL = '#0ea5e9'
-const SPLIT_PAY = '#f97362'
-const AXIS = { fontSize: 13, fill: '#475569' }
+// logo palette: blue for what is charged, violet for what the school keeps, pink for instructor pay
+const SKY = '#4f5fe6'
+const PROFIT = '#7a3fe0'
+const SPLIT_SCHOOL = '#5b5fe8'
+const SPLIT_PAY = '#e64e86'
+const AXIS = { fontSize: 13, fill: '#4a4666' }
 
 export default function Dashboard() {
   const { isAdmin, session, currency, profile } = useAuth()
@@ -66,7 +67,7 @@ export default function Dashboard() {
             {isAdmin ? (
               <>
                 <Stat tone="dark" label="Ingresos totales" value={formatMoney(totals.revenue, currency)} hint={describePeriod(period)} />
-                <Stat tone="lagoon" label="Ganancia neta" value={formatMoney(totals.profit, currency)}
+                <Stat tone="violet" label="Ganancia neta" value={formatMoney(totals.profit, currency)}
                   hint={`Pagos a instructores: ${formatMoney(totals.pay, currency)}`} />
                 <Stat label="Horas de clase" value={formatHours(totals.hours)} />
                 <Stat label="Clases realizadas" value={formatNumber(totals.classes)} />
@@ -93,8 +94,8 @@ export default function Dashboard() {
 
           {rows.length === 0 ? (
             <div className="card mt-4 flex flex-col items-center px-6 py-10 text-center">
-              <div className="grid h-14 w-14 place-items-center rounded-full bg-sky-soft text-sky-deep"><Icon name="trend" className="h-7 w-7" /></div>
-              <h2 className="mt-3 text-lg font-semibold text-ocean-900">Todavía no hay clases en {describePeriod(period).toLowerCase()}</h2>
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-deep"><Icon name="trend" className="h-7 w-7" /></div>
+              <h2 className="mt-3 text-lg font-semibold text-night-900">Todavía no hay clases en {describePeriod(period).toLowerCase()}</h2>
               <p className="mt-1 max-w-sm text-sm text-ink-mute">Cuando registres clases, acá vas a ver cuánto se cobró, cuánto le quedó a la escuela y las horas de cada instructor.</p>
               <Link to="/registrar" className="btn-primary mt-5"><Icon name="plus" /> Registrar clase</Link>
             </div>
@@ -117,11 +118,11 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height={Math.max(130, byInstructor.length * 52)}>
                     <BarChart data={byInstructor} layout="vertical" margin={{ top: 0, right: 64, left: 0, bottom: 0 }}>
                       <XAxis type="number" hide />
-                      <YAxis type="category" dataKey="name" tick={{ ...AXIS, fill: '#0f172a', fontWeight: 600 }} width={130} tickLine={false} axisLine={false} />
-                      <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }} formatter={(v) => [formatHours(Number(v)), 'Horas']} />
+                      <YAxis type="category" dataKey="name" tick={{ ...AXIS, fill: '#16132b', fontWeight: 600 }} width={130} tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{ fill: 'rgba(109,75,233,0.08)' }} formatter={(v) => [formatHours(Number(v)), 'Horas']} />
                       <Bar dataKey="hours" fill={SKY} radius={[0, 6, 6, 0]} barSize={26}>
                         <LabelList dataKey="hours" position="right" formatter={(v: unknown) => formatHours(Number(v))}
-                          style={{ fontSize: 13, fontWeight: 700, fill: '#0f172a' }} />
+                          style={{ fontSize: 13, fontWeight: 700, fill: '#16132b' }} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -145,7 +146,7 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
   return (
     <section className="card p-4 sm:p-5">
       <div className="mb-3">
-        <h2 className="text-lg font-semibold text-ocean-900">{title}</h2>
+        <h2 className="text-lg font-semibold text-night-900">{title}</h2>
         {subtitle && <p className="text-sm text-ink-mute">{subtitle}</p>}
       </div>
       {children}
@@ -163,15 +164,15 @@ function MoneyBars({ data, dataKey, color, currency, name }: {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} margin={{ top: 24, right: 4, left: 0, bottom: 0 }}>
-        <CartesianGrid vertical={false} stroke="#e2e8f0" />
-        <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} interval={0} />
+        <CartesianGrid vertical={false} stroke="#ebe8f4" />
+        <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#d6d2e6' }} interval={0} />
         <YAxis tick={{ ...AXIS, fontSize: 12 }} tickLine={false} axisLine={false} width={62}
           tickFormatter={(v: number) => compactMoney(v, currency)} />
-        <Tooltip cursor={{ fill: 'rgba(14,165,233,0.08)' }}
+        <Tooltip cursor={{ fill: 'rgba(109,75,233,0.08)' }}
           labelFormatter={(_l, p) => (p?.[0]?.payload as SeriesPoint | undefined)?.title ?? ''}
           formatter={(v) => [formatMoney(Number(v), currency), name]} />
         <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} maxBarSize={56}>
-          <LabelList dataKey={dataKey} position="top" formatter={short} style={{ fontSize: 12, fontWeight: 700, fill: '#0f172a' }} />
+          <LabelList dataKey={dataKey} position="top" formatter={short} style={{ fontSize: 12, fontWeight: 700, fill: '#16132b' }} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
