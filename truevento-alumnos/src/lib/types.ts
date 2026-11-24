@@ -25,6 +25,12 @@ export interface Lesson {
   created_at: string
 }
 
+export interface BusySlot {
+  lesson_date: string
+  start_time: string
+  hours: number
+}
+
 export interface Person {
   id: string
   full_name: string

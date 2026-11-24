@@ -3,7 +3,7 @@
 import { normalizeUsername, USERNAME_PATTERN } from '../lib/username'
 import { addDays, today } from '../lib/format'
 import type {
-  Announcement, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
+  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
 } from '../lib/types'
 
 interface User { id: string; username: string; password: string; role: Me['role']; student_id: string | null; instructor_id: string | null; full_name: string }
@@ -156,12 +156,27 @@ export async function agenda(from: string, to: string): Promise<Lesson[]> {
     .map(view)
 }
 
+export async function busySlots(from: string, to: string, excludeId: string | null): Promise<BusySlot[]> {
+  await wait()
+  return db.lessons
+    .filter((l) => l.lesson_date >= from && l.lesson_date <= to && (l.status === 'requested' || l.status === 'confirmed') && l.id !== excludeId)
+    .map((l) => ({ lesson_date: l.lesson_date, start_time: l.start_time.slice(0, 5), hours: l.hours }))
+}
+
+function assertFree(date: string, time: string, hours: number, exclude?: string) {
+  const m = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))
+  const s = m(time), e = s + hours * 60
+  if (db.lessons.some((l) => l.id !== exclude && l.lesson_date === date && (l.status === 'requested' || l.status === 'confirmed')
+    && m(l.start_time) < e && s < m(l.start_time) + l.hours * 60)) fail('Ese horario ya está reservado. Elegí otro.')
+}
+
 export async function instructorDirectory(): Promise<Person[]> { return db.instructors }
 
 export async function requestLesson(date: string, time: string, hours: number, instructorId: string | null, note: string) {
   await wait()
   quarter(hours)
   if (date < today()) fail('Elegí una fecha de hoy en adelante.')
+  assertFree(date, time, hours)
   db.lessons.push({ id: uid(), student_id: me()!.student_id!, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'requested', student_note: note || null, staff_note: null, created_at: now() })
   save()
 }
@@ -169,6 +184,7 @@ export async function requestLesson(date: string, time: string, hours: number, i
 export async function scheduleLesson(studentId: string, instructorId: string, date: string, time: string, hours: number, note: string) {
   await wait()
   quarter(hours)
+  assertFree(date, time, hours)
   db.lessons.push({ id: uid(), student_id: studentId, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'confirmed', student_note: null, staff_note: note || null, created_at: now() })
   save()
 }
@@ -176,6 +192,7 @@ export async function scheduleLesson(studentId: string, instructorId: string, da
 export async function confirmLesson(id: string, instructorId: string, date: string, time: string, hours: number, note: string) {
   await wait()
   quarter(hours)
+  assertFree(date, time, hours, id)
   Object.assign(db.lessons.find((l) => l.id === id)!, { status: 'confirmed', instructor_id: instructorId, lesson_date: date, start_time: time, hours, ...(note ? { staff_note: note } : {}) })
   save()
 }

@@ -3,7 +3,7 @@
 import { supabase } from './supabase'
 import { loginToEmail, normalizeUsername, USERNAME_PATTERN } from './username'
 import type {
-  Announcement, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
+  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
 } from './types'
 
 const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? 'truevento.com'
@@ -70,6 +70,12 @@ export async function getMe(): Promise<Me | null> {
 export async function agenda(from: string, to: string): Promise<Lesson[]> {
   const rows = check(await supabase.rpc('agenda', { p_from: from, p_to: to })) as Lesson[]
   return rows.map((r) => ({ ...r, hours: Number(r.hours) }))
+}
+
+/** Taken times (requested or confirmed classes), without names. */
+export async function busySlots(from: string, to: string, excludeId: string | null): Promise<BusySlot[]> {
+  const rows = check(await supabase.rpc('busy_slots', { p_from: from, p_to: to, p_exclude: excludeId })) as BusySlot[]
+  return rows.map((r) => ({ ...r, start_time: r.start_time.slice(0, 5), hours: Number(r.hours) }))
 }
 
 export async function instructorDirectory(): Promise<Person[]> {

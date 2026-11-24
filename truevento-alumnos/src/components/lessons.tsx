@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
-import { addDays, dayLabel, DURATIONS, endTime, formatHours, longDay, shortTime, START_TIMES, today } from '../lib/format'
+import { addDays, dayLabel, DURATIONS, endTime, formatHours, longDay, shortTime, today } from '../lib/format'
+import SlotPicker, { type Slot } from './SlotPicker'
 import { notifyChange } from '../lib/hooks'
 import type { Lesson, LessonStatus, Person, Skill, SkillStatus } from '../lib/types'
 import { levelName } from '../lib/types'
@@ -76,29 +77,6 @@ function Chips<T extends string | number>({ label, options, value, onChange, for
   )
 }
 
-export function DatePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const days = Array.from({ length: 7 }, (_, i) => addDays(today(), i))
-  return (
-    <div>
-      <Chips label="Día" options={days} value={days.includes(value) ? value : null} onChange={onChange} format={dayLabel} />
-      <Field label="u otra fecha" className="mt-3">
-        {(id) => <input id={id} type="date" className="input" min={today()} value={value} onChange={(e) => e.target.value && onChange(e.target.value)} />}
-      </Field>
-    </div>
-  )
-}
-
-export function TimePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <Chips label="Hora de inicio" options={START_TIMES} value={START_TIMES.includes(value) ? value : null} onChange={onChange} />
-      <Field label="u otra hora" className="mt-3">
-        {(id) => <input id={id} type="time" step={900} className="input" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} />}
-      </Field>
-    </div>
-  )
-}
-
 export function DurationPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return <Chips label="Duración" options={DURATIONS} value={value} onChange={onChange} format={(h) => formatHours(h)} />
 }
@@ -107,6 +85,7 @@ function useSubmit() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const toast = useToast()
+  const [conflicts, setConflicts] = useState(0)
   async function run(fn: () => Promise<void>, ok: string, done: () => void) {
     setBusy(true)
     setError(null)
@@ -116,28 +95,30 @@ function useSubmit() {
       toast(ok)
       done()
     } catch (err) {
-      setError(friendlyError(err))
+      const msg = friendlyError(err)
+      setError(msg)
+      // someone took the time meanwhile: refresh the calendar
+      if (/reservado/i.test(msg)) setConflicts((n) => n + 1)
     } finally {
       setBusy(false)
     }
   }
-  return { busy, error, setError, run }
+  return { busy, error, setError, run, conflicts }
 }
 
 // ------------------------------------------------------------------ student asks for a class
 
 export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [date, setDate] = useState(addDays(today(), 1))
-  const [time, setTime] = useState('10:00')
-  const [hours, setHours] = useState(1.5)
+  const [slot, setSlot] = useState<Slot>({ date: addDays(today(), 1), time: '', hours: 1.5 })
   const [instructor, setInstructor] = useState('')
   const [note, setNote] = useState('')
   const [people, setPeople] = useState<Person[]>([])
-  const { busy, error, setError, run } = useSubmit()
+  const { busy, error, setError, run, conflicts } = useSubmit()
 
   useEffect(() => {
     if (!open) return
     setError(null)
+    setSlot({ date: addDays(today(), 1), time: '', hours: 1.5 })
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
   }, [open, setError])
 
@@ -146,15 +127,16 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
       footer={<>
         <button type="button" className="btn-ghost flex-1" onClick={onClose}>Cancelar</button>
         <button type="button" className="btn-primary flex-[2]" disabled={busy}
-          onClick={() => void run(() => api.requestLesson(date, time, hours, instructor || null, note.trim()),
-            'Listo: la escuela va a confirmar tu clase', onClose)}>
+          onClick={() => {
+            if (!slot.time) return setError('Elegí un horario libre en la grilla.')
+            void run(() => api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim()),
+              'Listo: la escuela va a confirmar tu clase', onClose)
+          }}>
           {busy && <Spinner />} Enviar pedido
         </button>
       </>}>
       <div className="space-y-5">
-        <DatePicker value={date} onChange={setDate} />
-        <TimePicker value={time} onChange={setTime} />
-        <DurationPicker value={hours} onChange={setHours} />
+        {open && <SlotPicker value={slot} onChange={setSlot} refreshKey={conflicts} />}
         <Field label="Instructor (opcional)">
           {(id) => (
             <select id={id} className="input" value={instructor} onChange={(e) => setInstructor(e.target.value)}>
@@ -167,9 +149,11 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
           {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
             placeholder="Ej: es mi primera clase, vengo con un amigo…" />}
         </Field>
-        <p className="rounded-xl bg-brand-soft px-4 py-3 text-sm text-brand-deep">
-          <b>{longDay(date, true)}</b>, de {time} a {endTime(time, hours)}. La clase queda <b>pendiente</b> hasta que la escuela la confirme.
-        </p>
+        {slot.time && (
+          <p className="rounded-xl bg-brand-soft px-4 py-3 text-sm text-brand-deep">
+            <b>{longDay(slot.date, true)}</b>, de {slot.time} a {endTime(slot.time, slot.hours)}. La clase queda <b>pendiente</b> hasta que la escuela la confirme.
+          </p>
+        )}
         {error && <ErrorBox message={error} />}
       </div>
     </Modal>
@@ -187,22 +171,20 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
 }) {
   const [student, setStudent] = useState('')
   const [instructor, setInstructor] = useState('')
-  const [date, setDate] = useState(today())
-  const [time, setTime] = useState('10:00')
-  const [hours, setHours] = useState(1.5)
+  const [slot, setSlot] = useState<Slot>({ date: today(), time: '', hours: 1.5 })
   const [note, setNote] = useState('')
   const [students, setStudents] = useState<Person[]>([])
   const [people, setPeople] = useState<Person[]>([])
-  const { busy, error, setError, run } = useSubmit()
+  const { busy, error, setError, run, conflicts } = useSubmit()
 
   useEffect(() => {
     if (!open) return
     setError(null)
     setStudent(lesson?.student_id ?? '')
     setInstructor(lesson?.instructor_id ?? (isAdmin ? '' : myInstructorId ?? ''))
-    setDate(lesson?.lesson_date ?? today())
-    setTime(lesson ? shortTime(lesson.start_time) : '10:00')
-    setHours(lesson?.hours ?? 1.5)
+    setSlot(lesson
+      ? { date: lesson.lesson_date < today() ? today() : lesson.lesson_date, time: shortTime(lesson.start_time), hours: lesson.hours }
+      : { date: today(), time: '', hours: 1.5 })
     setNote('')
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
     if (!lesson) void api.listStudents().then(setStudents).catch(() => setStudents([]))
@@ -211,10 +193,11 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
   function submit() {
     if (!lesson && !student) return setError('Elegí el alumno.')
     if (!instructor) return setError('Elegí quién da la clase.')
+    if (!slot.time) return setError('Elegí un horario libre en la grilla.')
     void run(
       () => lesson
-        ? api.confirmLesson(lesson.id, instructor, date, time, hours, note.trim())
-        : api.scheduleLesson(student, instructor, date, time, hours, note.trim()),
+        ? api.confirmLesson(lesson.id, instructor, slot.date, slot.time, slot.hours, note.trim())
+        : api.scheduleLesson(student, instructor, slot.date, slot.time, slot.hours, note.trim()),
       lesson ? 'Clase confirmada' : 'Clase agendada',
       onClose,
     )
@@ -248,9 +231,7 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
             </select>
           )}
         </Field>
-        <DatePicker value={date} onChange={setDate} />
-        <TimePicker value={time} onChange={setTime} />
-        <DurationPicker value={hours} onChange={setHours} />
+        {open && <SlotPicker value={slot} onChange={setSlot} excludeId={lesson?.id ?? null} refreshKey={conflicts} allowPast />}
         <Field label="Mensaje para el alumno (opcional)">
           {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
             placeholder="Ej: nos vemos en la escuela, traé protector solar" />}

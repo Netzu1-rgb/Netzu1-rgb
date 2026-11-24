@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { addDays, endTime, formatHours, normalizeCode } from './format'
 import { compass, groupDays, windLevel } from './wind'
+import { timeState } from '../components/SlotPicker'
 
 describe('format', () => {
   it('formats hours and times', () => {
@@ -41,5 +42,17 @@ describe('wind', () => {
     expect(windLevel(30)).toBe('strong')
     expect(compass(90)).toBe('E')
     expect(compass(350)).toBe('N')
+  })
+})
+
+describe('time slots', () => {
+  const busy = [{ lesson_date: '2030-01-10', start_time: '10:00', hours: 1.5 }]
+  it('marks taken and overlapping times', () => {
+    expect(timeState('2030-01-10', '10:00', 1, busy)).toBe('taken')
+    expect(timeState('2030-01-10', '11:00', 1, busy)).toBe('taken') // inside 10:00–11:30
+    expect(timeState('2030-01-10', '09:00', 1, busy)).toBe('free') // ends at 10:00
+    expect(timeState('2030-01-10', '09:00', 2, busy)).toBe('noRoom') // would run into 10:00
+    expect(timeState('2030-01-10', '12:00', 2, busy)).toBe('free')
+    expect(timeState('2030-01-11', '10:00', 1, busy)).toBe('free') // other day
   })
 })

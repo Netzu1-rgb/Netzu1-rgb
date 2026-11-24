@@ -125,14 +125,28 @@ do $$ begin
   assert (select count(*) from public.lessons) = 1;
 end $$;
 select tests.fails($$select public.cancel_lesson((select v::uuid from tests.vars where k = 'req1'))$$) as "cancel another's class";
+-- Ana asked for 10:00–11:30 tomorrow and Beto 09:00–10:00: overlapping times are taken
+select tests.fails($$select public.request_lesson(current_date + 1, '10:00', 1)$$) as "same slot";
+select tests.fails($$select public.request_lesson(current_date + 1, '11:00', 1)$$) as "overlaps Ana's 1:30";
+select tests.fails($$select public.request_lesson(current_date + 1, '08:30', 1)$$) as "overlaps Beto's own";
+do $$ begin
+  -- Beto sees Ana's slot as taken, without her name
+  assert (select count(*) from public.busy_slots(current_date, current_date + 7)) = 3;
+  assert exists (select 1 from public.busy_slots(current_date, current_date + 7) where start_time = '10:00' and hours = 1.5);
+end $$;
+-- right after another class is free
+insert into tests.vars values ('req4', public.request_lesson(current_date + 1, '11:30', 1));
+select public.cancel_lesson((select v::uuid from tests.vars where k = 'req4'));
 
 \echo '6. instructors confirm their own classes only'
 select tests.act_as('00000000-0000-0000-0000-0000000000b1');
-do $$ begin assert (select count(*) from public.agenda(current_date, current_date + 30)) = 3, 'staff see the whole agenda'; end $$;
+do $$ begin assert (select count(*) from public.agenda(current_date, current_date + 30)) = 4, 'staff see the whole agenda (one cancelled)'; end $$;
 select tests.fails($$select public.confirm_lesson((select v::uuid from tests.vars where k = 'req1'),
   '00000000-0000-0000-0000-000000000e02', current_date + 1, '10:00', 1.5)$$) as "assign another instructor";
 select tests.fails($$select public.confirm_lesson((select v::uuid from tests.vars where k = 'req2'),
   '00000000-0000-0000-0000-000000000e01', current_date + 2, '15:30', 2)$$) as "take another's request";
+select tests.fails($$select public.confirm_lesson((select v::uuid from tests.vars where k = 'req1'),
+  '00000000-0000-0000-0000-000000000e01', current_date + 1, '09:00', 1.5)$$) as "move onto a taken time";
 select public.confirm_lesson((select v::uuid from tests.vars where k = 'req1'),
   '00000000-0000-0000-0000-000000000e01', current_date + 1, '11:00', 1.5, 'Traé protector solar');
 do $$ begin

@@ -315,6 +315,38 @@ begin
   end if;
 end $$;
 
+-- one class at a time in the school: a time is taken when it overlaps another
+-- requested or confirmed class. The lock makes two people choosing the same
+-- slot at once queue up, so only the first one gets it.
+create or replace function public.assert_slot_free(p_date date, p_time time, p_hours numeric, p_exclude uuid default null)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  perform pg_advisory_xact_lock(hashtext('truevento.slot.' || p_date::text));
+  if exists (
+    select 1 from public.lessons l
+     where l.lesson_date = p_date
+       and l.status in ('requested', 'confirmed')
+       and l.id is distinct from p_exclude
+       and l.start_time < p_time + make_interval(mins => (p_hours * 60)::int)
+       and p_time < l.start_time + make_interval(mins => (l.hours * 60)::int)) then
+    raise exception 'Ese horario ya está reservado. Elegí otro.' using errcode = 'P0001';
+  end if;
+end $$;
+
+-- taken times between two dates, without names (for the calendar of every user)
+create or replace function public.busy_slots(p_from date, p_to date, p_exclude uuid default null)
+returns table (lesson_date date, start_time time, hours numeric)
+language sql stable security definer set search_path = public as $$
+  select l.lesson_date, l.start_time, l.hours
+    from public.lessons l
+   where l.lesson_date between p_from and p_to
+     and l.status in ('requested', 'confirmed')
+     and l.id is distinct from p_exclude
+     and (public.has_access() or public.my_student_id() is not null)
+   order by l.lesson_date, l.start_time
+$$;
+
 -- a student asks for a class
 create or replace function public.request_lesson(
   p_date date, p_time time, p_hours numeric, p_instructor uuid default null, p_note text default null)
@@ -340,6 +372,7 @@ begin
   if (select count(*) from public.lessons where student_id = sid and status = 'requested') >= 10 then
     raise exception 'Ya tenés muchas solicitudes pendientes. Esperá a que la escuela responda.' using errcode = 'P0001';
   end if;
+  perform public.assert_slot_free(p_date, p_time, p_hours);
   insert into public.lessons (student_id, instructor_id, lesson_date, start_time, hours, status, student_note)
   values (sid, p_instructor, p_date, p_time, p_hours, 'requested', nullif(trim(p_note), ''))
   returning id into new_id;
@@ -364,6 +397,7 @@ begin
   if not exists (select 1 from public.instructors where id = p_instructor and active) then
     raise exception 'Elegí un instructor activo.' using errcode = 'P0001';
   end if;
+  perform public.assert_slot_free(p_date, p_time, p_hours);
   insert into public.lessons (student_id, instructor_id, lesson_date, start_time, hours, status, staff_note)
   values (p_student, p_instructor, p_date, p_time, p_hours, 'confirmed', nullif(trim(p_note), ''))
   returning id into new_id;
@@ -400,6 +434,7 @@ begin
   if not exists (select 1 from public.instructors where id = p_instructor and active) then
     raise exception 'Elegí un instructor activo.' using errcode = 'P0001';
   end if;
+  perform public.assert_slot_free(p_date, p_time, p_hours, p_lesson);
   update public.lessons
      set status = 'confirmed', instructor_id = p_instructor, lesson_date = p_date,
          start_time = p_time, hours = p_hours,
@@ -596,6 +631,8 @@ revoke execute on function public.cancel_lesson(uuid, text) from public, anon;
 revoke execute on function public.complete_lesson(uuid, numeric, text, uuid[], uuid[]) from public, anon;
 revoke execute on function public.set_student_skill(uuid, uuid, text) from public, anon;
 revoke execute on function public.agenda(date, date) from public, anon;
+revoke execute on function public.busy_slots(date, date, uuid) from public, anon;
+revoke execute on function public.assert_slot_free(date, time, numeric, uuid) from public, anon, authenticated;
 grant execute on function public.create_invite(text, uuid) to authenticated;
 grant execute on function public.claim_invite(text) to authenticated;
 grant execute on function public.app_me() to authenticated;
@@ -609,3 +646,4 @@ grant execute on function public.cancel_lesson(uuid, text) to authenticated;
 grant execute on function public.complete_lesson(uuid, numeric, text, uuid[], uuid[]) to authenticated;
 grant execute on function public.set_student_skill(uuid, uuid, text) to authenticated;
 grant execute on function public.agenda(date, date) to authenticated;
+grant execute on function public.busy_slots(date, date, uuid) to authenticated;
