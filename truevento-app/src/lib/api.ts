@@ -247,3 +247,10 @@ export function createLogin(input: { instructor_id: string; username: string; pa
 export function updateLogin(input: { profile_id: string; active?: boolean; password?: string }) {
   return callUsersApi('PATCH', input)
 }
+
+// ------------------------------------------------------------------ students & instructors app
+
+/** One-time code for a student or instructor to join the students app (admins only). */
+export async function createInvite(kind: 'student' | 'instructor', targetId: string): Promise<string> {
+  return check(await supabase.rpc('create_invite', { p_kind: kind, p_target: targetId })) as string
+}

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>TRUEVENTO Alumnos</title>
+    <meta name="description" content="Tus clases, tu progreso y el viento en TRUEVENTO Kiteschool." />
+    <meta name="theme-color" content="#07060f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Truevento" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon-64.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      // apply the saved theme before the first paint (see src/lib/theme.ts)
+      try {
+        var t = localStorage.getItem('truevento-alumnos-theme')
+        var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
+    <style>
+      /* Launch screen: the logo arrives, a ring in the logo's gradient draws around it,
+         wind streaks pass behind and a comet keeps turning until the app is ready. */
+      #splash {
+        position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 26px; overflow: hidden; color: #fff;
+        background: radial-gradient(circle at 50% 42%, #24185a 0%, #0c0920 46%, #07060f 76%);
+        transition: opacity .55s ease .1s;
+      }
+      #splash.hide { opacity: 0; pointer-events: none; }
+      #splash.hide .sp-stage { transform: scale(1.12); opacity: 0; }
+      .sp-stage {
+        position: relative; width: min(60vw, 240px); aspect-ratio: 1; display: grid; place-items: center;
+        transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s ease;
+      }
+      .sp-glow {
+        position: absolute; inset: -30%; border-radius: 50%; filter: blur(28px);
+        background: radial-gradient(circle, rgba(109,75,233,.55), rgba(230,78,134,.18) 45%, transparent 68%);
+        animation: sp-breathe 3.2s ease-in-out infinite;
+      }
+      .sp-logo {
+        position: relative; width: 78%; aspect-ratio: 1; border-radius: 50%; z-index: 2;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 18px 60px rgba(0,0,0,.6);
+        animation: sp-logo-in 1s cubic-bezier(.16,1,.3,1) both;
+      }
+      .sp-ring { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; }
+      .sp-ring circle { fill: none; stroke-linecap: round; }
+      .sp-track { stroke: rgba(255,255,255,.07); stroke-width: 2; }
+      .sp-arc {
+        stroke: url(#sp-grad); stroke-width: 3; stroke-dasharray: 100; stroke-dashoffset: 100;
+        transform-origin: 50% 50%; transform: rotate(-90deg);
+        animation: sp-draw 1.3s cubic-bezier(.65,0,.35,1) .25s forwards, sp-dim .8s ease 1.6s forwards;
+      }
+      .sp-comet {
+        stroke: url(#sp-grad); stroke-width: 4; stroke-dasharray: 16 84; opacity: 0;
+        transform-origin: 50% 50%; filter: drop-shadow(0 0 6px rgba(157,65,217,.9));
+        animation: sp-fade-in .5s ease 1.4s forwards, sp-spin 1.6s linear 1.4s infinite;
+      }
+      .sp-wind {
+        position: absolute; left: 0; height: 2px; width: 46%; border-radius: 2px; opacity: 0; z-index: 0;
+        background: linear-gradient(90deg, transparent, #c5c8ff 45%, #e64e86 75%, transparent);
+        animation: sp-wind 2.6s cubic-bezier(.4,0,.2,1) infinite;
+      }
+      .sp-wind.w1 { top: 30%; animation-delay: .5s; }
+      .sp-wind.w2 { top: 52%; width: 58%; animation-delay: .85s; }
+      .sp-wind.w3 { top: 71%; width: 38%; animation-delay: 1.2s; }
+      .sp-tag {
+        font: 600 11px/1 system-ui, sans-serif; letter-spacing: .48em; text-indent: .48em; color: rgba(197,200,255,.85);
+        opacity: 0; animation: sp-rise .7s cubic-bezier(.16,1,.3,1) .95s forwards;
+      }
+      .sp-bar { width: 132px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden;
+        opacity: 0; animation: sp-fade-in .4s ease 1.2s forwards; }
+      .sp-bar::after { content: ''; display: block; width: 38%; height: 100%; border-radius: 3px;
+        background: linear-gradient(90deg, #5278ec, #6d4be9, #9d41d9, #e64e86); animation: sp-slide 1.2s ease-in-out infinite; }
+      @keyframes sp-logo-in { from { opacity: 0; transform: scale(.62) rotate(-10deg); filter: blur(10px); }
+        to { opacity: 1; transform: none; filter: none; } }
+      @keyframes sp-draw { to { stroke-dashoffset: 0; } }
+      @keyframes sp-dim { to { opacity: .28; } }
+      @keyframes sp-fade-in { to { opacity: 1; } }
+      @keyframes sp-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes sp-breathe { 0%, 100% { transform: scale(.9); opacity: .55; } 50% { transform: scale(1.08); opacity: .9; } }
+      @keyframes sp-wind { 0% { transform: translateX(-70%); opacity: 0; } 15% { opacity: .9; }
+        55% { transform: translateX(230%); opacity: 0; } 100% { transform: translateX(230%); opacity: 0; } }
+      @keyframes sp-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      @keyframes sp-slide { from { transform: translateX(-100%); } to { transform: translateX(265%); } }
+      @media (prefers-reduced-motion: reduce) {
+        #splash *, #splash *::after { animation: none !important; }
+        .sp-arc { stroke-dashoffset: 0; opacity: .6; } .sp-tag, .sp-bar { opacity: 1; } .sp-wind, .sp-comet { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash" role="status" aria-label="Cargando TRUEVENTO Alumnos">
+      <div class="sp-stage">
+        <div class="sp-glow"></div>
+        <span class="sp-wind w1"></span><span class="sp-wind w2"></span><span class="sp-wind w3"></span>
+        <svg class="sp-ring" viewBox="0 0 240 240" aria-hidden="true">
+          <defs>
+            <linearGradient id="sp-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#5278ec" /><stop offset=".4" stop-color="#6d4be9" />
+              <stop offset=".7" stop-color="#9d41d9" /><stop offset="1" stop-color="#e64e86" />
+            </linearGradient>
+          </defs>
+          <circle class="sp-track" cx="120" cy="120" r="116" />
+          <circle class="sp-arc" cx="120" cy="120" r="116" pathLength="100" />
+          <circle class="sp-comet" cx="120" cy="120" r="116" pathLength="100" />
+        </svg>
+        <img class="sp-logo" src="/logo-truevento.png" alt="TRUEVENTO kiteschool" />
+      </div>
+      <div class="sp-tag">ALUMNOS · INSTRUCTORES</div>
+      <div class="sp-bar"></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

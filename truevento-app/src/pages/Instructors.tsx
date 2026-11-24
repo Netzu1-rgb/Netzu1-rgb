@@ -8,6 +8,8 @@ import { formatHours, formatMoney, hasAtMostTwoDecimals, parseDecimal, sumAmount
 import { friendlyError } from '../lib/errors'
 import { normalizeUsername, USERNAME_PATTERN } from '../lib/username'
 import type { Instructor, Profile } from '../lib/types'
+import InviteButton from '../components/InviteButton'
+import { SINGLE_USER } from '../lib/singleUser'
 import { ErrorBox, Field, Icon, Loading, Modal, OfflineNote, PageHeader, Spinner, Toggle, useConfirm, useToast } from '../components/ui'
 
 export default function Instructors() {
@@ -102,13 +104,14 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
           <div className="tabular font-semibold">{i.kind === 'owner' ? 'No genera' : formatMoney(pending, currency)}</div>
         </div>
       </div>
-      <button type="button" onClick={onAccess} className="mt-3 flex w-full items-center justify-between rounded-xl border border-line px-3 py-2.5 text-sm">
+      {i.active && <InviteButton kind="instructor" targetId={i.id} name={i.full_name} phone={i.phone} className="btn-ghost mt-3 w-full" />}
+      {!SINGLE_USER && <button type="button" onClick={onAccess} className="mt-3 flex w-full items-center justify-between rounded-xl border border-line px-3 py-2.5 text-sm">
         <span className="flex items-center gap-2 text-ink-soft">
           <Icon name="key" className="h-4 w-4" />
           {login ? <>Acceso: <b className="text-ink">{login.username ?? 'con su email'}</b>{!login.active && ' (desactivado)'}</> : 'Sin acceso a la app'}
         </span>
         <span className="font-semibold text-brand-deep">{login ? 'Gestionar' : 'Crear acceso'}</span>
-      </button>
+      </button>}
     </div>
   )
 }

@@ -61,8 +61,8 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: instructor } = await db.from('instructors').select('id, full_name, kind').eq('id', instructorId).maybeSingle()
   if (!instructor) return json(404, { error: 'Instructor inexistente.' })
-  const { data: linked } = await db.from('profiles').select('id').eq('instructor_id', instructorId).maybeSingle()
-  if (linked) return json(409, { error: 'Este instructor ya tiene acceso.' })
+  const { data: linked } = await db.from('profiles').select('id').eq('instructor_id', instructorId).limit(1)
+  if (linked?.length) return json(409, { error: 'Este instructor ya tiene acceso.' })
 
   const domain = process.env.USERNAME_DOMAIN ?? process.env.VITE_USERNAME_DOMAIN ?? 'truevento.com'
   const { data: created, error } = await db.auth.admin.createUser({

@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* TRUEVENTO logo palette: blue #5278ec -> violet #6d4be9 -> purple #9d41d9 -> pink #e64e86, on night black */
+@theme {
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-night-950: #07060f;
+  --color-night-900: #110d24;
+  --color-night-800: #1c1638;
+  --color-night-700: #2b2255;
+  --color-brand: #4f5fe6;
+  --color-brand-deep: #3c45c4;
+  --color-brand-soft: #eceefd;
+  --color-brand-100: #e4e6ff;
+  --color-brand-200: #c5c8ff;
+  --color-brand-300: #a6a9ff;
+  --color-violet: #7a3fe0;
+  --color-violet-deep: #5a28b5;
+  --color-violet-soft: #f1eafd;
+  --color-pink: #e64e86;
+  --color-coral: #c22f59;
+  --color-coral-soft: #fde8ee;
+  --color-sand: #f2f0f9;
+  --color-sand-deep: #e4e0f2;
+  --color-mist: #f7f6fb;
+  --color-line: #e7e4f1;
+  --color-ink: #16132b;
+  --color-ink-soft: #4a4666;
+  --color-ink-mute: #6c6887;
+  /* roles that change with the theme */
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f1f9;
+  --color-line-strong: #d3cee5;
+  --color-heading: #110d24;
+  --color-selected: #110d24;
+  --color-coral-ink: #9d1c48;
+  /* destructive buttons: white text needs a deep red in both themes */
+  --color-danger: #c22f59;
+}
+
+/* Dark theme: same logo palette on night surfaces. Applied with data-theme="dark" on <html>
+   (Configuración → Tema, or the phone's setting when the theme is automatic). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-mist: #0c0a1a;
+  --color-surface: #17132d;
+  --color-surface-2: #211b3e;
+  --color-line: #2d2650;
+  --color-line-strong: #463d73;
+  --color-heading: #f4f2ff;
+  --color-ink: #ece9fb;
+  --color-ink-soft: #bfbad9;
+  --color-ink-mute: #9690b8;
+  --color-brand: #6372f0;
+  --color-brand-deep: #aab2ff;
+  --color-brand-soft: #23214f;
+  --color-violet: #8f5bf0;
+  --color-violet-deep: #c9adff;
+  --color-violet-soft: #2a1d4f;
+  --color-coral: #f0567f;
+  --color-coral-soft: #3b1a2c;
+  --color-coral-ink: #ffb3c9;
+  --color-sand: #1e1939;
+  --color-sand-deep: #2b2452;
+  --color-selected: #5b5fe8;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-mist font-sans text-ink antialiased;
+    overscroll-behavior-y: none;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+  input, select, textarea, button {
+    font: inherit;
+  }
+  /* iOS zooms into inputs under 16px */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(22,19,43,0.05)];
+}
+@utility field-label {
+  @apply mb-1.5 block text-sm font-semibold text-ink-soft;
+}
+@utility input {
+  @apply block min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-ink outline-none transition
+    placeholder:text-ink-mute/70 focus:border-brand focus:ring-4 focus:ring-brand/15 disabled:bg-surface-2 disabled:text-ink-mute;
+}
+/* use instead of .input (not together) so the error colors always win */
+@utility input-error {
+  @apply input;
+  border-color: var(--color-coral);
+  --tw-ring-color: color-mix(in oklab, var(--color-coral) 15%, transparent);
+}
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition
+    active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+}
+/* main action: the logo's blue-to-violet */
+@utility btn-primary {
+  @apply btn text-white shadow-[0_8px_20px_-8px_rgba(109,75,233,0.7)] hover:brightness-110;
+  background-image: linear-gradient(100deg, #4f5fe6, #6d4be9 55%, #8a3fdc);
+}
+@utility btn-dark {
+  @apply btn bg-selected text-white hover:brightness-110;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
+}
+@utility btn-danger {
+  @apply btn bg-danger text-white hover:brightness-110;
+}
+@utility chip {
+  @apply inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-surface px-4 text-sm font-semibold
+    text-ink-soft transition active:scale-95;
+}
+/* selected chip: use instead of .chip */
+@utility chip-on {
+  @apply chip;
+  border-color: var(--color-selected);
+  background-color: var(--color-selected);
+  color: #fff;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+/* the full logo gradient, for thin accents */
+@utility brand-gradient {
+  background: linear-gradient(90deg, #5278ec, #6d4be9 40%, #9d41d9 70%, #e64e86);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+/* inside a host that already pads the page for the status bar (the demo viewer) */
+.in-viewer .safe-top {
+  padding-top: 0;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

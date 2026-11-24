@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string
   readonly VITE_SUPABASE_ANON_KEY?: string
   readonly VITE_USERNAME_DOMAIN?: string
+  /** address of the students & instructors app (for invitations) */
+  readonly VITE_STUDENTS_APP_URL?: string
   /** '1' only in the self-contained demo build (npm run build:demo) */
   readonly VITE_DEMO?: string
   /** single-person mode: no login screen (see src/lib/singleUser.ts) */

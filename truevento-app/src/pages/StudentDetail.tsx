@@ -7,6 +7,7 @@ import { useInstructors } from '../lib/hooks'
 import { formatDate } from '../lib/dates'
 import { formatHours, formatMoney, sumAmounts, sumHours } from '../lib/money'
 import StudentForm from '../components/StudentForm'
+import InviteButton from '../components/InviteButton'
 import { ErrorBox, Icon, Loading, OfflineNote, Stat } from '../components/ui'
 
 export default function StudentDetail() {
@@ -55,6 +56,7 @@ export default function StudentDetail() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Link to={`/registrar?alumno=${s.id}`} className="btn-primary"><Icon name="plus" /> Registrar clase</Link>
           {isAdmin && <button type="button" className="btn-ghost" onClick={() => setEditOpen(true)}><Icon name="edit" /> Editar ficha</button>}
+          {isAdmin && s.active && <InviteButton kind="student" targetId={s.id} name={s.full_name} phone={s.phone} className="btn-ghost sm:col-span-2" />}
         </div>
       </div>
 

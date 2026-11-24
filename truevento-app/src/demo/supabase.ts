@@ -295,6 +295,12 @@ async function rpc(name: string, a: any = {}) {
       save()
       return { data: null, error: null }
     }
+    case 'create_invite': {
+      if (!isAdmin()) return fail('Solo un administrador puede invitar.', '42501')
+      const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+      const pick = () => Array.from({ length: 4 }, () => abc[Math.floor(Math.random() * abc.length)]).join('')
+      return { data: `${pick()}-${pick()}`, error: null }
+    }
     default:
       return fail(`Función no disponible en la demo: ${name}`)
   }

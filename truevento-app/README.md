@@ -29,7 +29,7 @@ Aplicación web progresiva (PWA) para registrar alumnos, clases, horas, ingresos
 ### Estructura
 
 ```
-supabase/migrations/   esquema, reglas, RLS y funciones (una migración)
+supabase/migrations/   esquema, reglas, RLS y funciones (gestión + app de alumnos)
 supabase/tests/        pruebas de reglas y permisos (npm run db:test)
 api/users.ts           función de servidor para accesos
 src/pages/             pantallas: Dashboard, Registrar clase, Alumnos, Instructores, Liquidaciones, Historial, Configuración
@@ -49,6 +49,12 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
 7. Las clases ya liquidadas no se pueden editar ni borrar.
 8. Un instructor inactivo no puede cargar clases nuevas.
 
+## App de alumnos e instructores
+
+La carpeta `../truevento-alumnos` es una segunda app, conectada a esta misma base, donde los alumnos ven sus clases, piden horarios, siguen su progreso y el viento, y los instructores manejan su agenda. Se invita a cada persona desde acá: **ficha del alumno → Invitar a la app** o **Instructores → Invitar a la app** (genera un código y lo manda por WhatsApp). Las clases que un instructor cierra en esa app aparecen solas en el Historial con la nota "Desde la agenda". Ver `../truevento-alumnos/README.md`.
+
+Requiere la migración `20261124000000_students_app.sql` y la variable `VITE_STUDENTS_APP_URL` con la dirección de esa app.
+
 ## Funcionamiento sin conexión
 
 - El service worker guarda la app completa: abre sin internet.
@@ -67,7 +73,7 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
    npx supabase link --project-ref TU_PROJECT_REF
    npx supabase db push
    ```
-   O copiá el contenido de `supabase/migrations/20261119000000_init.sql` en el **SQL Editor** y ejecutalo.
+   O copiá el contenido de cada archivo de `supabase/migrations/` (en orden) en el **SQL Editor** y ejecutalo.
 3. En **Authentication → URL Configuration**, poné como *Site URL* la dirección de Vercel (por ejemplo `https://truevento.vercel.app`).
 4. En **Project Settings → API** copiá: la URL del proyecto, la clave *anon/publishable* y la clave *service_role/secret* (esta última es secreta: solo va en Vercel, nunca en el frontend).
 
