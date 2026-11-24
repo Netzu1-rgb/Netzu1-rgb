@@ -14,6 +14,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: 'home' },
   { to: '/registrar', label: 'Registrar clase', icon: 'plus' },
+  { to: '/solicitudes', label: 'Solicitudes', icon: 'calendar', adminOnly: true },
   { to: '/alumnos', label: 'Alumnos', icon: 'users' },
   { to: '/instructores', label: 'Instructores', icon: 'kite', adminOnly: true },
   { to: '/liquidaciones', label: 'Liquidaciones', icon: 'wallet' },

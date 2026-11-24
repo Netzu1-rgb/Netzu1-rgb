@@ -15,6 +15,7 @@ interface DB {
   students: Row[]
   classes: Row[]
   settlements: Row[]
+  lessons: Row[]
   users: { id: string; email: string; password: string }[]
 }
 type Table = Exclude<keyof DB, 'users'>
@@ -41,6 +42,7 @@ function seed(): DB {
     students: [],
     classes: [],
     settlements: [],
+    lessons: [],
     users: [
       { id: u1, email: `victoria@${DEMO_DOMAIN}`, password: 'demo1234' },
       { id: u2, email: `sebastian@${DEMO_DOMAIN}`, password: 'demo1234' },
@@ -59,7 +61,7 @@ function withMoney(c: Row): Row {
 function load(): DB {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as DB
+    if (raw) return { lessons: [], ...JSON.parse(raw) } as DB
   } catch { /* storage blocked: keep in memory */ }
   const db = seed()
   save(db)
@@ -121,6 +123,7 @@ function visible(table: Table): Row[] {
 const FK: Record<string, Record<string, [Table, string]>> = {
   classes: { student: ['students', 'student_id'], instructor: ['instructors', 'instructor_id'] },
   settlements: { instructor: ['instructors', 'instructor_id'] },
+  lessons: { student: ['students', 'student_id'], instructor: ['instructors', 'instructor_id'] },
 }
 
 // ------------------------------------------------------------------ query builder
@@ -292,6 +295,21 @@ async function rpc(name: string, a: any = {}) {
       if (!isAdmin()) return fail('Solo un administrador puede anular pagos.', '42501')
       db.classes.forEach((c) => { if (c.settlement_id === a.p_settlement_id) c.settlement_id = null })
       db.settlements = db.settlements.filter((s) => s.id !== a.p_settlement_id)
+      save()
+      return { data: null, error: null }
+    }
+    case 'confirm_request': {
+      if (!isAdmin()) return fail('Solo un administrador puede poner precios.', '42501')
+      const l = db.lessons.find((x) => x.id === a.p_lesson)
+      if (!l) return fail('Clase inexistente.')
+      db.students.find((x) => x.id === l.student_id)!.hourly_rate = a.p_rate
+      Object.assign(l, { status: 'confirmed', instructor_id: a.p_instructor })
+      save()
+      return { data: null, error: null }
+    }
+    case 'cancel_lesson': {
+      const l = db.lessons.find((x) => x.id === a.p_lesson)
+      if (l) l.status = 'cancelled'
       save()
       return { data: null, error: null }
     }

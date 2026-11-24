@@ -23,6 +23,8 @@ export interface Lesson {
   student_note: string | null
   staff_note: string | null
   created_at: string
+  /** staff only: the school has not set this student's price yet */
+  price_pending?: boolean
 }
 
 export interface BusySlot {
@@ -71,8 +73,25 @@ export interface Announcement {
   created_at: string
 }
 
+export type Experience = 'none' | 'some' | 'independent'
+export const EXPERIENCE: { value: Experience; label: string }[] = [
+  { value: 'none', label: 'Nunca hice kite' },
+  { value: 'some', label: 'Tomé algunas clases' },
+  { value: 'independent', label: 'Ya navego solo' },
+]
+
+export interface PersonalData {
+  full_name: string
+  phone: string
+  weight_kg: number | null
+  experience: Experience | null
+}
+
 export interface StudentSummary {
   full_name: string
+  phone: string | null
+  weight_kg: number | null
+  experience: Experience | null
   start_date: string
   hours: number
   classes: number

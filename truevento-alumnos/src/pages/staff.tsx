@@ -52,8 +52,9 @@ function useLessonActions() {
     }
     if (l.status === 'confirmed') {
       return <>
-        {l.lesson_date <= today() && (
-          <button type="button" className={`btn-primary ${small}`} onClick={() => setClosing(l)}><Icon name="check" className="h-4 w-4" /> Clase dada</button>
+        {l.lesson_date <= today() && (l.price_pending
+          ? <span className="flex min-h-10 items-center text-sm text-ink-mute">Para cerrarla, la escuela tiene que poner el precio en la gestión.</span>
+          : <button type="button" className={`btn-primary ${small}`} onClick={() => setClosing(l)}><Icon name="check" className="h-4 w-4" /> Clase dada</button>
         )}
         <button type="button" className={`btn-ghost ${small}`} onClick={() => setEditing(l)}>Cambiar</button>
         <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>Cancelar</button>

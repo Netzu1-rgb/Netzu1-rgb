@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import { useAuth } from '../context/AuthContext'
 import PeriodFilter from '../components/PeriodFilter'
 import { ErrorBox, Icon, Loading, OfflineNote, PageHeader, Stat } from '../components/ui'
-import { fetchClasses, fetchPendingPayouts, fetchStudents } from '../lib/api'
+import { fetchClasses, fetchPendingPayouts, fetchRequests, fetchStudents } from '../lib/api'
 import { useData } from '../lib/useData'
 import { chartBuckets, describePeriod, periodFor, type Period } from '../lib/dates'
 import { formatHours, formatMoney, formatNumber, sumAmounts, sumHours } from '../lib/money'
@@ -62,6 +62,7 @@ export default function Dashboard() {
         subtitle={isAdmin ? undefined : 'Tu actividad en la escuela'}
         action={<Link to="/registrar" className="btn-primary hidden sm:inline-flex"><Icon name="plus" /> Registrar clase</Link>} />
 
+      {isAdmin && <RequestsBanner />}
       <div className="mb-4"><PeriodFilter value={period} onChange={setPeriod} /></div>
       {classes.offline && <OfflineNote savedAt={classes.savedAt} />}
       {classes.error && <div className="mb-4"><ErrorBox message={classes.error} onRetry={classes.reload} /></div>}
@@ -237,4 +238,23 @@ function buildSeries(rows: ClassRow[], period: Period) {
     unit,
     data: [...acc.values()].map((b) => ({ label: b.label, title: b.title, revenue: sumAmounts(b.revenue), profit: sumAmounts(b.profit) })),
   }
+}
+
+/** New class requests from the students app, at the top of the dashboard. */
+function RequestsBanner() {
+  const { session } = useAuth()
+  const requests = useData(`${session!.user.id}:requests`, fetchRequests)
+  const n = requests.data?.length ?? 0
+  if (!n) return null
+  const fresh = requests.data!.filter((r) => r.student.hourly_rate == null).length
+  return (
+    <Link to="/solicitudes" className="mb-4 flex items-center gap-3 rounded-2xl border border-coral/30 bg-coral-soft px-4 py-3 text-coral-ink transition hover:brightness-[0.98]">
+      <span className="grid h-9 min-w-9 place-items-center rounded-full bg-coral px-2 font-display font-bold text-white">{n}</span>
+      <span className="flex-1">
+        <b className="block">{n === 1 ? '1 clase pedida desde la app' : `${n} clases pedidas desde la app`}</b>
+        <span className="text-sm">{fresh ? `${fresh === 1 ? '1 alumno nuevo' : `${fresh} alumnos nuevos`}: poné el precio y confirmá.` : 'Revisá y confirmá.'}</span>
+      </span>
+      <Icon name="chevronRight" />
+    </Link>
+  )
 }

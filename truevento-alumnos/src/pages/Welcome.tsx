@@ -4,7 +4,8 @@ import { useSession } from '../context/Session'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { normalizeCode } from '../lib/format'
-import type { InvitePreview } from '../lib/types'
+import type { InvitePreview, PersonalData } from '../lib/types'
+import { EXPERIENCE } from '../lib/types'
 
 function Shell({ children, subtitle }: { children: ReactNode; subtitle: string }) {
   return (
@@ -53,10 +54,63 @@ function usePreview(code: string) {
 const DEMO = import.meta.env.VITE_DEMO === '1'
 const demoApi = api as unknown as { demoInvite?: () => string }
 
+const EMPTY: PersonalData = { full_name: '', phone: '', weight_kg: null, experience: null }
+
+/** Name, WhatsApp, weight and experience: what the school needs to know about a new student. */
+export function PersonalFields({ value, onChange, withName = true }: {
+  value: PersonalData
+  onChange: (v: PersonalData) => void
+  withName?: boolean
+}) {
+  return (
+    <>
+      {withName && (
+        <Field label="Nombre y apellido">
+          {(id) => <input id={id} className="input" autoComplete="name" maxLength={120}
+            value={value.full_name} onChange={(e) => onChange({ ...value, full_name: e.target.value })} />}
+        </Field>
+      )}
+      <Field label="WhatsApp" hint="Con código de país y de área. Ej: +54 9 221 555-1234">
+        {(id) => <input id={id} className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={40}
+          value={value.phone} onChange={(e) => onChange({ ...value, phone: e.target.value })} />}
+      </Field>
+      <Field label="Peso aproximado en kg (opcional)" hint="Sirve para elegir el tamaño de kite.">
+        {(id) => <input id={id} className="input" inputMode="numeric" maxLength={3}
+          value={value.weight_kg ?? ''} onChange={(e) => {
+            const n = Number(e.target.value.replace(/\D/g, ''))
+            onChange({ ...value, weight_kg: e.target.value.trim() && n ? Math.min(n, 999) : null })
+          }} />}
+      </Field>
+      <fieldset>
+        <legend className="field-label">Experiencia</legend>
+        <div className="flex flex-wrap gap-2">
+          {EXPERIENCE.map((x) => (
+            <button key={x.value} type="button" aria-pressed={value.experience === x.value}
+              onClick={() => onChange({ ...value, experience: x.value })}
+              className={value.experience === x.value ? 'chip-on' : 'chip'}>{x.label}</button>
+          ))}
+        </div>
+      </fieldset>
+    </>
+  )
+}
+
+/** Checks the personal data; returns a message or null. */
+export function personalError(d: PersonalData, withName = true): string | null {
+  if (withName && d.full_name.trim().length < 3) return 'Escribí tu nombre y apellido.'
+  if (d.phone.replace(/\D/g, '').length < 8) return 'Escribí tu WhatsApp con código de área.'
+  if (d.weight_kg !== null && (d.weight_kg < 20 || d.weight_kg > 200)) return 'El peso tiene que estar entre 20 y 200 kg.'
+  if (!d.experience) return 'Contanos tu experiencia.'
+  return null
+}
+
 export default function Welcome() {
   const { refresh } = useSession()
-  const [mode, setMode] = useState<'join' | 'login'>(() => (new URLSearchParams(location.search).get('codigo') ? 'join' : 'login'))
-  const [code, setCode] = useState(() => normalizeCode(new URLSearchParams(location.search).get('codigo') ?? ''))
+  const urlCode = normalizeCode(new URLSearchParams(location.search).get('codigo') ?? '')
+  const [mode, setMode] = useState<'login' | 'join'>(urlCode ? 'join' : 'login')
+  const [withCode, setWithCode] = useState(Boolean(urlCode))
+  const [code, setCode] = useState(urlCode)
+  const [data, setData] = useState<PersonalData>(EMPTY)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -67,7 +121,8 @@ export default function Welcome() {
     e.preventDefault()
     setError(null)
     if (mode === 'join') {
-      if (code.length !== 9) return setError('Escribí el código completo (8 letras y números).')
+      if (withCode && code.length !== 9) return setError('Escribí el código completo (8 letras y números).')
+      if (!withCode) { const msg = personalError(data); if (msg) return setError(msg) }
       if (!api.validUsername(username)) return setError('El usuario debe tener de 3 a 30 letras o números, sin espacios.')
       if (password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.')
     } else if (!username.trim() || !password) {
@@ -75,13 +130,18 @@ export default function Welcome() {
     }
     setBusy(true)
     try {
-      if (mode === 'join') await api.signUpWithCode(code, username, password)
-      else await api.signIn(username, password)
+      if (mode === 'join') {
+        await api.signUpAccount(username, password)
+        if (withCode) await api.claimInvite(code)
+        else await api.registerStudent({ ...data, full_name: data.full_name.trim(), phone: data.phone.trim() })
+      } else {
+        await api.signIn(username, password)
+      }
       await refresh()
     } catch (err) {
       const msg = friendlyError(err)
       setError(/Ya existe una cuenta/.test(msg) ? 'Ese usuario ya está en uso. Elegí otro.' : msg)
-      // the account may exist without the code applied: the next screen asks for it again
+      // the login may exist without its data: the next screen asks for it again
       await refresh()
     } finally {
       setBusy(false)
@@ -101,8 +161,8 @@ export default function Welcome() {
             onClick={() => { setBusy(true); void api.signIn('victoria', 'demo1234').then(refresh).finally(() => setBusy(false)) }}>
             <span>Entrar como instructora</span><span className="text-sm text-brand-200">Victoria</span>
           </button>
-          <button type="button" className="btn-ghost w-full" onClick={() => { setMode('join'); setCode(demoApi.demoInvite?.() ?? '') }}>
-            Probar con un código de invitación
+          <button type="button" className="btn-ghost w-full" onClick={() => { setMode('join'); setWithCode(false); setError(null) }}>
+            Probar como alumno nuevo
           </button>
         </div>
       )}
@@ -110,12 +170,27 @@ export default function Welcome() {
         {(['login', 'join'] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null) }}
             className={`min-h-11 rounded-lg text-sm font-semibold transition ${mode === m ? 'bg-surface text-heading shadow' : 'text-ink-mute'}`}>
-            {m === 'login' ? 'Ya tengo cuenta' : 'Tengo un código'}
+            {m === 'login' ? 'Ya tengo cuenta' : 'Crear cuenta'}
           </button>
         ))}
       </div>
       <form onSubmit={submit} className="space-y-4" noValidate>
-        {mode === 'join' && <CodeField code={code} setCode={setCode} preview={preview} />}
+        {mode === 'join' && (withCode ? (
+          <>
+            <CodeField code={code} setCode={setCode} preview={preview} />
+            <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2"
+              onClick={() => { setWithCode(false); setError(null) }}>No tengo código: soy alumno nuevo</button>
+          </>
+        ) : (
+          <>
+            <PersonalFields value={data} onChange={setData} />
+            <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2"
+              onClick={() => { setWithCode(true); setError(null); if (DEMO && !code) setCode(demoApi.demoInvite?.() ?? '') }}>
+              ¿La escuela te mandó un código? Usalo acá
+            </button>
+          </>
+        ))}
+        {mode === 'join' && <div className="border-t border-line pt-4 text-sm font-semibold text-heading">Tu usuario para entrar</div>}
         <Field label={mode === 'join' ? 'Elegí un usuario' : 'Usuario'} hint={mode === 'join' ? 'Con esto vas a entrar siempre. Ej: ana.silva' : undefined}>
           {(id) => <input id={id} className="input" autoComplete="username" autoCapitalize="none" autoCorrect="off"
             value={username} onChange={(e) => setUsername(e.target.value)} />}
@@ -133,20 +208,24 @@ export default function Welcome() {
   )
 }
 
-/** Signed in, but the account is not linked yet (the code failed or was never entered). */
+/** Signed in, but the account is not linked yet (sign-up interrupted): finish with data or a code. */
 export function ClaimCode() {
   const { refresh, signOut } = useSession()
+  const [withCode, setWithCode] = useState(false)
   const [code, setCode] = useState('')
+  const [data, setData] = useState<PersonalData>(EMPTY)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const preview = usePreview(code)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
-    setBusy(true)
     setError(null)
+    if (!withCode) { const msg = personalError(data); if (msg) return setError(msg) }
+    setBusy(true)
     try {
-      await api.claimInvite(code)
+      if (withCode) await api.claimInvite(code)
+      else await api.registerStudent({ ...data, full_name: data.full_name.trim(), phone: data.phone.trim() })
       await refresh()
     } catch (err) {
       setError(friendlyError(err))
@@ -158,10 +237,13 @@ export function ClaimCode() {
   return (
     <Shell subtitle="Falta un paso">
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <p className="text-ink-soft">Tu cuenta está creada. Escribí el código que te mandó la escuela para ver tus clases.</p>
-        <CodeField code={code} setCode={setCode} preview={preview} />
+        <p className="text-ink-soft">Tu usuario está creado. {withCode ? 'Escribí el código que te mandó la escuela.' : 'Completá tus datos para la escuela.'}</p>
+        {withCode ? <CodeField code={code} setCode={setCode} preview={preview} /> : <PersonalFields value={data} onChange={setData} />}
+        <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => { setWithCode(!withCode); setError(null) }}>
+          {withCode ? 'No tengo código: soy alumno nuevo' : '¿La escuela te mandó un código? Usalo acá'}
+        </button>
         {error && <ErrorBox message={error} />}
-        <button type="submit" className="btn-primary w-full text-lg" disabled={busy || code.length !== 9}>
+        <button type="submit" className="btn-primary w-full text-lg" disabled={busy || (withCode && code.length !== 9)}>
           {busy && <Spinner />} Continuar
         </button>
         <button type="button" className="btn-ghost w-full" onClick={() => void signOut()}>Salir</button>

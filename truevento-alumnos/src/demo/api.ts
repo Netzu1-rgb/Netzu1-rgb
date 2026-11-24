@@ -3,7 +3,7 @@
 import { normalizeUsername, USERNAME_PATTERN } from '../lib/username'
 import { addDays, today } from '../lib/format'
 import type {
-  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
+  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, PersonalData, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
 } from '../lib/types'
 
 interface User { id: string; username: string; password: string; role: Me['role']; student_id: string | null; instructor_id: string | null; full_name: string }
@@ -11,7 +11,7 @@ interface Row { id: string; student_id: string; instructor_id: string | null; le
 interface Db {
   users: User[]
   session: string | null
-  students: (Person & { start_date: string })[]
+  students: (Person & { start_date: string; phone?: string | null; weight_kg?: number | null; experience?: PersonalData['experience'] })[]
   instructors: Person[]
   skills: Skill[]
   progress: StudentSkill[]
@@ -52,7 +52,7 @@ const SKILLS: [number, string, string | null][] = [
 function seed(): Db {
   const victoria = { id: uid(), full_name: 'Victoria Linde' }
   const sebastian = { id: uid(), full_name: 'Sebastián Comasco' }
-  const ana = { id: uid(), full_name: 'Ana (alumna de ejemplo)', start_date: addDays(today(), -10) }
+  const ana = { id: uid(), full_name: 'Ana (alumna de ejemplo)', start_date: addDays(today(), -10), phone: '+54 9 221 555-0000', weight_kg: 60, experience: 'none' as const }
   const skills = SKILLS.map(([level, name, description], i) => ({ id: uid(), level, position: i, name, description }))
   const past = addDays(today(), -3)
   return {
@@ -114,14 +114,27 @@ export async function signIn(login: string, password: string) {
 export async function signOut() { setSession(null) }
 export function validUsername(u: string) { return USERNAME_PATTERN.test(normalizeUsername(u)) }
 
-export async function signUpWithCode(code: string, username: string, password: string) {
+export async function signUpAccount(username: string, password: string) {
   await wait()
   const user = normalizeUsername(username)
   if (db.users.some((u) => u.username === user)) throw new Error('User already registered')
   const u: User = { id: uid(), username: user, password, role: null, student_id: null, instructor_id: null, full_name: user }
   db.users.push(u)
   setSession(u.id)
-  await claimInvite(code)
+}
+
+export async function registerStudent(d: PersonalData) {
+  await wait()
+  const st = { id: uid(), full_name: d.full_name, start_date: today(), phone: d.phone, weight_kg: d.weight_kg, experience: d.experience }
+  db.students.push(st)
+  Object.assign(me()!, { role: 'student', student_id: st.id, full_name: st.full_name })
+  save()
+}
+
+export async function updateMyDetails(d: Pick<PersonalData, 'phone' | 'weight_kg' | 'experience'>) {
+  await wait()
+  Object.assign(db.students.find((s) => s.id === me()?.student_id)!, d)
+  save()
 }
 
 export async function claimInvite(code: string) {
@@ -222,7 +235,7 @@ export async function myStudentSummary(): Promise<StudentSummary | null> {
   const st = db.students.find((s) => s.id === me()?.student_id)
   if (!st) return null
   const mine = db.classes.filter((c) => c.student_id === st.id)
-  return { full_name: st.full_name, start_date: st.start_date, hours: mine.reduce((s, c) => s + c.hours, 0), classes: mine.length, last_class: mine.at(-1)?.date ?? null }
+  return { full_name: st.full_name, phone: st.phone ?? null, weight_kg: st.weight_kg ?? null, experience: st.experience ?? null, start_date: st.start_date, hours: mine.reduce((s, c) => s + c.hours, 0), classes: mine.length, last_class: mine.at(-1)?.date ?? null }
 }
 
 export async function listStudents(): Promise<Person[]> { await wait(); return db.students }

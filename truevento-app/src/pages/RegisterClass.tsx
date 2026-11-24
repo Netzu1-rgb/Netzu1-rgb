@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { useInstructors, useStudents } from '../lib/hooks'
-import { createClass, createInstructor, fetchClass, updateClass } from '../lib/api'
+import { createClass, createInstructor, fetchClass, updateClass, updateStudent } from '../lib/api'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, hoursToInput, parseDecimal, parseHours } from '../lib/money'
 import { formatDate, today } from '../lib/dates'
@@ -12,7 +12,7 @@ import { ErrorBox, Icon, Loading, OfflineNote, PageHeader, Spinner, useToast } f
 
 const HOUR_CHIPS = ['1', '1:30', '2', '2:30', '3']
 
-const toInput = (n: number) => String(n).replace('.', ',')
+const toInput = (n: number | null) => (n == null ? '' : String(n).replace('.', ','))
 const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ')
 
 interface Errors { [k: string]: string | undefined }
@@ -214,6 +214,11 @@ export default function RegisterClass() {
         return
       }
       const result = await createClass(payload, session.user.id, studentInput, instructorQueued)
+      // a student who signed up in the app gets this price on their record
+      if (chosen && chosen.hourly_rate == null && isAdmin) {
+        try { await updateStudent(chosen.id, { hourly_rate: rateN! }) } catch { /* the class is saved; the price can be set later */ }
+        students.reload()
+      }
       setSaved({
         queued: result === 'queued', student: chosen?.full_name ?? studentInput!.full_name, newStudent: Boolean(studentInput),
         instructor: instructorInput?.full_name ?? instructor?.full_name ?? '', hours: hoursN!, total: fromCents(amounts!.totalCents),
@@ -308,7 +313,7 @@ export default function RegisterClass() {
                       <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => pickStudent(s)}
                         className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left active:bg-surface-2">
                         <span className="truncate font-medium">{s.full_name}</span>
-                        <span className="shrink-0 text-sm text-ink-mute">{formatMoney(s.hourly_rate, currency)}/h</span>
+                        <span className="shrink-0 text-sm text-ink-mute">{s.hourly_rate == null ? 'Sin precio' : `${formatMoney(s.hourly_rate, currency)}/h`}</span>
                       </button>
                     </li>
                   ))}
@@ -337,7 +342,7 @@ export default function RegisterClass() {
           </Step>
 
           {/* 2. price */}
-          <Step n={2} done={step2Done} title="Precio por hora" hint={chosen && rateN !== null && rateN !== chosen.hourly_rate
+          <Step n={2} done={step2Done} title="Precio por hora" hint={chosen && chosen.hourly_rate != null && rateN !== null && rateN !== chosen.hourly_rate
             ? `Solo para esta clase. Su ficha sigue en ${formatMoney(chosen.hourly_rate, currency)}.`
             : 'Lo que paga el alumno por cada hora de clase.'}>
             <MoneyInput id="f-rate" label="Precio por hora que paga el alumno" symbol={symbol} value={rate} onChange={setRate}

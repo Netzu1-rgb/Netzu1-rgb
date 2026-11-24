@@ -12,7 +12,8 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ana@test.local'),
   ('00000000-0000-0000-0000-0000000000d2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'beto@test.local'),
   ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'owner2@test.local'),
-  ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'nobody@test.local');
+  ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'nobody@test.local'),
+  ('00000000-0000-0000-0000-0000000000e9', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'nueva@test.local');
 
 create function tests.act_as(uid text) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
@@ -217,6 +218,49 @@ do $$ begin
   assert (select count(*) from public.announcements) = 0;
 end $$;
 select tests.fails($$select public.request_lesson(current_date + 3, '10:00', 1)$$) as "inactive student asks";
+
+\echo '11. a new student signs up alone; the admin only sets the price'
+select tests.act_as('00000000-0000-0000-0000-0000000000e9');
+select tests.fails($$select public.register_student('Jo', '+54 9 221 555-1111')$$) as "short name";
+select tests.fails($$select public.register_student('Julia Paz', '123')$$) as "short phone";
+insert into tests.vars values ('julia', public.register_student('Julia Paz', '+54 9 221 555-1111', 62::smallint, 'none'));
+select tests.fails($$select public.register_student('Otra Vez', '+54 9 221 555-1111')$$) as "register twice";
+do $$ begin
+  assert public.my_student_id() = (select v::uuid from tests.vars where k = 'julia');
+  assert (public.my_student_summary() ->> 'weight_kg')::int = 62;
+  assert (select count(*) from public.students) = 0, 'still cannot read the students table';
+end $$;
+select public.update_my_details('+55 88 99999-1111', 63::smallint, 'some');
+insert into tests.vars values ('jreq', public.request_lesson(current_date + 5, '10:00', 2, null, 'Primera vez'));
+
+select tests.act_as('00000000-0000-0000-0000-0000000000a1');
+do $$ begin
+  assert (select hourly_rate is null and self_registered and weight_kg = 63 and experience = 'some' and phone = '+55 88 99999-1111'
+            from public.students where id = (select v::uuid from tests.vars where k = 'julia')), 'admin sees her data, no price yet';
+  assert (select price_pending from public.agenda(current_date, current_date + 10) where id = (select v::uuid from tests.vars where k = 'jreq'));
+end $$;
+
+-- an instructor may confirm, but cannot close a class without the price, nor set it
+select tests.act_as('00000000-0000-0000-0000-0000000000b1');
+select tests.fails($$select public.confirm_request((select v::uuid from tests.vars where k = 'jreq'), 200, '00000000-0000-0000-0000-000000000e01')$$) as "instructor sets price";
+
+select tests.act_as('00000000-0000-0000-0000-0000000000a1');
+select tests.fails($$select public.confirm_request((select v::uuid from tests.vars where k = 'jreq'), null, '00000000-0000-0000-0000-000000000e01')$$) as "no price";
+select public.confirm_request((select v::uuid from tests.vars where k = 'jreq'), 220, '00000000-0000-0000-0000-000000000e01');
+do $$ begin
+  assert (select hourly_rate from public.students where id = (select v::uuid from tests.vars where k = 'julia')) = 220;
+  assert (select status = 'confirmed' and instructor_id = '00000000-0000-0000-0000-000000000e01'
+            from public.lessons where id = (select v::uuid from tests.vars where k = 'jreq'));
+  assert not (select price_pending from public.agenda(current_date, current_date + 10) where id = (select v::uuid from tests.vars where k = 'jreq'));
+end $$;
+
+-- a class of a student without price cannot be closed
+reset role;
+insert into public.students (id, full_name, hourly_rate) values ('00000000-0000-0000-0000-000000000d09', 'Sin Precio', null);
+insert into public.lessons (id, student_id, instructor_id, lesson_date, start_time, hours, status)
+values ('00000000-0000-0000-0000-00000000aa09', '00000000-0000-0000-0000-000000000d09', '00000000-0000-0000-0000-000000000e01', current_date + 20, '08:00', 1, 'confirmed');
+select tests.act_as('00000000-0000-0000-0000-0000000000b1');
+select tests.fails($$select public.complete_lesson('00000000-0000-0000-0000-00000000aa09', 1)$$) as "close without price";
 
 reset role;
 \echo ''

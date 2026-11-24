@@ -3,7 +3,7 @@
 import { supabase } from './supabase'
 import { loginToEmail, normalizeUsername, USERNAME_PATTERN } from './username'
 import type {
-  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
+  Announcement, BusySlot, InvitePreview, Lesson, LessonNote, Me, PersonalData, Person, Skill, SkillStatus, StudentSkill, StudentSummary,
 } from './types'
 
 const DOMAIN = (import.meta.env.VITE_USERNAME_DOMAIN as string | undefined) ?? 'truevento.com'
@@ -37,8 +37,9 @@ export function validUsername(username: string): boolean {
   return USERNAME_PATTERN.test(normalizeUsername(username))
 }
 
-/** Creates the login and links it to the student or instructor of the invite code. */
-export async function signUpWithCode(code: string, username: string, password: string) {
+/** Creates the login (username + password). Then the account is linked with
+ *  registerStudent (a new student) or claimInvite (a code from the school). */
+export async function signUpAccount(username: string, password: string) {
   const user = normalizeUsername(username)
   const res = await supabase.auth.signUp({
     email: `${user}@${DOMAIN}`,
@@ -50,7 +51,16 @@ export async function signUpWithCode(code: string, username: string, password: s
     // projects that require email confirmation return no session
     check(await supabase.auth.signInWithPassword({ email: `${user}@${DOMAIN}`, password }))
   }
-  await claimInvite(code)
+}
+
+export async function registerStudent(d: PersonalData) {
+  check(await supabase.rpc('register_student', {
+    p_full_name: d.full_name, p_phone: d.phone, p_weight: d.weight_kg, p_experience: d.experience,
+  }))
+}
+
+export async function updateMyDetails(d: Pick<PersonalData, 'phone' | 'weight_kg' | 'experience'>) {
+  check(await supabase.rpc('update_my_details', { p_phone: d.phone, p_weight: d.weight_kg, p_experience: d.experience }))
 }
 
 export async function claimInvite(code: string) {

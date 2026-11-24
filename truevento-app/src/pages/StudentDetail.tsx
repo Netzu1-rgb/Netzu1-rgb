@@ -8,6 +8,7 @@ import { formatDate } from '../lib/dates'
 import { formatHours, formatMoney, sumAmounts, sumHours } from '../lib/money'
 import StudentForm from '../components/StudentForm'
 import InviteButton from '../components/InviteButton'
+import { EXPERIENCE_LABEL } from '../lib/types'
 import { ErrorBox, Icon, Loading, OfflineNote, Stat } from '../components/ui'
 
 export default function StudentDetail() {
@@ -40,7 +41,10 @@ export default function StudentDetail() {
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold text-heading">{s.full_name}</h1>
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-mute">
-              <span>{formatMoney(s.hourly_rate, currency)} por hora</span>
+              {s.hourly_rate == null ? <span className="badge bg-coral-soft text-coral-ink">Precio por hora pendiente</span> : <span>{formatMoney(s.hourly_rate, currency)} por hora</span>}
+              {s.weight_kg ? <span>{s.weight_kg} kg</span> : null}
+              {s.experience && <span>{EXPERIENCE_LABEL[s.experience]}</span>}
+              {s.self_registered && <span className="badge bg-violet-soft text-violet-deep">Se registró en la app</span>}
               <span>Desde {formatDate(s.start_date)}</span>
               {instructorName && <span>Instructor: {instructorName}</span>}
               {!s.active && <span className="badge bg-surface-2">Inactivo</span>}
@@ -56,7 +60,7 @@ export default function StudentDetail() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Link to={`/registrar?alumno=${s.id}`} className="btn-primary"><Icon name="plus" /> Registrar clase</Link>
           {isAdmin && <button type="button" className="btn-ghost" onClick={() => setEditOpen(true)}><Icon name="edit" /> Editar ficha</button>}
-          {isAdmin && s.active && <InviteButton kind="student" targetId={s.id} name={s.full_name} phone={s.phone} className="btn-ghost sm:col-span-2" />}
+          {isAdmin && s.active && !s.self_registered && <InviteButton kind="student" targetId={s.id} name={s.full_name} phone={s.phone} className="btn-ghost sm:col-span-2" />}
         </div>
       </div>
 

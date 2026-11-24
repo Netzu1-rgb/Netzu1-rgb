@@ -53,6 +53,8 @@ public/                logo de TRUEVENTO, íconos de la app (generados del logo)
 
 La carpeta `../truevento-alumnos` es una segunda app, conectada a esta misma base, donde los alumnos ven sus clases, piden horarios, siguen su progreso y el viento, y los instructores manejan su agenda. Se invita a cada persona desde acá: **ficha del alumno → Invitar a la app** o **Instructores → Invitar a la app** (genera un código y lo manda por WhatsApp). Las clases que un instructor cierra en esa app aparecen solas en el Historial con la nota "Desde la agenda". Ver `../truevento-alumnos/README.md`.
 
+Los alumnos nuevos se registran solos en esa app con sus datos y piden su clase; acá aparecen en **Solicitudes** (con un aviso en el Dashboard) y el administrador solo pone el precio por hora y confirma.
+
 Requiere la migración `20261124000000_students_app.sql` y la variable `VITE_STUDENTS_APP_URL` con la dirección de esa app.
 
 ## Funcionamiento sin conexión

@@ -40,6 +40,7 @@ export function LessonCard({ lesson, show, actions }: {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-heading">{dayLabel(lesson.lesson_date)}</span>
             <StatusBadge status={lesson.status} />
+            {lesson.price_pending && lesson.status !== 'done' && lesson.status !== 'cancelled' && <span className="badge bg-sand text-ink-soft">Precio pendiente</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-soft">
             {shortTime(lesson.start_time)} a {endTime(lesson.start_time, lesson.hours)}

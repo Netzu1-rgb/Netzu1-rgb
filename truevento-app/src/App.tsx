@@ -16,6 +16,7 @@ const RegisterClass = lazy(() => import('./pages/RegisterClass'))
 const Students = lazy(() => import('./pages/Students'))
 const StudentDetail = lazy(() => import('./pages/StudentDetail'))
 const Instructors = lazy(() => import('./pages/Instructors'))
+const Requests = lazy(() => import('./pages/Requests'))
 const Settlements = lazy(() => import('./pages/Settlements'))
 const History = lazy(() => import('./pages/History'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -84,6 +85,7 @@ function Screens() {
         <Route path="/alumnos" element={<Students />} />
         <Route path="/alumnos/:id" element={<StudentDetail />} />
         <Route path="/instructores" element={<AdminOnly><Instructors /></AdminOnly>} />
+        <Route path="/solicitudes" element={<AdminOnly><Requests /></AdminOnly>} />
         <Route path="/liquidaciones" element={<Settlements />} />
         <Route path="/historial" element={<History />} />
         <Route path="/configuracion" element={<Settings />} />

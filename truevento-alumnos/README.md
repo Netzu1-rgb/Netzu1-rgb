@@ -16,9 +16,17 @@ Es una app aparte de la de gestión (`../truevento-app`), pero usa **la misma ba
 
 Al cerrar una clase ("Clase dada"), el instructor indica cuánto duró, deja un comentario y marca las habilidades trabajadas. Eso crea la clase en la gestión con los precios guardados en las fichas.
 
+## Cómo se vinculan las dos apps
+
+1. **Un alumno nuevo se registra solo**: nombre y apellido, WhatsApp, peso aproximado y experiencia, más su usuario y contraseña. Se crea su ficha en la gestión, sin precio.
+2. Pide su clase eligiendo día y horario en el calendario (los horarios ocupados aparecen como *Reservado*).
+3. En la app de gestión aparece en **Solicitudes** (y un aviso en el Dashboard) con todos sus datos y la clase pedida. **El administrador solo pone el precio por hora** y confirma; para un alumno que ya tiene precio, viene completado.
+4. El instructor da la clase y la marca como dada: se registra sola en la gestión con ese precio.
+
 ## Seguridad y privacidad
 
-- Cada persona entra con **su usuario y contraseña**. Para crear la cuenta necesita un **código de invitación** que genera la escuela desde la app de gestión (ficha del alumno o tarjeta del instructor → **Invitar a la app**), y que se manda por WhatsApp con un toque. El código vale 30 días y se usa una sola vez.
+- Cada persona entra con **su usuario y contraseña**. Los alumnos nuevos se registran solos; los alumnos que la escuela ya tenía cargados y los instructores usan un **código de invitación** (ficha del alumno o tarjeta del instructor → **Invitar a la app**, se manda por WhatsApp). El código vale 30 días y se usa una sola vez.
+- Un alumno sin precio puede pedir clases y el instructor confirmarlas, pero la clase solo se puede cerrar cuando la escuela puso el precio.
 - Un alumno **nunca** ve precios, pagos ni datos de otros alumnos: la base de datos se lo impide (Row Level Security y funciones que devuelven solo sus horas, sin importes).
 - Un instructor solo confirma, cambia o cierra sus propias clases. Los dueños entran como administradores.
 - La app de gestión sigue siendo privada y no cambia.

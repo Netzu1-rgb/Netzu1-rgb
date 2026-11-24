@@ -81,7 +81,7 @@ export default function Students() {
                       {s.pending && <span className="badge bg-sand text-ink-soft">Sin sincronizar</span>}
                     </div>
                     <div className="mt-0.5 truncate text-sm text-ink-mute">
-                      {formatMoney(s.hourly_rate, currency)}/h{instructorName(s.default_instructor_id) ? ` · ${instructorName(s.default_instructor_id)}` : ''}
+                      {s.hourly_rate == null ? 'Precio pendiente' : `${formatMoney(s.hourly_rate, currency)}/h`}{instructorName(s.default_instructor_id) ? ` · ${instructorName(s.default_instructor_id)}` : ''}
                     </div>
                   </div>
                   <div className="shrink-0 text-right text-sm">

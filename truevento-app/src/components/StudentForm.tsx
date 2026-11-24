@@ -34,7 +34,7 @@ export default function StudentForm({ open, student, instructors, onClose, onSav
     setName(student?.full_name ?? '')
     setPhone(student?.phone ?? '')
     setStart(student?.start_date ?? today())
-    setRate(student ? String(student.hourly_rate).replace('.', ',') : '')
+    setRate(student?.hourly_rate != null ? String(student.hourly_rate).replace('.', ',') : '')
     setInstructorId(student?.default_instructor_id ?? (isAdmin ? '' : profile?.instructor_id ?? ''))
     setNotes(student?.notes ?? '')
     setActive(student?.active ?? true)

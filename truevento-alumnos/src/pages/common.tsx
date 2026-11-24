@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router'
-import { PageHeader, Icon, useConfirm } from '../components/ui'
+import { useEffect, useState } from 'react'
+import { ErrorBox, PageHeader, Icon, Spinner, useConfirm, useToast } from '../components/ui'
+import { friendlyError } from '../lib/errors'
+import type { PersonalData } from '../lib/types'
+import { PersonalFields, personalError } from './Welcome'
 import { WindForecast } from '../components/wind'
 import { useMe, useSession } from '../context/Session'
 import { useInstall } from '../lib/pwa'
@@ -43,6 +47,8 @@ export function SettingsPage() {
         </div>
       </section>
 
+      {me.role === 'student' && <MyDetails />}
+
       <section className="card p-4">
         <h2 className="mb-3 font-semibold text-heading">Tema</h2>
         <div className="flex flex-wrap gap-2">
@@ -82,5 +88,40 @@ export function SettingsPage() {
       )}
       <p className="text-center text-xs text-ink-mute">TRUEVENTO Alumnos · versión {__APP_VERSION__}</p>
     </div>
+  )
+}
+
+/** The student's own contact data, which the school sees. */
+function MyDetails() {
+  const toast = useToast()
+  const [data, setData] = useState<PersonalData | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    void api.myStudentSummary().then((s) => s && setData({ full_name: s.full_name, phone: s.phone ?? '', weight_kg: s.weight_kg, experience: s.experience }))
+      .catch(() => setError('No se pudieron cargar tus datos.'))
+  }, [])
+  if (!data) return error ? <ErrorBox message={error} /> : null
+  return (
+    <form className="card space-y-4 p-4" noValidate onSubmit={async (e) => {
+      e.preventDefault()
+      const msg = personalError(data, false)
+      if (msg) return setError(msg)
+      setBusy(true)
+      setError(null)
+      try {
+        await api.updateMyDetails({ phone: data.phone.trim(), weight_kg: data.weight_kg, experience: data.experience })
+        toast('Datos guardados')
+      } catch (err) {
+        setError(friendlyError(err))
+      } finally {
+        setBusy(false)
+      }
+    }}>
+      <h2 className="font-semibold text-heading">Mis datos</h2>
+      <PersonalFields value={data} onChange={setData} withName={false} />
+      {error && <ErrorBox message={error} />}
+      <button type="submit" className="btn-dark w-full" disabled={busy}>{busy && <Spinner />} Guardar mis datos</button>
+    </form>
   )
 }

@@ -32,10 +32,14 @@ export interface Student {
   full_name: string
   phone: string | null
   start_date: string
-  hourly_rate: number
+  /** null: signed up in the students app and the school has not set the price yet */
+  hourly_rate: number | null
   default_instructor_id: string | null
   notes: string | null
   active: boolean
+  weight_kg?: number | null
+  experience?: 'none' | 'some' | 'independent' | null
+  self_registered?: boolean
   /** true while it only exists on this device, waiting to sync */
   pending?: boolean
 }
@@ -100,4 +104,22 @@ export interface NewStudentInput {
   hourly_rate: number
   default_instructor_id: string | null
   notes: string | null
+}
+
+/** A class a student asked for in the students app, waiting for the school. */
+export interface ClassRequest {
+  id: string
+  lesson_date: string
+  start_time: string
+  hours: number
+  student_note: string | null
+  instructor_id: string | null
+  created_at: string
+  student: Student
+}
+
+export const EXPERIENCE_LABEL: Record<string, string> = {
+  none: 'Nunca hizo kite',
+  some: 'Tomó algunas clases',
+  independent: 'Ya navega solo',
 }

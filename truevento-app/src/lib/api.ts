@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { enqueue } from './offline'
 import { isNetworkError } from './errors'
 import type {
-  ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
+  ClassRequest, ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
 } from './types'
 
 // All reads and writes go through here. Every function throws on error so callers
@@ -87,12 +87,14 @@ export async function fetchProfiles(): Promise<Profile[]> {
 
 export async function fetchStudents(): Promise<Student[]> {
   const rows = check(await supabase.from('students').select('*').order('full_name').limit(MAX_ROWS)) as Student[]
-  return rows.map((r) => ({ ...r, hourly_rate: Number(r.hourly_rate) }))
+  return rows.map(normalizeStudent)
 }
+
+const normalizeStudent = (r: Student): Student => ({ ...r, hourly_rate: r.hourly_rate == null ? null : Number(r.hourly_rate) })
 
 export async function fetchStudent(id: string): Promise<Student | null> {
   const row = check(await supabase.from('students').select('*').eq('id', id).maybeSingle()) as Student | null
-  return row ? { ...row, hourly_rate: Number(row.hourly_rate) } : null
+  return row ? normalizeStudent(row) : null
 }
 
 export type SaveResult = 'saved' | 'queued'
@@ -253,4 +255,24 @@ export function updateLogin(input: { profile_id: string; active?: boolean; passw
 /** One-time code for a student or instructor to join the students app (admins only). */
 export async function createInvite(kind: 'student' | 'instructor', targetId: string): Promise<string> {
   return check(await supabase.rpc('create_invite', { p_kind: kind, p_target: targetId })) as string
+}
+
+/** Classes students asked for in their app (today onwards), with the student's data. */
+export async function fetchRequests(): Promise<ClassRequest[]> {
+  const t = new Date()
+  const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  const rows = check(await supabase.from('lessons')
+    .select('id, lesson_date, start_time, hours, student_note, instructor_id, created_at, student:students(*)')
+    .eq('status', 'requested').gte('lesson_date', today)
+    .order('lesson_date').order('start_time')) as unknown as ClassRequest[]
+  return rows.map((r) => ({ ...r, hours: Number(r.hours), start_time: r.start_time.slice(0, 5), student: normalizeStudent(r.student) }))
+}
+
+/** Sets the student's price per hour and confirms the class with an instructor. */
+export async function confirmRequest(lessonId: string, rate: number, instructorId: string) {
+  check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId }))
+}
+
+export async function rejectRequest(lessonId: string) {
+  check(await supabase.rpc('cancel_lesson', { p_lesson: lessonId, p_note: null }))
 }

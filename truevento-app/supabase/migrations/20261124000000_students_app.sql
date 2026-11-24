@@ -31,6 +31,16 @@ language sql stable security definer set search_path = public as $$
   select student_id from public.profiles where id = auth.uid() and active and role = 'student'
 $$;
 
+-- ---------------------------------------------------------------- students
+
+-- students can sign up by themselves in the app: their record exists before
+-- the school sets their price, and carries the data they give
+alter table public.students alter column hourly_rate drop not null;
+alter table public.students
+  add column weight_kg      smallint check (weight_kg is null or weight_kg between 20 and 200),
+  add column experience     text check (experience in ('none', 'some', 'independent')),
+  add column self_registered boolean not null default false;
+
 -- ---------------------------------------------------------------- tables
 
 -- one-time codes the school sends to a student or instructor to join the app
@@ -297,6 +307,9 @@ create or replace function public.my_student_summary() returns json
 language sql stable security definer set search_path = public as $$
   select json_build_object(
     'full_name', s.full_name,
+    'phone', s.phone,
+    'weight_kg', s.weight_kg,
+    'experience', s.experience,
     'start_date', s.start_date,
     'hours', coalesce((select sum(c.hours) from public.classes c where c.student_id = s.id), 0),
     'classes', (select count(*) from public.classes c where c.student_id = s.id),
@@ -304,6 +317,52 @@ language sql stable security definer set search_path = public as $$
   from public.students s
   where s.id = public.my_student_id()
 $$;
+
+-- a new student signs up in the app: their record is created with their data
+-- and no price; the school sets the price when it confirms their first class
+create or replace function public.register_student(
+  p_full_name text, p_phone text, p_weight smallint default null, p_experience text default null)
+returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := auth.uid();
+  new_id uuid;
+begin
+  if me is null then
+    raise exception 'Tenés que iniciar sesión.' using errcode = '42501';
+  end if;
+  if exists (select 1 from public.profiles where id = me and role is not null) then
+    raise exception 'Tu cuenta ya está vinculada.' using errcode = 'P0001';
+  end if;
+  if length(trim(coalesce(p_full_name, ''))) < 3 then
+    raise exception 'Escribí tu nombre y apellido.' using errcode = '22023';
+  end if;
+  if length(regexp_replace(coalesce(p_phone, ''), '\D', '', 'g')) < 8 then
+    raise exception 'Escribí tu WhatsApp con código de área.' using errcode = '22023';
+  end if;
+  insert into public.students (full_name, phone, hourly_rate, weight_kg, experience, self_registered, created_by)
+  values (trim(p_full_name), trim(p_phone), null, p_weight, p_experience, true, me)
+  returning id into new_id;
+  insert into public.profiles (id, role, student_id, full_name, active)
+  values (me, 'student', new_id, trim(p_full_name), true)
+  on conflict (id) do update set role = 'student', student_id = new_id, full_name = trim(p_full_name), active = true;
+  return new_id;
+end $$;
+
+-- a student keeps their contact data up to date
+create or replace function public.update_my_details(p_phone text, p_weight smallint, p_experience text) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  sid uuid := public.my_student_id();
+begin
+  if sid is null then
+    raise exception 'Solo los alumnos pueden cambiar sus datos acá.' using errcode = '42501';
+  end if;
+  if length(regexp_replace(coalesce(p_phone, ''), '\D', '', 'g')) < 8 then
+    raise exception 'Escribí tu WhatsApp con código de área.' using errcode = '22023';
+  end if;
+  update public.students set phone = trim(p_phone), weight_kg = p_weight, experience = p_experience where id = sid;
+end $$;
 
 -- ---------------------------------------------------------------- agenda
 
@@ -498,6 +557,9 @@ begin
   end if;
   perform public.check_lesson_hours(p_hours);
   select * into st from public.students where id = l.student_id;
+  if st.hourly_rate is null then
+    raise exception 'Falta el precio por hora de %: lo pone la escuela en la app de gestión (Solicitudes).', st.full_name using errcode = 'P0001';
+  end if;
 
   insert into public.classes (student_id, instructor_id, class_date, hours, student_rate, instructor_rate, notes)
   values (l.student_id, l.instructor_id, l.lesson_date, p_hours, st.hourly_rate, null,
@@ -543,14 +605,38 @@ begin
   end if;
 end $$;
 
--- lessons with names, for the agenda (students only get their own)
+-- the school's inbox: the admin sets the student's price per hour (when it
+-- changes or is still missing) and confirms the requested class in one step
+create or replace function public.confirm_request(p_lesson uuid, p_rate numeric, p_instructor uuid)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  l public.lessons;
+begin
+  if not public.is_admin() then
+    raise exception 'Solo un administrador puede poner precios.' using errcode = '42501';
+  end if;
+  if p_rate is null or p_rate < 0 or p_rate >= 1000000 or p_rate * 100 <> trunc(p_rate * 100) then
+    raise exception 'Escribí el precio por hora.' using errcode = '22023';
+  end if;
+  select * into l from public.lessons where id = p_lesson;
+  if not found then
+    raise exception 'Clase inexistente.' using errcode = 'P0001';
+  end if;
+  update public.students set hourly_rate = p_rate where id = l.student_id;
+  perform public.confirm_lesson(p_lesson, p_instructor, l.lesson_date, l.start_time, l.hours, null);
+end $$;
+
+-- lessons with names, for the agenda (students only get their own).
+-- price_pending tells staff the school has not set this student's price yet.
 create or replace function public.agenda(p_from date, p_to date) returns table (
   id uuid, student_id uuid, student_name text, instructor_id uuid, instructor_name text,
   lesson_date date, start_time time, hours numeric, status text,
-  student_note text, staff_note text, created_at timestamptz)
+  student_note text, staff_note text, created_at timestamptz, price_pending boolean)
 language sql stable security definer set search_path = public as $$
   select l.id, l.student_id, s.full_name, l.instructor_id, i.full_name,
-         l.lesson_date, l.start_time, l.hours, l.status, l.student_note, l.staff_note, l.created_at
+         l.lesson_date, l.start_time, l.hours, l.status, l.student_note, l.staff_note, l.created_at,
+         public.has_access() and s.hourly_rate is null
     from public.lessons l
     join public.students s on s.id = l.student_id
     left join public.instructors i on i.id = l.instructor_id
@@ -624,6 +710,9 @@ revoke execute on function public.app_me() from public, anon;
 revoke execute on function public.invite_preview(text) from public;
 revoke execute on function public.instructor_directory() from public, anon;
 revoke execute on function public.my_student_summary() from public, anon;
+revoke execute on function public.register_student(text, text, smallint, text) from public, anon;
+revoke execute on function public.update_my_details(text, smallint, text) from public, anon;
+revoke execute on function public.confirm_request(uuid, numeric, uuid) from public, anon;
 revoke execute on function public.request_lesson(date, time, numeric, uuid, text) from public, anon;
 revoke execute on function public.schedule_lesson(uuid, uuid, date, time, numeric, text) from public, anon;
 revoke execute on function public.confirm_lesson(uuid, uuid, date, time, numeric, text) from public, anon;
@@ -639,6 +728,9 @@ grant execute on function public.app_me() to authenticated;
 grant execute on function public.invite_preview(text) to anon, authenticated;
 grant execute on function public.instructor_directory() to authenticated;
 grant execute on function public.my_student_summary() to authenticated;
+grant execute on function public.register_student(text, text, smallint, text) to authenticated;
+grant execute on function public.update_my_details(text, smallint, text) to authenticated;
+grant execute on function public.confirm_request(uuid, numeric, uuid) to authenticated;
 grant execute on function public.request_lesson(date, time, numeric, uuid, text) to authenticated;
 grant execute on function public.schedule_lesson(uuid, uuid, date, time, numeric, text) to authenticated;
 grant execute on function public.confirm_lesson(uuid, uuid, date, time, numeric, text) to authenticated;
