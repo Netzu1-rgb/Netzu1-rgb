@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { useMe } from '../context/Session'
-import { LanguageMenu, t } from '../i18n'
+import { LanguageMenu, t, useLang } from '../i18n'
 import type { Key } from '../i18n/messages'
 import { RequestLessonModal, ScheduleModal } from './lessons'
 import { Icon } from './ui'
@@ -46,6 +46,9 @@ function TabLink({ tab, badge = 0 }: { tab: Tab; badge?: number }) {
 
 export default function Layout() {
   const me = useMe()
+  const { lang } = useLang()
+  // the school writes to the student (WhatsApp, notifications) in this language
+  useEffect(() => { if (me.role === 'student') void api.setMyLang(lang).catch(() => {}) }, [me.role, lang])
   const tabs = me.isStaff ? STAFF_TABS : STUDENT_TABS
   const side = me.isStaff ? STAFF_SIDEBAR : STUDENT_TABS
   const { pathname } = useLocation()

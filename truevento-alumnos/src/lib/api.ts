@@ -63,6 +63,11 @@ export async function updateMyDetails(d: Pick<PersonalData, 'phone' | 'weight_kg
   check(await supabase.rpc('update_my_details', { p_phone: d.phone, p_weight: d.weight_kg, p_experience: d.experience }))
 }
 
+/** The student's app language, so the school writes to them in it. */
+export async function setMyLang(lang: string) {
+  await supabase.rpc('set_my_lang', { p_lang: lang })
+}
+
 export async function claimInvite(code: string) {
   check(await supabase.rpc('claim_invite', { p_code: code }))
 }

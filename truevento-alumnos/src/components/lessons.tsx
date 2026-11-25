@@ -8,6 +8,10 @@ import type { Lesson, LessonStatus, Person, Skill, SkillStatus } from '../lib/ty
 import { levelName } from '../lib/types'
 import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
 import { skillText, t } from '../i18n'
+import { useMe } from '../context/Session'
+import { waNumber } from '../lib/whatsapp'
+import { AgreePriceButton, SCHOOL_CONTACT } from './contact'
+import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
 
 // ------------------------------------------------------------------ status
@@ -57,6 +61,9 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
           {lesson.staff_note && <p className="mt-2 flex gap-2 text-sm text-ink-soft"><Icon name="note" className="mt-0.5 h-4 w-4 shrink-0" />{lesson.staff_note}</p>}
         </div>
       </div>
+      {simple && lesson.status === 'requested' && (
+        <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} time={lesson.start_time} hours={lesson.hours} className="mt-3 w-full" />
+      )}
       {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
     </div>
   )
@@ -122,10 +129,19 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   const [extras, setExtras] = useState(false)
   const [people, setPeople] = useState<Person[]>([])
   const { busy, error, setError, run, conflicts } = useSubmit()
+  const me = useMe()
+  // the school agrees the price on WhatsApp: a student without one types it here
+  const [summary, setSummary] = useState<StudentSummary | null>(null)
+  const [phone, setPhone] = useState('')
+  const [sent, setSent] = useState(false)
+  const needPhone = summary !== null && !waNumber(summary.phone)
 
   useEffect(() => {
     if (!open) return
     setError(null)
+    setSent(false)
+    setPhone('')
+    void api.myStudentSummary().then(setSummary).catch(() => setSummary(null))
     setStep(1)
     setExtras(false)
     setInstructor('')
@@ -144,7 +160,26 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     setError(null)
     if (step === 2 && !slot.time) return setError(t('err.pickTime'))
     if (step < 3) return setStep(step + 1)
-    void run(() => api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim()), t('ask.sent'), onClose)
+    if (needPhone && !waNumber(phone)) return setError(t('err.phone'))
+    void run(async () => {
+      if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })
+      await api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim())
+    }, t('ask.sent'), () => setSent(true))
+  }
+
+  if (sent) {
+    return (
+      <Modal open={open} title={t('ask.title')} onClose={onClose}
+        footer={<button type="button" className="btn-ghost w-full" onClick={onClose}>{t('ask.done')}</button>}>
+        <div className="page-enter space-y-4 text-center">
+          <span className="pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#1fa855] text-white"><Icon name="check" className="h-8 w-8" /></span>
+          <h3 className="text-xl font-bold text-heading">{t('ask.sentTitle')}</h3>
+          <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {slot.time} – {endTime(slot.time, slot.hours)}</p>
+          <p className="text-ink-soft">{t('ask.sentText', { name: SCHOOL_CONTACT })}</p>
+          <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} time={slot.time} hours={slot.hours} label="wa.write" className="w-full" />
+        </div>
+      </Modal>
+    )
   }
 
   return (
@@ -182,7 +217,13 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
                 <div className="mt-1 font-display text-3xl font-bold tabular">{slot.time} – {endTime(slot.time, slot.hours)}</div>
                 <div className="mt-1 text-brand-100">{longDay(slot.date, true)} · {formatHours(slot.hours)}</div>
               </div>
-              <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="clock" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
+              <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote', { name: SCHOOL_CONTACT })}</p>
+              {needPhone && (
+                <Field label={t('data.phone')} hint={t('ask.phoneWhy')}>
+                  {(id) => <input id={id} type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="+55 88 99999-1234"
+                    value={phone} onChange={(e) => setPhone(e.target.value)} />}
+                </Field>
+              )}
               {!extras ? (
                 <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setExtras(true)}>
                   {t('ask.extras')}

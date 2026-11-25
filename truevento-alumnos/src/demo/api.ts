@@ -131,6 +131,8 @@ export async function registerStudent(d: PersonalData) {
   save()
 }
 
+export async function setMyLang(_lang: string) { void _lang }
+
 export async function updateMyDetails(d: Pick<PersonalData, 'phone' | 'weight_kg' | 'experience'>) {
   await wait()
   Object.assign(db.students.find((s) => s.id === me()?.student_id)!, d)

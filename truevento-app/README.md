@@ -75,6 +75,15 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Acordar el precio por WhatsApp
+
+Cada alumno tiene que tener su WhatsApp para pedir una clase (se pide al registrarse, o en el último paso del pedido si no lo tenía). El precio se acuerda por WhatsApp antes de confirmar:
+
+- **Alumno**: al enviar el pedido ve "Victoria te va a escribir por WhatsApp" y el botón **Escribir a Victoria**, con un mensaje armado (día, hora y duración) en su idioma. El mismo botón queda en la clase pendiente.
+- **Gestión**: en cada solicitud, **Acordar precio por WhatsApp** abre el chat con el alumno y un mensaje en el idioma del alumno (el de su app o, si no, según su número), con el precio que se escribió en la tarjeta. Cuando lo acuerdan, se confirma la clase.
+
+El número de la escuela es el de la página (+54 9 221 545-1174); se cambia con `VITE_SCHOOL_WHATSAPP` y el nombre con `VITE_SCHOOL_CONTACT` en la app de alumnos. Migración: `20261127000000_whatsapp_contact.sql` (prueba: `supabase/tests/whatsapp.sql`).
+
 ## Un registro por instructor
 
 Si al cargar una clase se escribe como "Otro instructor" un nombre que ya existe (sin importar mayúsculas, acentos o espacios), la app usa ese mismo instructor y avisa "ya está cargado: esta clase se suma a sus horas". La migración `20261126000000_merge_instructors.sql` une los instructores externos que ya estaban repetidos: pasa todas sus clases, liquidaciones, alumnos y accesos a uno solo, sin cambiar ningún importe (prueba: `supabase/tests/merge.sql`).

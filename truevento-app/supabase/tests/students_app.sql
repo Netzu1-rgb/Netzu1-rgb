@@ -39,9 +39,9 @@ select public.setup_school('TRUEVENTO', 'Victoria Linde', 'Sebastián Comasco', 
 insert into public.instructors (id, full_name, hourly_pay) values
   ('00000000-0000-0000-0000-000000000e01', 'Instructor Externo', 60),
   ('00000000-0000-0000-0000-000000000e02', 'Otro Externo', 70);
-insert into public.students (id, full_name, hourly_rate, notes) values
-  ('00000000-0000-0000-0000-000000000d01', 'Ana', 250, 'nota interna'),
-  ('00000000-0000-0000-0000-000000000d02', 'Beto', 300, null);
+insert into public.students (id, full_name, hourly_rate, notes, phone) values
+  ('00000000-0000-0000-0000-000000000d01', 'Ana', 250, 'nota interna', '+55 88 99999-0001'),
+  ('00000000-0000-0000-0000-000000000d02', 'Beto', 300, null, '+55 88 99999-0002');
 
 \echo '2. only admins create invites; a pending code is reused'
 insert into tests.vars values
@@ -257,7 +257,7 @@ end $$;
 
 -- a class of a student without price cannot be closed
 reset role;
-insert into public.students (id, full_name, hourly_rate) values ('00000000-0000-0000-0000-000000000d09', 'Sin Precio', null);
+insert into public.students (id, full_name, hourly_rate, phone) values ('00000000-0000-0000-0000-000000000d09', 'Sin Precio', null, '+55 88 99999-0009');
 insert into public.lessons (id, student_id, instructor_id, lesson_date, start_time, hours, status)
 values ('00000000-0000-0000-0000-00000000aa09', '00000000-0000-0000-0000-000000000d09', '00000000-0000-0000-0000-000000000e01', current_date + 20, '08:00', 1, 'confirmed');
 select tests.act_as('00000000-0000-0000-0000-0000000000b1');

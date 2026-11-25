@@ -10,6 +10,8 @@ import { NotificationsCard } from '../components/NotificationsCard'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { STUDENTS_APP_URL } from '../components/InviteButton'
 import { requestsChanged } from '../lib/requestCount'
+import { waLink } from '../lib/whatsapp'
+import { requestMessage } from '../lib/requestMessage'
 
 const toInput = (n: number | null) => (n == null ? '' : String(n).replace('.', ','))
 
@@ -52,7 +54,7 @@ export default function Requests() {
 }
 
 function RequestCard({ request: r, instructors, onDone }: { request: ClassRequest; instructors: Instructor[]; onDone: () => void }) {
-  const { currency } = useAuth()
+  const { currency, profile } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
   const s = r.student
@@ -73,7 +75,14 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   const rateN = parseDecimal(rate)
   const ins = instructors.find((i) => i.id === instructorId)
   const amounts = rateN !== null && ins ? classAmounts(r.hours, rateN, ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
-  const wa = s.phone ? `https://wa.me/${s.phone.replace(/\D/g, '')}` : null
+  // who writes: the main owner (Victoria), else this account's name
+  const from = (instructors.find((i) => i.owner_slot === 1)?.full_name ?? profile?.full_name ?? 'Truevento').split(' ')[0]
+  const agreeLink = waLink(s.phone, requestMessage({
+    studentName: s.full_name, lang: s.lang, phone: s.phone, from,
+    date: r.lesson_date, time: r.start_time, hours: r.hours,
+    price: rateN !== null && rateN > 0 ? formatMoney(rateN, currency) : null,
+  }))
+  const wa = waLink(s.phone)
   const asked = r.instructor_id ? instructors.find((i) => i.id === r.instructor_id)?.full_name : null
 
   async function accept() {
@@ -136,6 +145,19 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
         </div>
       </div>
       {r.student_note && <p className="mt-3 rounded-xl bg-surface-2 px-4 py-2.5 text-sm text-ink-soft">“{r.student_note}”</p>}
+
+      {/* 1. agree on the price with the student; 2. write it below and confirm */}
+      {agreeLink ? (
+        <a href={agreeLink} target="_blank" rel="noreferrer"
+          className="btn mt-4 w-full bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110">
+          <Icon name="whatsapp" /> Acordar precio por WhatsApp
+        </a>
+      ) : (
+        <p className="mt-4 rounded-xl bg-coral-soft px-4 py-2.5 text-sm text-coral-ink">Este alumno no tiene WhatsApp cargado: pedíselo antes de confirmar.</p>
+      )}
+      <p className="mt-2 text-center text-xs text-ink-mute">
+        {rateN !== null && rateN > 0 ? 'El mensaje incluye el precio que escribiste abajo.' : 'Escribí el precio abajo y el mensaje lo incluye.'} Cuando lo acuerden, confirmá la clase.
+      </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Field label="Precio por hora" hint={isNew ? 'Queda en su ficha para las próximas clases.' : 'Si lo cambiás, queda en su ficha.'}>

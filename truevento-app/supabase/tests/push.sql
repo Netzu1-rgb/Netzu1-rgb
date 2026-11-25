@@ -41,7 +41,7 @@ delete from net.http_request_queue;
 select tests.act_as('00000000-0000-0000-0000-0000000000a1');
 select public.setup_school('TRUEVENTO', 'Victoria Linde', 'Sebastián Comasco', 'BRL', 1::smallint);
 insert into public.instructors (id, full_name, hourly_pay) values ('00000000-0000-0000-0000-000000000e01', 'Lucas Rocha', 60);
-insert into public.students (id, full_name, hourly_rate) values ('00000000-0000-0000-0000-000000000d01', 'Ana Silva', 250);
+insert into public.students (id, full_name, hourly_rate, phone) values ('00000000-0000-0000-0000-000000000d01', 'Ana Silva', 250, '+55 88 99999-0001');
 insert into tests.vars values
   ('ana', public.create_invite('student', '00000000-0000-0000-0000-000000000d01')),
   ('lucas', public.create_invite('instructor', '00000000-0000-0000-0000-000000000e01'));

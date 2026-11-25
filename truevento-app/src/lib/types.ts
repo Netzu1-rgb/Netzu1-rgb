@@ -40,6 +40,8 @@ export interface Student {
   weight_kg?: number | null
   experience?: 'none' | 'some' | 'independent' | null
   self_registered?: boolean
+  /** language of the students app, for the school's messages */
+  lang?: 'es' | 'pt' | 'en' | null
   /** true while it only exists on this device, waiting to sync */
   pending?: boolean
 }
