@@ -20,6 +20,13 @@ Al cerrar una clase ("Clase dada"), el instructor indica cuánto duró, deja un 
 
 La app detecta el idioma del celular (portugués o inglés; si no, español) y se puede cambiar en la pantalla de entrada o en **Ajustes → Idioma**. Todos los textos están en `src/i18n/messages.ts` (el español es la referencia; la compilación falla si a portugués o inglés le falta un texto). Los mensajes de la base de datos y las habilidades del camino de aprendizaje también se traducen; lo que escriben las personas (avisos, comentarios) queda como se escribió.
 
+## Viento
+
+- **Punto**: la escuela (TRUEVENTO kiteschool, Guajirú, -2.8813, -39.9119, según el mapa de truevento.com). Se puede cambiar con `VITE_SPOT_LAT` / `VITE_SPOT_LON`.
+- **Fuente principal**: Open-Meteo, celda del modelo **sobre el mar** (`cell_selection=sea`: el viento sobre tierra es más débil), en nudos y en hora de Ceará (UTC−3). **Respaldo**: MET Norway (Instituto Meteorológico de Noruega) si Open-Meteo no responde. Si no hay conexión, se muestra el último pronóstico guardado (hasta 24 h) con un aviso.
+- **Cálculos** (`src/lib/wind.ts`): promedio, máximo y ráfagas de las horas de clase (9 a 17 h); dirección promedio como vector, en 16 rumbos y grados; los datos faltantes se omiten (nunca se muestran como 0 kn). Guía para clases: menos de 12 kn poco viento, 12–25 kn ideal, más de 25 kn o ráfagas de 32 kn o más, fuerte; ráfagas 10 kn por encima del promedio se marcan como fuertes. "Mejor horario" es el tramo más largo de horas ideales.
+- **Pruebas**: `npm test` (33 casos de unidades, zonas horarias, rumbos, datos faltantes, fuentes y caché) y `npx vite-node scripts/check-wind-real.ts <respuesta-de-met-norway.json>` para comparar con un pronóstico real.
+
 ## Privacidad (LGPD)
 
 Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer en la pantalla de registro y en Ajustes). La base guarda cuándo la aceptó (`students.privacy_accepted_at`).

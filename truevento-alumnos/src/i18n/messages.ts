@@ -213,7 +213,7 @@ export const es = {
 
   // wind
   'wind.title': 'Viento',
-  'wind.subtitle': 'Pronóstico de los próximos 7 días, de 6 a 18 h',
+  'wind.subtitle': 'Pronóstico hora por hora en la escuela, de 6 a 18 h',
   'wind.knots': 'nudos',
   'wind.low': 'Poco viento',
   'wind.good': 'Ideal para clase',
@@ -346,6 +346,21 @@ export const es = {
   'progress.allDone': '¡Completaste todo el camino de aprendizaje!',
   'progress.percent': '{n}% del camino',
   'lang.menu': 'Cambiar idioma',
+  'wind.dirs16': 'N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSO,SO,OSO,O,ONO,NO,NNO',
+  'wind.gusty': 'Ráfagas fuertes',
+  'wind.best': 'Mejor horario: {from} a {to}',
+  'wind.noBest': 'Sin un horario bueno para clase',
+  'wind.now': 'Ahora',
+  'wind.dirDeg': 'del {dir} ({deg}°)',
+  'wind.detailNoGust': 'Máx. {max} kn',
+  'wind.sourceOM': 'Open-Meteo',
+  'wind.sourceMET': 'MET Norway',
+  'wind.sourceEx': 'datos de ejemplo',
+  'wind.stale': 'Sin conexión: mostrando el último pronóstico guardado ({time}).',
+  'wind.tz': 'Horarios de Ceará (UTC−3)',
+  'wind.footer2': 'Pronóstico para {spot} ({source}), actualizado {time}. Viento a 10 m, en nudos. Es una guía: la escuela decide cada clase en la playa.',
+  'wind.dirLabel': 'Dirección',
+  'wind.hourA11y': '{h} h: {kn} nudos, ráfagas {gust}, del {dir}',
 }
 
 export type Key = keyof typeof es
@@ -550,7 +565,7 @@ export const pt: Dict = {
   'slot.loadFailed': 'Não foi possível ver os horários ocupados. Se escolher um reservado, a escola te avisa.',
 
   'wind.title': 'Vento',
-  'wind.subtitle': 'Previsão dos próximos 7 dias, das 6 às 18 h',
+  'wind.subtitle': 'Previsão hora a hora na escola, das 6 às 18 h',
   'wind.knots': 'nós',
   'wind.low': 'Pouco vento',
   'wind.good': 'Ideal para aula',
@@ -679,6 +694,21 @@ export const pt: Dict = {
   'progress.allDone': 'Você completou todo o caminho de aprendizado!',
   'progress.percent': '{n}% do caminho',
   'lang.menu': 'Mudar idioma',
+  'wind.dirs16': 'N,NNE,NE,ENE,L,ESE,SE,SSE,S,SSO,SO,OSO,O,ONO,NO,NNO',
+  'wind.gusty': 'Rajadas fortes',
+  'wind.best': 'Melhor horário: {from} às {to}',
+  'wind.noBest': 'Sem um horário bom para aula',
+  'wind.now': 'Agora',
+  'wind.dirDeg': 'de {dir} ({deg}°)',
+  'wind.detailNoGust': 'Máx. {max} kn',
+  'wind.sourceOM': 'Open-Meteo',
+  'wind.sourceMET': 'MET Norway',
+  'wind.sourceEx': 'dados de exemplo',
+  'wind.stale': 'Sem conexão: mostrando a última previsão salva ({time}).',
+  'wind.tz': 'Horários do Ceará (UTC−3)',
+  'wind.footer2': 'Previsão para {spot} ({source}), atualizada às {time}. Vento a 10 m, em nós. É uma referência: a escola decide cada aula na praia.',
+  'wind.dirLabel': 'Direção',
+  'wind.hourA11y': '{h} h: {kn} nós, rajadas {gust}, de {dir}',
 }
 
 export const en: Dict = {
@@ -880,7 +910,7 @@ export const en: Dict = {
   'slot.loadFailed': "Could not check the booked times. If you pick a booked one, the school will let you know.",
 
   'wind.title': 'Wind',
-  'wind.subtitle': 'Forecast for the next 7 days, 6 am to 6 pm',
+  'wind.subtitle': 'Hour-by-hour forecast at the school, 6 am to 6 pm',
   'wind.knots': 'knots',
   'wind.low': 'Light wind',
   'wind.good': 'Great for lessons',
@@ -1009,6 +1039,21 @@ export const en: Dict = {
   'progress.allDone': 'You completed the whole learning path!',
   'progress.percent': '{n}% of the path',
   'lang.menu': 'Change language',
+  'wind.dirs16': 'N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW',
+  'wind.gusty': 'Strong gusts',
+  'wind.best': 'Best time: {from} to {to}',
+  'wind.noBest': 'No good time for lessons',
+  'wind.now': 'Now',
+  'wind.dirDeg': 'from {dir} ({deg}°)',
+  'wind.detailNoGust': 'Max {max} kn',
+  'wind.sourceOM': 'Open-Meteo',
+  'wind.sourceMET': 'MET Norway',
+  'wind.sourceEx': 'example data',
+  'wind.stale': 'Offline: showing the last saved forecast ({time}).',
+  'wind.tz': 'Ceará time (UTC−3)',
+  'wind.footer2': 'Forecast for {spot} ({source}), updated {time}. Wind at 10 m, in knots. It is a guide: the school decides each lesson on the beach.',
+  'wind.dirLabel': 'Direction',
+  'wind.hourA11y': '{h} h: {kn} knots, gusts {gust}, from {dir}',
 }
 
 /** Messages the database sends in Spanish, translated for the other languages. */

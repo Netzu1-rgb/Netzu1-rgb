@@ -6,6 +6,7 @@ import { CompleteModal, LessonCard, ScheduleModal } from '../components/lessons'
 import { NotesList, ProgressPath } from '../components/progress'
 import { EmptyState, ErrorBox, Field, Icon, Loading, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { useWind, WindSummary } from '../components/wind'
+import { schoolToday } from '../lib/wind'
 import { useMe } from '../context/Session'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
@@ -89,7 +90,7 @@ export function StaffToday() {
   // classes from past days still waiting to be closed
   const toClose = lessons.filter((l) => l.status === 'confirmed' && l.lesson_date < today()
     && (me.isAdmin || l.instructor_id === me.instructor_id))
-  const todayWind = wind.data?.days.find((d) => d.date === today())
+  const todayWind = wind.data?.days.find((d) => d.date === schoolToday())
 
   return (
     <div className="space-y-6">

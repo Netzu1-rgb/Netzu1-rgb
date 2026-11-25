@@ -5,7 +5,8 @@ import { AnnouncementCard } from '../components/announcements'
 import { LessonCard, RequestLessonModal } from '../components/lessons'
 import { NotesList, ProgressPath } from '../components/progress'
 import { ErrorBox, Icon, Loading, PageHeader, Stat, useConfirm, useToast } from '../components/ui'
-import { useWind, WindSummary } from '../components/wind'
+import { todayOf, useWind, WindSummary } from '../components/wind'
+import { schoolToday } from '../lib/wind'
 import { useMe } from '../context/Session'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
@@ -82,7 +83,7 @@ export function StudentHome() {
   const pending = upcoming.filter((l) => l.status === 'requested').length
   // new students (no class yet) get a short guide
   const isNew = lessons.data !== null && all.every((l) => l.status === 'cancelled')
-  const todayWind = wind.data?.days.find((d) => d.date === today()) ?? wind.data?.days[0]
+  const todayWind = todayOf(wind.data)
 
   return (
     <div className="space-y-6">
@@ -133,7 +134,7 @@ export function StudentHome() {
 
       {todayWind && (
         <section aria-labelledby="wind-h">
-          <h2 id="wind-h" className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(todayWind.date === today() ? 'home.windToday' : 'home.windNext')}</h2>
+          <h2 id="wind-h" className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(todayWind.date === schoolToday() ? 'home.windToday' : 'home.windNext')}</h2>
           <Link to="/viento" className="tap card block p-4">
             <WindSummary day={todayWind} />
             <span className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand-deep">{t('home.nextDays')} <Icon name="chevronRight" className="h-4 w-4" /></span>
