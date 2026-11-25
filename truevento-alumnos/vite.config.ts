@@ -41,10 +41,9 @@ export default defineConfig(({ mode }) => {
         includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png'],
         manifest: {
           id: '/',
-          name: 'TRUEVENTO · Alumnos e instructores',
+          name: 'TRUEVENTO Kiteschool',
           short_name: 'Truevento',
-          description: 'Tus clases, tu progreso y el viento en TRUEVENTO Kiteschool.',
-          lang: 'es',
+          description: 'Clases, progreso y viento · Aulas, progresso e vento · Lessons, progress and wind',
           start_url: '/',
           scope: '/',
           display: 'standalone',

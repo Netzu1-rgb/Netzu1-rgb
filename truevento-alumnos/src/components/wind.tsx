@@ -1,6 +1,7 @@
 import { dayLabel } from '../lib/format'
 import { useLoad } from '../lib/hooks'
-import { compass, fetchWind, SPOT, WIND_LABEL, windLevel, type WindDay, type WindLevel } from '../lib/wind'
+import { compass, fetchWind, SPOT, windLabel, windLevel, type WindDay, type WindLevel } from '../lib/wind'
+import { locale, t } from '../i18n'
 import { ErrorBox, Icon, Loading } from './ui'
 
 const LEVEL_CLS: Record<WindLevel, { bar: string; badge: string }> = {
@@ -30,13 +31,13 @@ export function WindSummary({ day }: { day: WindDay }) {
       <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-night-900 text-white">
         <div className="text-center">
           <div className="tabular font-display text-2xl font-bold leading-none">{day.avg}</div>
-          <div className="text-[10px] font-semibold text-brand-200">nudos</div>
+          <div className="text-[10px] font-semibold text-brand-200">{t('wind.knots')}</div>
         </div>
       </div>
       <div className="min-w-0">
-        <span className={`badge ${LEVEL_CLS[level].badge}`}>{WIND_LABEL[level]}</span>
+        <span className={`badge ${LEVEL_CLS[level].badge}`}>{windLabel(level)}</span>
         <div className="mt-1 text-sm text-ink-soft">
-          Máx. {day.max} kn · ráfagas {day.gustMax} kn · {mid && <>del {compass(mid.direction)} <Arrow deg={mid.direction} /></>}
+          {t('wind.detail', { max: day.max, gust: day.gustMax })} · {mid && <>{t('wind.from', { dir: compass(mid.direction) })} <Arrow deg={mid.direction} /></>}
         </div>
       </div>
     </div>
@@ -52,7 +53,7 @@ export function WindDayCard({ day }: { day: WindDay }) {
       </div>
       <WindSummary day={day} />
       <div className="mt-4 flex h-28 items-end gap-1" role="img"
-        aria-label={`Viento por hora: ${day.hours.map((h) => `${h.time.slice(11, 13)} h ${h.speed} nudos`).join(', ')}`}>
+        aria-label={`${t('wind.byHour')}: ${day.hours.map((h) => t('wind.hourItem', { h: h.time.slice(11, 13), kn: h.speed })).join(', ')}`}>
         {day.hours.map((h) => (
           <div key={h.time} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
             <span className="tabular text-[10px] font-semibold text-ink-soft">{h.speed}</span>
@@ -73,20 +74,20 @@ export function WindDayCard({ day }: { day: WindDay }) {
 
 export function WindForecast() {
   const { data, error, loading, reload } = useWind()
-  if (loading && !data) return <Loading label="Cargando pronóstico…" />
-  if (error && !data) return <ErrorBox message="No se pudo cargar el pronóstico del viento." onRetry={() => void reload()} />
+  if (loading && !data) return <Loading label={t('wind.loading')} />
+  if (error && !data) return <ErrorBox message={t('wind.error')} onRetry={() => void reload()} />
   if (!data) return null
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-line-strong" />Menos de 12 kn</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-brand" />12 a 25 kn: ideal</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-coral" />Más de 25 kn</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-surface-2 ring-1 ring-line" />Ráfagas</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-line-strong" />{t('wind.legendLow')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-brand" />{t('wind.legendGood')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-coral" />{t('wind.legendStrong')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-surface-2 ring-1 ring-line" />{t('wind.legendGust')}</span>
       </div>
       {data.days.map((d) => <WindDayCard key={d.date} day={d} />)}
       <p className="text-center text-xs text-ink-mute">
-        Pronóstico para {SPOT.name} de Open-Meteo, actualizado {new Date(data.fetchedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}. Es una guía: la escuela decide cada clase en la playa.
+        {t('wind.footer', { spot: SPOT.name, time: new Date(data.fetchedAt).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }) })}
       </p>
     </div>
   )

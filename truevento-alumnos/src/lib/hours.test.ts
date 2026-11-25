@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { addDays, endTime, formatHours, normalizeCode } from './format'
 import { compass, groupDays, windLevel } from './wind'
 import { timeState } from '../components/SlotPicker'
+import { dbMessage, setLanguage, t } from '../i18n'
+
+setLanguage('es')
 
 describe('format', () => {
   it('formats hours and times', () => {
@@ -54,5 +57,21 @@ describe('time slots', () => {
     expect(timeState('2030-01-10', '09:00', 2, busy)).toBe('noRoom') // would run into 10:00
     expect(timeState('2030-01-10', '12:00', 2, busy)).toBe('free')
     expect(timeState('2030-01-11', '10:00', 1, busy)).toBe('free') // other day
+  })
+})
+
+describe('languages', () => {
+  it('translates texts, units and database messages', () => {
+    setLanguage('pt')
+    expect(formatHours(1.5)).toBe('1:30 h')
+    expect(t('home.hello', { name: 'Julia' })).toBe('Olá, Julia!')
+    expect(dbMessage('Ese horario ya está reservado. Elegí otro.')).toBe('Esse horário já está reservado. Escolha outro.')
+    expect(compass(270)).toBe('O')
+    setLanguage('en')
+    expect(dbMessage('Falta el precio por hora de Julia Paz: lo pone la escuela en la app de gestión (Solicitudes).'))
+      .toBe("Julia Paz's price per hour is missing: the school sets it in the management app (Requests).")
+    expect(compass(270)).toBe('W')
+    setLanguage('es')
+    expect(dbMessage('Clase inexistente.')).toBe('Clase inexistente.')
   })
 })

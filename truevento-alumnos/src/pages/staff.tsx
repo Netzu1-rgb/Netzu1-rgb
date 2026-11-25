@@ -12,6 +12,7 @@ import { friendlyError } from '../lib/errors'
 import { addDays, dayLabel, firstName, longDay, shortTime, today } from '../lib/format'
 import { notifyChange, useLoad } from '../lib/hooks'
 import type { Lesson } from '../lib/types'
+import { t } from '../i18n'
 
 // ------------------------------------------------------------------ lesson actions
 
@@ -27,15 +28,15 @@ function useLessonActions() {
   async function cancel(l: Lesson) {
     const rejecting = l.status === 'requested'
     if (!(await confirm({
-      title: rejecting ? 'Rechazar el pedido' : 'Cancelar la clase',
-      message: `${rejecting ? '¿Rechazás el pedido' : '¿Cancelás la clase'} de ${l.student_name} del ${longDay(l.lesson_date)} a las ${shortTime(l.start_time)}? El alumno lo ve en su app.`,
-      confirmLabel: rejecting ? 'Rechazar' : 'Cancelar clase',
+      title: t(rejecting ? 'staff.rejectTitle' : 'staff.cancelTitle'),
+      message: t(rejecting ? 'staff.rejectMsg' : 'staff.cancelMsg', { name: l.student_name, day: longDay(l.lesson_date), time: shortTime(l.start_time) }),
+      confirmLabel: t(rejecting ? 'staff.reject' : 'staff.cancelClass'),
       danger: true,
     }))) return
     try {
       await api.cancelLesson(l.id, '')
       notifyChange()
-      toast(rejecting ? 'Pedido rechazado' : 'Clase cancelada')
+      toast(t(rejecting ? 'staff.rejected' : 'classes.cancelled'))
     } catch (err) {
       toast(friendlyError(err), 'error')
     }
@@ -46,18 +47,18 @@ function useLessonActions() {
     const small = 'min-h-10 px-4 py-2 text-sm'
     if (l.status === 'requested') {
       return <>
-        <button type="button" className={`btn-primary ${small}`} onClick={() => setEditing(l)}><Icon name="check" className="h-4 w-4" /> Confirmar</button>
-        <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>Rechazar</button>
+        <button type="button" className={`btn-primary ${small}`} onClick={() => setEditing(l)}><Icon name="check" className="h-4 w-4" /> {t('staff.confirm')}</button>
+        <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>{t('staff.reject')}</button>
       </>
     }
     if (l.status === 'confirmed') {
       return <>
         {l.lesson_date <= today() && (l.price_pending
-          ? <span className="flex min-h-10 items-center text-sm text-ink-mute">Para cerrarla, la escuela tiene que poner el precio en la gestión.</span>
-          : <button type="button" className={`btn-primary ${small}`} onClick={() => setClosing(l)}><Icon name="check" className="h-4 w-4" /> Clase dada</button>
+          ? <span className="flex min-h-10 items-center text-sm text-ink-mute">{t('staff.needPrice')}</span>
+          : <button type="button" className={`btn-primary ${small}`} onClick={() => setClosing(l)}><Icon name="check" className="h-4 w-4" /> {t('staff.given')}</button>
         )}
-        <button type="button" className={`btn-ghost ${small}`} onClick={() => setEditing(l)}>Cambiar</button>
-        <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>Cancelar</button>
+        <button type="button" className={`btn-ghost ${small}`} onClick={() => setEditing(l)}>{t('staff.change')}</button>
+        <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>{t('staff.cancel')}</button>
       </>
     }
     return undefined
@@ -94,10 +95,10 @@ export function StaffToday() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-heading">Hola, {firstName(me.full_name)}</h1>
+          <h1 className="text-2xl font-bold text-heading">{t('staff.hello', { name: firstName(me.full_name) })}</h1>
           <p className="text-ink-mute">{longDay(today(), true)}</p>
         </div>
-        <button type="button" className="btn-primary" onClick={newLesson}><Icon name="plus" /> Agendar</button>
+        <button type="button" className="btn-primary" onClick={newLesson}><Icon name="plus" /> {t('staff.schedule')}</button>
       </div>
 
       {todayWind && <Link to="/viento" className="card block p-4"><WindSummary day={todayWind} /></Link>}
@@ -107,20 +108,20 @@ export function StaffToday() {
           <section>
             <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-coral-ink">
               <span className="grid h-6 min-w-6 place-items-center rounded-full bg-coral px-1.5 text-xs text-white">{requests.length}</span>
-              Pedidos para confirmar
+              {t('staff.requests')}
             </h2>
             <div className="space-y-3">{requests.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
           </section>
         )}
         {toClose.length > 0 && (
           <section>
-            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">Clases pasadas sin cerrar</h2>
+            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('staff.toClose')}</h2>
             <div className="space-y-3">{toClose.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
           </section>
         )}
         <section>
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{me.isAdmin ? 'Clases de hoy' : 'Tus clases de hoy'}</h2>
-          {mineToday.length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">No hay clases para hoy.</p>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(me.isAdmin ? 'staff.todayAll' : 'staff.todayMine')}</h2>
+          {mineToday.length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('staff.noToday')}</p>
             : <div className="space-y-3">{mineToday.map((l) => <LessonCard key={l.id} lesson={l} show={me.isAdmin ? 'both' : 'student'} actions={actions(l)} />)}</div>}
         </section>
       </>}
@@ -144,18 +145,18 @@ export function StaffAgenda() {
 
   return (
     <div>
-      <PageHeader title="Agenda" action={<button type="button" className="btn-primary" onClick={newLesson}><Icon name="plus" /> Agendar</button>} />
+      <PageHeader title={t('nav.agenda')} action={<button type="button" className="btn-primary" onClick={newLesson}><Icon name="plus" /> {t('staff.schedule')}</button>} />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex items-center rounded-xl border border-line bg-surface">
-          <button type="button" className="grid h-11 w-11 place-items-center" aria-label="Semana anterior" onClick={() => setStart(addDays(start, -7))}><Icon name="chevronLeft" /></button>
+          <button type="button" className="grid h-11 w-11 place-items-center" aria-label={t('staff.prevWeek')} onClick={() => setStart(addDays(start, -7))}><Icon name="chevronLeft" /></button>
           <span className="min-w-36 text-center text-sm font-semibold text-heading">{dayLabel(start)} – {dayLabel(end)}</span>
-          <button type="button" className="grid h-11 w-11 place-items-center" aria-label="Semana siguiente" onClick={() => setStart(addDays(start, 7))}><Icon name="chevronRight" /></button>
+          <button type="button" className="grid h-11 w-11 place-items-center" aria-label={t('staff.nextWeek')} onClick={() => setStart(addDays(start, 7))}><Icon name="chevronRight" /></button>
         </div>
-        {start !== today() && <button type="button" className="chip" onClick={() => setStart(today())}>Hoy</button>}
+        {start !== today() && <button type="button" className="chip" onClick={() => setStart(today())}>{t('date.today')}</button>}
         {me.instructor_id && (
           <div className="ml-auto flex gap-1">
-            <button type="button" aria-pressed={onlyMine} className={onlyMine ? 'chip-on' : 'chip'} onClick={() => setOnlyMine(true)}>Mías</button>
-            <button type="button" aria-pressed={!onlyMine} className={!onlyMine ? 'chip-on' : 'chip'} onClick={() => setOnlyMine(false)}>Toda la escuela</button>
+            <button type="button" aria-pressed={onlyMine} className={onlyMine ? 'chip-on' : 'chip'} onClick={() => setOnlyMine(true)}>{t('staff.mine')}</button>
+            <button type="button" aria-pressed={!onlyMine} className={!onlyMine ? 'chip-on' : 'chip'} onClick={() => setOnlyMine(false)}>{t('staff.all')}</button>
           </div>
         )}
       </div>
@@ -166,7 +167,7 @@ export function StaffAgenda() {
             return (
               <section key={d}>
                 <h2 className="mb-2 text-sm font-bold text-heading">{dayLabel(d)} <span className="font-normal normal-case text-ink-mute">· {longDay(d)}</span></h2>
-                {list.length === 0 ? <p className="rounded-xl border border-dashed border-line px-4 py-3 text-sm text-ink-mute">Sin clases</p>
+                {list.length === 0 ? <p className="rounded-xl border border-dashed border-line px-4 py-3 text-sm text-ink-mute">{t('staff.noClasses')}</p>
                   : <div className="space-y-3">{list.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>}
               </section>
             )
@@ -186,13 +187,13 @@ export function StaffStudents() {
   const list = (data ?? []).filter((s) => s.full_name.toLowerCase().includes(q.trim().toLowerCase()))
   return (
     <div>
-      <PageHeader title="Alumnos" subtitle="Progreso y comentarios de cada alumno" />
+      <PageHeader title={t('nav.students')} subtitle={t('staff.studentsSub')} />
       <div className="relative mb-4">
         <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-mute" />
-        <input className="input pl-12" type="search" placeholder="Buscar alumno" aria-label="Buscar alumno" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="input pl-12" type="search" placeholder={t('staff.search')} aria-label={t('staff.search')} value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
       {loading && !data ? <Loading /> : error ? <ErrorBox message={error} onRetry={() => void reload()} />
-        : list.length === 0 ? <EmptyState title={q ? 'Sin resultados' : 'Todavía no hay alumnos'} text={q ? undefined : 'Los alumnos se cargan desde la app de gestión de la escuela.'} />
+        : list.length === 0 ? <EmptyState title={t(q ? 'staff.noResults' : 'staff.noStudents')} text={q ? undefined : t('staff.noStudentsText')} />
           : (
             <ul className="card divide-y divide-line overflow-hidden">
               {list.map((s) => (
@@ -236,7 +237,7 @@ export function StaffStudentDetail() {
     try {
       await api.addLessonNote(id, me.instructor_id, note.trim())
       setNote('')
-      toast('Comentario guardado')
+      toast(t('staff.commentSaved'))
       void reload()
     } catch (err) {
       toast(friendlyError(err), 'error')
@@ -246,30 +247,30 @@ export function StaffStudentDetail() {
   }
 
   if (loading && !data) return <Loading />
-  if (error || !data) return <ErrorBox message={error ?? 'No se pudo cargar.'} onRetry={() => void reload()} />
-  if (!data.student) return <EmptyState title="Alumno no encontrado" action={<Link to="/alumnos" className="btn-ghost">Volver</Link>} />
+  if (error || !data) return <ErrorBox message={error ?? t('common.loadFailed')} onRetry={() => void reload()} />
+  if (!data.student) return <EmptyState title={t('staff.notFound')} action={<Link to="/alumnos" className="btn-ghost">{t('common.back')}</Link>} />
 
   return (
     <div className="space-y-6">
       <div>
-        <Link to="/alumnos" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-deep"><Icon name="chevronLeft" className="h-4 w-4" /> Alumnos</Link>
+        <Link to="/alumnos" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-deep"><Icon name="chevronLeft" className="h-4 w-4" /> {t('nav.students')}</Link>
         <h1 className="text-2xl font-bold text-heading">{data.student.full_name}</h1>
       </div>
       {data.upcoming.length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">Próximas clases</h2>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('staff.upcoming')}</h2>
           <div className="space-y-3">{data.upcoming.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" />)}</div>
         </section>
       )}
       <ProgressPath skills={data.skills} progress={data.progress} studentId={id} editable onChanged={() => void reload()} />
       <section>
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">Comentarios</h2>
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('staff.comments')}</h2>
         <form onSubmit={addNote} className="card mb-3 space-y-3 p-4">
-          <Field label="Nuevo comentario (lo ve el alumno)">
+          <Field label={t('staff.newComment')}>
             {(fid) => <textarea id={fid} className="input min-h-20" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)}
-              placeholder="Ej: para la próxima, practicá la posición del cuerpo en el waterstart" />}
+              placeholder={t('staff.commentPh')} />}
           </Field>
-          <button type="submit" className="btn-dark w-full" disabled={saving || !note.trim()}>{saving && <Spinner />} Guardar comentario</button>
+          <button type="submit" className="btn-dark w-full" disabled={saving || !note.trim()}>{saving && <Spinner />} {t('staff.saveComment')}</button>
         </form>
         <NotesList notes={data.notes} instructorNames={data.names} />
       </section>
@@ -294,7 +295,7 @@ export function StaffAnnouncements() {
 
   async function post(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim()) return setError('Escribí un título.')
+    if (!title.trim()) return setError(t('news.needTitle'))
     setBusy(true)
     setError(null)
     try {
@@ -303,7 +304,7 @@ export function StaffAnnouncements() {
       setBody('')
       setTo('')
       notifyChange()
-      toast('Aviso publicado')
+      toast(t('news.published'))
     } catch (err) {
       setError(friendlyError(err))
     } finally {
@@ -311,42 +312,42 @@ export function StaffAnnouncements() {
     }
   }
 
-  const QUICK = ['Hoy no hay viento: se suspenden las clases', 'Buen viento esta tarde: ¡los esperamos!', 'Mañana arrancamos más temprano']
+  const QUICK = [t('news.quick1'), t('news.quick2'), t('news.quick3')]
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Avisos" subtitle="Los alumnos los ven al abrir la app" />
+      <PageHeader title={t('news.title')} subtitle={t('news.subtitle')} />
       <form onSubmit={post} className="card space-y-4 p-4">
         <div className="flex flex-wrap gap-2">
           {QUICK.map((q) => <button key={q} type="button" className="chip text-left" onClick={() => setTitle(q)}>{q}</button>)}
         </div>
-        <Field label="Título">
-          {(id) => <input id={id} className="input" maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej: Mañana sin viento" />}
+        <Field label={t('news.fTitle')}>
+          {(id) => <input id={id} className="input" maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('news.fTitlePh')} />}
         </Field>
-        <Field label="Detalle (opcional)">
+        <Field label={t('news.fBody')}>
           {(id) => <textarea id={id} className="input min-h-20" maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} />}
         </Field>
-        <Field label="Para">
+        <Field label={t('news.fTo')}>
           {(id) => (
             <select id={id} className="input" value={to} onChange={(e) => setTo(e.target.value)}>
-              <option value="">Todos los alumnos</option>
-              {(students.data ?? []).map((s) => <option key={s.id} value={s.id}>Solo {s.full_name}</option>)}
+              <option value="">{t('news.toAll')}</option>
+              {(students.data ?? []).map((s) => <option key={s.id} value={s.id}>{t('news.toOne', { name: s.full_name })}</option>)}
             </select>
           )}
         </Field>
         {error && <ErrorBox message={error} />}
-        <button type="submit" className="btn-primary w-full" disabled={busy}>{busy && <Spinner />} <Icon name="megaphone" /> Publicar aviso</button>
+        <button type="submit" className="btn-primary w-full" disabled={busy}>{busy && <Spinner />} <Icon name="megaphone" /> {t('news.publish')}</button>
       </form>
       <section>
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">Publicados</h2>
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('news.publishedList')}</h2>
         {news.loading && !news.data ? <Loading /> : news.error ? <ErrorBox message={news.error} />
-          : (news.data ?? []).length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">Todavía no hay avisos.</p>
+          : (news.data ?? []).length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('news.none')}</p>
             : (
               <div className="space-y-3">
                 {news.data!.map((a) => (
                   <AnnouncementCard key={a.id} a={a} studentName={a.student_id ? names.get(a.student_id) : null}
                     onDelete={me.isAdmin || a.created_by === me.user_id ? async () => {
-                      if (!(await confirm({ title: 'Borrar aviso', message: `¿Borrás “${a.title}”?`, confirmLabel: 'Borrar', danger: true }))) return
+                      if (!(await confirm({ title: t('news.deleteTitle'), message: t('news.deleteMsg', { title: a.title }), confirmLabel: t('news.deleteYes'), danger: true }))) return
                       try {
                         await api.deleteAnnouncement(a.id)
                         notifyChange()

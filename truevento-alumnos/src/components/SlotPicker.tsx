@@ -3,13 +3,13 @@ import * as api from '../lib/api'
 import { addDays, DURATIONS, endTime, formatHours, isoDate, START_TIMES, today } from '../lib/format'
 import type { BusySlot } from '../lib/types'
 import { Icon, Spinner } from './ui'
+import { locale, t } from '../i18n'
 
 // Pick a class time by tapping: a month calendar, the duration, then the day's times.
 // Times that overlap another requested or confirmed class show as "Reservado".
 
 export interface Slot { date: string; time: string; hours: number }
 
-const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 const MAX_DAYS_AHEAD = 180
 
 const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
@@ -68,7 +68,7 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
     return [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => isoDate(new Date(y, m - 1, i + 1)))] as (string | null)[]
   }, [month])
 
-  const states = (date: string) => START_TIMES.map((t) => timeState(date, t, value.hours, busy ?? [], allowPast))
+  const states = (date: string) => START_TIMES.map((tm) => timeState(date, tm, value.hours, busy ?? [], allowPast))
   const dayInfo = (date: string) => {
     if (date < today() || date > last) return 'off'
     if (!busy) return 'open'
@@ -85,7 +85,7 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
   }, [busy, value, onChange, allowPast])
 
   const label = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1)
-    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+    .toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
   const canPrev = month > monthStart(today())
   const canNext = shiftMonth(month, 1) <= last
 
@@ -93,21 +93,21 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
     <div className="space-y-5">
       {/* 1. day */}
       <fieldset>
-        <legend className="field-label">Día</legend>
+        <legend className="field-label">{t('slot.day')}</legend>
         <div className="rounded-2xl border border-line bg-surface p-3">
           <div className="mb-2 flex items-center justify-between">
             <button type="button" className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2 disabled:opacity-30"
-              disabled={!canPrev} onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Mes anterior">
+              disabled={!canPrev} onClick={() => setMonth(shiftMonth(month, -1))} aria-label={t('slot.prevMonth')}>
               <Icon name="chevronLeft" />
             </button>
             <span className="font-semibold text-heading first-letter:uppercase" aria-live="polite">{label}</span>
             <button type="button" className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2 disabled:opacity-30"
-              disabled={!canNext} onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Mes siguiente">
+              disabled={!canNext} onClick={() => setMonth(shiftMonth(month, 1))} aria-label={t('slot.nextMonth')}>
               <Icon name="chevronRight" />
             </button>
           </div>
           <div className="grid grid-cols-7 text-center text-xs font-semibold text-ink-mute" aria-hidden="true">
-            {WEEKDAYS.map((d, i) => <span key={i} className="py-1">{d}</span>)}
+            {t('slot.weekdays').split(',').map((d, i) => <span key={i} className="py-1">{d}</span>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {cells.map((d, i) => {
@@ -116,10 +116,10 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
               const selected = d === value.date
               const disabled = info === 'off' || info === 'full'
               const n = Number(d.slice(8))
-              const name = new Date(d + 'T12:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+              const name = new Date(d + 'T12:00').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' })
               return (
                 <button key={d} type="button" disabled={disabled} aria-pressed={selected}
-                  aria-label={`${name}${info === 'full' ? ', completo' : ''}${d === today() ? ', hoy' : ''}`}
+                  aria-label={`${name}${info === 'full' ? `, ${t('slot.fullA11y')}` : ''}${d === today() ? `, ${t('slot.todayA11y')}` : ''}`}
                   onClick={() => onChange({ ...value, date: d, time: '' })}
                   className={`relative grid aspect-square min-h-10 place-items-center rounded-xl text-sm font-semibold transition ${
                     selected ? 'bg-selected text-white'
@@ -133,15 +133,15 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
             })}
           </div>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-mute">
-            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-coral" />Con horarios reservados</span>
-            <span className="line-through decoration-2">Completo</span>
+            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-coral" />{t('slot.someTaken')}</span>
+            <span className="line-through decoration-2">{t('slot.full')}</span>
           </div>
         </div>
       </fieldset>
 
       {/* 2. duration */}
       <fieldset>
-        <legend className="field-label">Duración</legend>
+        <legend className="field-label">{t('lesson.duration')}</legend>
         <div className="flex flex-wrap gap-2">
           {DURATIONS.map((h) => (
             <button key={h} type="button" aria-pressed={value.hours === h} onClick={() => onChange({ ...value, hours: h })}
@@ -152,30 +152,30 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
 
       {/* 3. time */}
       <fieldset>
-        <legend className="field-label">Horario</legend>
-        {!value.date ? <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink-mute">Primero elegí el día en el calendario.</p>
-          : !busy ? <div className="flex items-center gap-2 py-4 text-sm text-ink-mute"><Spinner className="h-4 w-4" /> Buscando horarios libres…</div> : (
+        <legend className="field-label">{t('slot.time')}</legend>
+        {!value.date ? <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink-mute">{t('slot.pickDayFirst')}</p>
+          : !busy ? <div className="flex items-center gap-2 py-4 text-sm text-ink-mute"><Spinner className="h-4 w-4" /> {t('slot.searching')}</div> : (
             <>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                {START_TIMES.map((t) => {
-                  const st = timeState(value.date, t, value.hours, busy, allowPast)
-                  const selected = value.time === t
-                  const note = st === 'taken' ? 'Reservado' : st === 'noRoom' ? `No entran ${formatHours(value.hours)}` : st === 'past' ? 'Ya pasó' : `hasta ${endTime(t, value.hours)}`
+                {START_TIMES.map((time) => {
+                  const st = timeState(value.date, time, value.hours, busy, allowPast)
+                  const selected = value.time === time
+                  const note = st === 'taken' ? t('slot.taken') : st === 'noRoom' ? t('slot.noRoom', { h: formatHours(value.hours) }) : st === 'past' ? t('slot.past') : t('slot.until', { time: endTime(time, value.hours) })
                   return (
-                    <button key={t} type="button" disabled={st !== 'free'} aria-pressed={selected}
-                      aria-label={`${t}, ${note}`} onClick={() => onChange({ ...value, time: t })}
+                    <button key={time} type="button" disabled={st !== 'free'} aria-pressed={selected}
+                      aria-label={`${time}, ${note}`} onClick={() => onChange({ ...value, time })}
                       className={`flex min-h-14 flex-col items-center justify-center rounded-xl border px-1 py-1.5 transition active:scale-95 ${
                         selected ? 'border-selected bg-selected text-white'
                           : st === 'taken' ? 'border-coral/30 bg-coral-soft text-coral-ink'
                             : st !== 'free' ? 'border-line bg-surface-2 text-ink-mute'
                               : 'border-line bg-surface text-ink hover:border-brand'}`}>
-                      <span className={`tabular font-display text-base font-bold ${st === 'taken' ? 'line-through' : ''}`}>{t}</span>
+                      <span className={`tabular font-display text-base font-bold ${st === 'taken' ? 'line-through' : ''}`}>{time}</span>
                       <span className={`text-[11px] font-semibold leading-tight ${selected ? 'text-white' : ''}`}>{note}</span>
                     </button>
                   )
                 })}
               </div>
-              {failed && <p className="mt-2 text-sm text-coral-ink">No se pudieron ver los horarios ocupados. Si elegís uno reservado, la escuela te avisa.</p>}
+              {failed && <p className="mt-2 text-sm text-coral-ink">{t('slot.loadFailed')}</p>}
             </>
           )}
       </fieldset>

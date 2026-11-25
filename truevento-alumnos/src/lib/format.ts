@@ -1,4 +1,5 @@
 // Dates are the school's local calendar days (YYYY-MM-DD); times are HH:MM.
+import { locale, t } from '../i18n'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -22,18 +23,18 @@ function parse(iso: string): Date {
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-/** "Hoy", "Mañana" or "Jue 28 nov". */
+/** "Today", "Tomorrow" or a short date, in the user's language. */
 export function dayLabel(iso: string): string {
-  const t = today()
-  if (iso === t) return 'Hoy'
-  if (iso === addDays(t, 1)) return 'Mañana'
-  if (iso === addDays(t, -1)) return 'Ayer'
-  return cap(parse(iso).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '').replace(',', ''))
+  const td = today()
+  if (iso === td) return t('date.today')
+  if (iso === addDays(td, 1)) return t('date.tomorrow')
+  if (iso === addDays(td, -1)) return t('date.yesterday')
+  return cap(parse(iso).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '').replace(',', ''))
 }
 
-/** "jueves 28 de noviembre" (capitalized: "Jueves 28 de noviembre"). */
+/** The full date, e.g. "jueves 28 de noviembre" (capitalized on request). */
 export function longDay(iso: string, capital = false): string {
-  const s = parse(iso).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '')
+  const s = parse(iso).toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '')
   return capital ? cap(s) : s
 }
 
@@ -48,21 +49,21 @@ export function endTime(start: string, hours: number): string {
   return `${pad(Math.floor(total / 60) % 24)}:${pad(total % 60)}`
 }
 
-/** 1.5 -> "1:30 hs", 2 -> "2 hs". */
+/** 1.5 -> "1:30 hs", 2 -> "2 hs" (the unit follows the language). */
 export function formatHours(hours: number): string {
   const totalMin = Math.round(hours * 60)
   const h = Math.floor(totalMin / 60)
   const m = totalMin % 60
-  return `${m === 0 ? h : `${h}:${pad(m)}`} hs`
+  return `${m === 0 ? h : `${h}:${pad(m)}`} ${t('hours.unit')}`
 }
 
 export function timeAgo(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000
-  if (diff < 60) return 'recién'
-  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
-  if (diff < 86400 * 7) return `hace ${Math.floor(diff / 86400)} d`
-  return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+  if (diff < 60) return t('ago.now')
+  if (diff < 3600) return t('ago.min', { n: Math.floor(diff / 60) })
+  if (diff < 86400) return t('ago.hours', { n: Math.floor(diff / 3600) })
+  if (diff < 86400 * 7) return t('ago.days', { n: Math.floor(diff / 86400) })
+  return new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 export function firstName(full: string | null | undefined): string {

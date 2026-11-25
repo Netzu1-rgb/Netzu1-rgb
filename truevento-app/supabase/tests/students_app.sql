@@ -235,6 +235,7 @@ insert into tests.vars values ('jreq', public.request_lesson(current_date + 5, '
 
 select tests.act_as('00000000-0000-0000-0000-0000000000a1');
 do $$ begin
+  assert (select privacy_accepted_at is not null from public.students where id = (select v::uuid from tests.vars where k = 'julia')), 'consent recorded';
   assert (select hourly_rate is null and self_registered and weight_kg = 63 and experience = 'some' and phone = '+55 88 99999-1111'
             from public.students where id = (select v::uuid from tests.vars where k = 'julia')), 'admin sees her data, no price yet';
   assert (select price_pending from public.agenda(current_date, current_date + 10) where id = (select v::uuid from tests.vars where k = 'jreq'));

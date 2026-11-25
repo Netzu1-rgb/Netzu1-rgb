@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 export type Role = 'admin' | 'instructor' | 'student'
 
 export interface Me {
@@ -74,11 +76,8 @@ export interface Announcement {
 }
 
 export type Experience = 'none' | 'some' | 'independent'
-export const EXPERIENCE: { value: Experience; label: string }[] = [
-  { value: 'none', label: 'Nunca hice kite' },
-  { value: 'some', label: 'Tomé algunas clases' },
-  { value: 'independent', label: 'Ya navego solo' },
-]
+export const EXPERIENCE: Experience[] = ['none', 'some', 'independent']
+export const experienceLabel = (e: Experience) => t(e === 'none' ? 'exp.none' : e === 'some' ? 'exp.some' : 'exp.independent')
 
 export interface PersonalData {
   full_name: string
@@ -103,10 +102,4 @@ export interface InvitePreview {
   first_name: string
 }
 
-export const LEVEL_NAMES: Record<number, string> = {
-  1: 'Nivel 1 · Control del kite',
-  2: 'Nivel 2 · En el agua',
-  3: 'Nivel 3 · Arriba de la tabla',
-  4: 'Nivel 4 · Independiente',
-}
-export const levelName = (n: number) => LEVEL_NAMES[n] ?? `Nivel ${n}`
+export const levelName = (n: number) => n >= 1 && n <= 4 ? t(`level.${n}` as 'level.1') : t('level.n', { n })

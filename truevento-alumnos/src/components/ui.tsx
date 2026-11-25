@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { t } from '../i18n'
 
 // ------------------------------------------------------------------ icons (inline, no extra dependency)
 
@@ -70,7 +71,7 @@ export function Spinner({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
-export function Loading({ label = 'Cargando…' }: { label?: string }) {
+export function Loading({ label = t('common.loading') }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-3 py-16 text-ink-mute" role="status">
       <Spinner className="h-6 w-6 text-brand" />
@@ -85,7 +86,7 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
       <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0" />
       <div className="flex-1">{message}</div>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="font-semibold underline underline-offset-2">Reintentar</button>
+        <button type="button" onClick={onRetry} className="font-semibold underline underline-offset-2">{t('common.retry')}</button>
       )}
     </div>
   )
@@ -169,7 +170,7 @@ export function Modal({ open, title, onClose, children, footer }: {
         <div className="flex max-h-[90dvh] flex-col">
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <h2 className="text-lg font-semibold text-heading">{title}</h2>
-            <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2" aria-label="Cerrar">
+            <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2" aria-label={t('common.close')}>
               <Icon name="x" />
             </button>
           </div>
@@ -206,9 +207,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       <Modal open={opts !== null} title={opts?.title ?? ''} onClose={() => close(false)}
         footer={<>
-          <button type="button" className="btn-ghost flex-1" onClick={() => close(false)}>Cancelar</button>
+          <button type="button" className="btn-ghost flex-1" onClick={() => close(false)}>{t('common.cancel')}</button>
           <button type="button" className={`${opts?.danger ? 'btn-danger' : 'btn-primary'} flex-1`} onClick={() => close(true)}>
-            {opts?.confirmLabel ?? 'Confirmar'}
+            {opts?.confirmLabel ?? t('common.confirm')}
           </button>
         </>}>
         <div className="text-ink-soft">{opts?.message}</div>

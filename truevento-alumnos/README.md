@@ -1,6 +1,6 @@
 # TRUEVENTO · App de alumnos e instructores
 
-Aplicación web progresiva (PWA) donde los alumnos de TRUEVENTO Kiteschool ven sus clases, piden horarios, siguen su progreso y el pronóstico del viento, y los instructores manejan su agenda y marcan lo que aprendió cada alumno.
+Aplicación web progresiva (PWA), en **español, portugués e inglés**, donde los alumnos de TRUEVENTO Kiteschool ven sus clases, piden horarios, siguen su progreso y el pronóstico del viento, y los instructores manejan su agenda y marcan lo que aprendió cada alumno.
 
 Es una app aparte de la de gestión (`../truevento-app`), pero usa **la misma base de datos Supabase**: una clase que el instructor marca como dada queda registrada sola en la gestión, con el precio del alumno y el pago del instructor.
 
@@ -15,6 +15,14 @@ Es una app aparte de la de gestión (`../truevento-app`), pero usa **la misma ba
 | **Viento** | pronóstico de 7 días (Open-Meteo, sin clave) | igual |
 
 Al cerrar una clase ("Clase dada"), el instructor indica cuánto duró, deja un comentario y marca las habilidades trabajadas. Eso crea la clase en la gestión con los precios guardados en las fichas.
+
+## Idiomas
+
+La app detecta el idioma del celular (portugués o inglés; si no, español) y se puede cambiar en la pantalla de entrada o en **Ajustes → Idioma**. Todos los textos están en `src/i18n/messages.ts` (el español es la referencia; la compilación falla si a portugués o inglés le falta un texto). Los mensajes de la base de datos y las habilidades del camino de aprendizaje también se traducen; lo que escriben las personas (avisos, comentarios) queda como se escribió.
+
+## Privacidad (LGPD)
+
+Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer en la pantalla de registro y en Ajustes). La base guarda cuándo la aceptó (`students.privacy_accepted_at`).
 
 ## Cómo se vinculan las dos apps
 
@@ -42,7 +50,8 @@ Al cerrar una clase ("Clase dada"), el instructor indica cuánto duró, deja un 
    | `VITE_SUPABASE_ANON_KEY` | la misma clave publishable / anon |
    | `VITE_USERNAME_DOMAIN` | `truevento.com` (igual que la gestión) |
 
-3. En el proyecto de **gestión**, agregá `VITE_STUDENTS_APP_URL` con la dirección de esta app (por ejemplo `https://truevento-alumnos.vercel.app`) y volvé a publicar, para que las invitaciones lleven el link correcto.
+3. **Dominio `app.truevento.com`**: en Vercel, *Settings → Domains* del proyecto, agregá `app.truevento.com`. En Cloudflare (DNS de truevento.com) creá un registro **CNAME** `app` → `cname.vercel-dns.com` con el proxy desactivado (nube gris).
+4. En el proyecto de **gestión**, `VITE_STUDENTS_APP_URL=https://app.truevento.com` (es el valor por defecto) y volvé a publicar.
 
 ## Desarrollo
 

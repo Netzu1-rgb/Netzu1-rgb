@@ -1,22 +1,24 @@
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { useMe } from '../context/Session'
 import { Icon } from './ui'
+import { t } from '../i18n'
+import type { Key } from '../i18n/messages'
 
-interface Tab { to: string; label: string; icon: string }
+interface Tab { to: string; label: Key; icon: string }
 
 const STUDENT_TABS: Tab[] = [
-  { to: '/', label: 'Inicio', icon: 'home' },
-  { to: '/agenda', label: 'Mis clases', icon: 'calendar' },
-  { to: '/progreso', label: 'Progreso', icon: 'star' },
-  { to: '/viento', label: 'Viento', icon: 'wind' },
+  { to: '/', label: 'nav.home', icon: 'home' },
+  { to: '/agenda', label: 'nav.myClasses', icon: 'calendar' },
+  { to: '/progreso', label: 'nav.progress', icon: 'star' },
+  { to: '/viento', label: 'nav.wind', icon: 'wind' },
 ]
 
 const STAFF_TABS: Tab[] = [
-  { to: '/', label: 'Hoy', icon: 'home' },
-  { to: '/agenda', label: 'Agenda', icon: 'calendar' },
-  { to: '/alumnos', label: 'Alumnos', icon: 'users' },
-  { to: '/avisos', label: 'Avisos', icon: 'megaphone' },
-  { to: '/viento', label: 'Viento', icon: 'wind' },
+  { to: '/', label: 'nav.today', icon: 'home' },
+  { to: '/agenda', label: 'nav.agenda', icon: 'calendar' },
+  { to: '/alumnos', label: 'nav.students', icon: 'users' },
+  { to: '/avisos', label: 'nav.announcements', icon: 'megaphone' },
+  { to: '/viento', label: 'nav.wind', icon: 'wind' },
 ]
 
 export default function Layout() {
@@ -32,19 +34,19 @@ export default function Layout() {
           <img src="/logo-truevento.png" alt="" className="h-11 w-11 rounded-full" />
           <div>
             <div className="font-display text-lg font-bold">TRUEVENTO</div>
-            <div className="text-xs text-brand-200">{me.isStaff ? 'Instructores' : 'Alumnos'}</div>
+            <div className="text-xs text-brand-200">{t(me.isStaff ? 'nav.forInstructors' : 'nav.forStudents')}</div>
           </div>
         </div>
-        <nav className="flex flex-col gap-1" aria-label="Secciones">
-          {tabs.map((t) => (
-            <NavLink key={t.to} to={t.to} end={t.to === '/'}
+        <nav className="flex flex-col gap-1" aria-label={t('nav.sections')}>
+          {tabs.map((tab) => (
+            <NavLink key={tab.to} to={tab.to} end={tab.to === "/"}
               className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${isActive ? 'bg-white/12 text-white' : 'text-brand-100/80 hover:bg-white/6'}`}>
-              <Icon name={t.icon} /> {t.label}
+              <Icon name={tab.icon} /> {t(tab.label)}
             </NavLink>
           ))}
         </nav>
         <NavLink to="/ajustes" className={({ isActive }) => `mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium ${isActive ? 'bg-white/12' : 'text-brand-100/80 hover:bg-white/6'}`}>
-          <Icon name="settings" /> Ajustes
+          <Icon name="settings" /> {t('nav.settings')}
         </NavLink>
       </aside>
 
@@ -57,7 +59,7 @@ export default function Layout() {
               <div className="font-display font-bold leading-tight">TRUEVENTO</div>
               <div className="truncate text-xs text-brand-200">{me.full_name}</div>
             </div>
-            <NavLink to="/ajustes" aria-label="Ajustes"
+            <NavLink to="/ajustes" aria-label={t('nav.settings')}
               className={`grid h-10 w-10 place-items-center rounded-full ${pathname === '/ajustes' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
               <Icon name="settings" />
             </NavLink>
@@ -70,17 +72,17 @@ export default function Layout() {
         </main>
 
         {/* phone bottom bar */}
-        <nav aria-label="Secciones" className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
+        <nav aria-label={t('nav.sections')} className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-lg">
-            {tabs.map((t) => (
-              <NavLink key={t.to} to={t.to} end={t.to === '/'}
+            {tabs.map((tab) => (
+              <NavLink key={tab.to} to={tab.to} end={tab.to === "/"}
                 className={({ isActive }) => `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
                 {({ isActive }) => (
                   <>
                     <span className={`grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-brand-soft' : ''}`}>
-                      <Icon name={t.icon} className="h-5 w-5" />
+                      <Icon name={tab.icon} className="h-5 w-5" />
                     </span>
-                    {t.label}
+                    {t(tab.label)}
                   </>
                 )}
               </NavLink>

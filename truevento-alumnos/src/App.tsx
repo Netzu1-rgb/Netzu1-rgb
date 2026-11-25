@@ -5,6 +5,7 @@ import { ErrorBox } from './components/ui'
 import UpdateBanner from './components/UpdateBanner'
 import { useSession } from './context/Session'
 import { isConfigured } from './lib/supabase'
+import { t } from './i18n'
 import { SettingsPage, WindPage } from './pages/common'
 import { StaffAgenda, StaffAnnouncements, StaffStudentDetail, StaffStudents, StaffToday } from './pages/staff'
 import { StudentAgenda, StudentHome, StudentProgress } from './pages/student'
@@ -39,10 +40,10 @@ export default function App() {
 
 function Screens({ status, role, retry }: { status: string; role: string | null; retry: () => Promise<void> }) {
   if (!isConfigured && import.meta.env.VITE_DEMO !== '1') {
-    return <div className="p-6"><ErrorBox message="Falta configurar la conexión con la base de datos (VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY)." /></div>
+    return <div className="p-6"><ErrorBox message={t('app.noConfig')} /></div>
   }
   if (status === 'loading') return null
-  if (status === 'error') return <div className="p-6"><ErrorBox message="No se pudo conectar. Revisá internet." onRetry={() => void retry()} /></div>
+  if (status === 'error') return <div className="p-6"><ErrorBox message={t('app.noConnection')} onRetry={() => void retry()} /></div>
   if (status === 'signedOut') return <Welcome />
   if (status === 'noRole') return <ClaimCode />
 

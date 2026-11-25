@@ -5,6 +5,7 @@ import { timeAgo } from '../lib/format'
 import type { LessonNote, Skill, SkillStatus, StudentSkill } from '../lib/types'
 import { levelName } from '../lib/types'
 import { Icon, useToast } from './ui'
+import { skillText, t } from '../i18n'
 
 /** Learning path by level. Staff can tap a skill to change it; students only see it. */
 export function ProgressPath({ skills, progress, studentId, editable, onChanged }: {
@@ -40,14 +41,14 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
     <div className="space-y-3">
       <div className="card p-4">
         <div className="flex items-baseline justify-between">
-          <span className="font-semibold text-heading">Camino de aprendizaje</span>
-          <span className="tabular text-sm font-semibold text-ink-mute">{doneTotal} de {skills.length}</span>
+          <span className="font-semibold text-heading">{t('progress.path')}</span>
+          <span className="tabular text-sm font-semibold text-ink-mute">{t('progress.count', { done: doneTotal, total: skills.length })}</span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuemin={0}
-          aria-valuemax={skills.length} aria-valuenow={doneTotal} aria-label="Habilidades logradas">
+          aria-valuemax={skills.length} aria-valuenow={doneTotal} aria-label={t('progress.achieved')}>
           <div className="brand-gradient h-full rounded-full transition-all" style={{ width: `${skills.length ? (doneTotal / skills.length) * 100 : 0}%` }} />
         </div>
-        {editable && <p className="mt-3 text-sm text-ink-mute">Tocá una habilidad para marcarla: practicando → logrado → sin marcar.</p>}
+        {editable && <p className="mt-3 text-sm text-ink-mute">{t('progress.tapHint')}</p>}
       </div>
 
       {levels.map((l) => {
@@ -63,23 +64,24 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-heading">{levelName(l)}</h3>
-                <div className="text-xs text-ink-mute">{complete ? 'Nivel completo' : isCurrent ? `En curso · ${done} de ${items.length}` : `${done} de ${items.length}`}</div>
+                <div className="text-xs text-ink-mute">{complete ? t('progress.levelDone') : isCurrent ? t('progress.inProgress', { done, total: items.length }) : t('progress.count', { done, total: items.length })}</div>
               </div>
             </div>
             <ul className="divide-y divide-line">
               {items.map((s) => {
                 const st = status.get(s.id) ?? null
+                const [name, description] = skillText(s.name, s.description)
                 const content = (
                   <>
                     <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 ${st === 'done' ? 'border-violet bg-violet text-white' : st === 'learning' ? 'border-brand text-brand' : 'border-line-strong'}`}>
                       {st === 'done' ? <Icon name="check" className="h-4 w-4" strokeWidth={3} /> : st === 'learning' ? <span className="h-2.5 w-2.5 rounded-full bg-brand" /> : null}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className={`block font-medium ${st ? 'text-heading' : 'text-ink-soft'}`}>{s.name}</span>
-                      {s.description && <span className="block text-sm text-ink-mute">{s.description}</span>}
+                      <span className={`block font-medium ${st ? 'text-heading' : 'text-ink-soft'}`}>{name}</span>
+                      {description && <span className="block text-sm text-ink-mute">{description}</span>}
                     </span>
                     <span className={`shrink-0 text-xs font-semibold ${st === 'done' ? 'text-violet-deep' : st === 'learning' ? 'text-brand-deep' : 'text-ink-mute'}`}>
-                      {st === 'done' ? 'Logrado' : st === 'learning' ? 'Practicando' : ''}
+                      {st === 'done' ? t('progress.done') : st === 'learning' ? t('progress.learning') : ''}
                     </span>
                   </>
                 )
@@ -106,7 +108,7 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
 
 export function NotesList({ notes, instructorNames }: { notes: LessonNote[]; instructorNames: Map<string, string> }) {
   if (!notes.length) {
-    return <p className="card px-4 py-6 text-center text-sm text-ink-mute">Todavía no hay comentarios del instructor.</p>
+    return <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('progress.noNotes')}</p>
   }
   return (
     <ol className="space-y-3">

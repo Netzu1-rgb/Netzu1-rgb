@@ -3,7 +3,7 @@ import { createInvite } from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { Icon, Modal, Spinner, useToast } from './ui'
 
-export const STUDENTS_APP_URL = ((import.meta.env.VITE_STUDENTS_APP_URL as string | undefined) ?? 'https://truevento-alumnos.vercel.app').replace(/\/$/, '')
+export const STUDENTS_APP_URL = ((import.meta.env.VITE_STUDENTS_APP_URL as string | undefined) ?? 'https://app.truevento.com').replace(/\/$/, '')
 
 /** Invites a student or instructor to the students app: makes a code and sends it by WhatsApp. */
 export default function InviteButton({ kind, targetId, name, phone, className = 'btn-ghost' }: {

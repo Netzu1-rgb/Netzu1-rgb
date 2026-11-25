@@ -39,7 +39,9 @@ alter table public.students alter column hourly_rate drop not null;
 alter table public.students
   add column weight_kg      smallint check (weight_kg is null or weight_kg between 20 and 200),
   add column experience     text check (experience in ('none', 'some', 'independent')),
-  add column self_registered boolean not null default false;
+  add column self_registered boolean not null default false,
+  -- when the student accepted the privacy policy in the app (LGPD)
+  add column privacy_accepted_at timestamptz;
 
 -- ---------------------------------------------------------------- tables
 
@@ -237,6 +239,7 @@ begin
     if exists (select 1 from public.profiles where student_id = st.id) then
       raise exception 'Este alumno ya tiene su cuenta en la app.' using errcode = 'P0001';
     end if;
+    update public.students set privacy_accepted_at = coalesce(privacy_accepted_at, now()) where id = st.id;
     insert into public.profiles (id, role, student_id, full_name, active)
     values (me, 'student', st.id, st.full_name, true)
     on conflict (id) do update set role = 'student', student_id = st.id,
@@ -340,8 +343,8 @@ begin
   if length(regexp_replace(coalesce(p_phone, ''), '\D', '', 'g')) < 8 then
     raise exception 'Escribí tu WhatsApp con código de área.' using errcode = '22023';
   end if;
-  insert into public.students (full_name, phone, hourly_rate, weight_kg, experience, self_registered, created_by)
-  values (trim(p_full_name), trim(p_phone), null, p_weight, p_experience, true, me)
+  insert into public.students (full_name, phone, hourly_rate, weight_kg, experience, self_registered, privacy_accepted_at, created_by)
+  values (trim(p_full_name), trim(p_phone), null, p_weight, p_experience, true, now(), me)
   returning id into new_id;
   insert into public.profiles (id, role, student_id, full_name, active)
   values (me, 'student', new_id, trim(p_full_name), true)

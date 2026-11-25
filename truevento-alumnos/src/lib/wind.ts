@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 // Wind forecast for the spot, from Open-Meteo (free, no key). Kept on the device for
 // an hour so the app does not ask again on every screen.
 
@@ -86,15 +87,10 @@ export function windLevel(knots: number): WindLevel {
   return 'strong'
 }
 
-export const WIND_LABEL: Record<WindLevel, string> = {
-  low: 'Poco viento',
-  good: 'Ideal para clase',
-  strong: 'Viento fuerte',
-}
+export const windLabel = (l: WindLevel) => t(l === 'low' ? 'wind.low' : l === 'good' ? 'wind.good' : 'wind.strong')
 
-const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']
 export function compass(deg: number): string {
-  return DIRS[Math.round((((deg % 360) + 360) % 360) / 45) % 8]
+  return t('wind.dirs').split(',')[Math.round((((deg % 360) + 360) % 360) / 45) % 8]
 }
 
 /** Demo only: a plausible week of trade winds. */

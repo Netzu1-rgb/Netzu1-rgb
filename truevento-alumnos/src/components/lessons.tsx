@@ -7,18 +7,20 @@ import { notifyChange } from '../lib/hooks'
 import type { Lesson, LessonStatus, Person, Skill, SkillStatus } from '../lib/types'
 import { levelName } from '../lib/types'
 import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
+import { skillText, t } from '../i18n'
+import type { Key } from '../i18n/messages'
 
 // ------------------------------------------------------------------ status
 
-const STATUS: Record<LessonStatus, { label: string; cls: string }> = {
-  requested: { label: 'Pendiente', cls: 'bg-coral-soft text-coral-ink' },
-  confirmed: { label: 'Confirmada', cls: 'bg-brand-soft text-brand-deep' },
-  done: { label: 'Realizada', cls: 'bg-violet-soft text-violet-deep' },
-  cancelled: { label: 'Cancelada', cls: 'bg-surface-2 text-ink-mute' },
+const STATUS: Record<LessonStatus, { label: Key; cls: string }> = {
+  requested: { label: 'status.requested', cls: 'bg-coral-soft text-coral-ink' },
+  confirmed: { label: 'status.confirmed', cls: 'bg-brand-soft text-brand-deep' },
+  done: { label: 'status.done', cls: 'bg-violet-soft text-violet-deep' },
+  cancelled: { label: 'status.cancelled', cls: 'bg-surface-2 text-ink-mute' },
 }
 
 export function StatusBadge({ status }: { status: LessonStatus }) {
-  return <span className={`badge ${STATUS[status].cls}`}>{STATUS[status].label}</span>
+  return <span className={`badge ${STATUS[status].cls}`}>{t(STATUS[status].label)}</span>
 }
 
 // ------------------------------------------------------------------ lesson card
@@ -40,13 +42,13 @@ export function LessonCard({ lesson, show, actions }: {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-heading">{dayLabel(lesson.lesson_date)}</span>
             <StatusBadge status={lesson.status} />
-            {lesson.price_pending && lesson.status !== 'done' && lesson.status !== 'cancelled' && <span className="badge bg-sand text-ink-soft">Precio pendiente</span>}
+            {lesson.price_pending && lesson.status !== 'done' && lesson.status !== 'cancelled' && <span className="badge bg-sand text-ink-soft">{t('lesson.pricePending')}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-soft">
-            {shortTime(lesson.start_time)} a {endTime(lesson.start_time, lesson.hours)}
+            {t('lesson.range', { from: shortTime(lesson.start_time), to: endTime(lesson.start_time, lesson.hours) })}
             {show !== 'instructor' && <> · <b className="font-semibold text-ink">{lesson.student_name}</b></>}
             {show !== 'student' && (
-              <> · {lesson.instructor_name ? <>con <b className="font-semibold text-ink">{lesson.instructor_name}</b></> : <span className="text-coral-ink">sin instructor</span>}</>
+              <> · {lesson.instructor_name ? <>{t('lesson.with')} <b className="font-semibold text-ink">{lesson.instructor_name}</b></> : <span className="text-coral-ink">{t('lesson.noInstructor')}</span>}</>
             )}
           </div>
           {lesson.student_note && <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-soft">“{lesson.student_note}”</p>}
@@ -79,7 +81,7 @@ function Chips<T extends string | number>({ label, options, value, onChange, for
 }
 
 export function DurationPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return <Chips label="Duración" options={DURATIONS} value={value} onChange={onChange} format={(h) => formatHours(h)} />
+  return <Chips label={t('lesson.duration')} options={DURATIONS} value={value} onChange={onChange} format={(h) => formatHours(h)} />
 }
 
 function useSubmit() {
@@ -99,7 +101,7 @@ function useSubmit() {
       const msg = friendlyError(err)
       setError(msg)
       // someone took the time meanwhile: refresh the calendar
-      if (/reservado/i.test(msg)) setConflicts((n) => n + 1)
+      if (/reservad|booked/i.test(msg)) setConflicts((n) => n + 1)
     } finally {
       setBusy(false)
     }
@@ -124,35 +126,35 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   }, [open, setError])
 
   return (
-    <Modal open={open} title="Pedir una clase" onClose={onClose}
+    <Modal open={open} title={t('ask.title')} onClose={onClose}
       footer={<>
-        <button type="button" className="btn-ghost flex-1" onClick={onClose}>Cancelar</button>
+        <button type="button" className="btn-ghost flex-1" onClick={onClose}>{t('common.cancel')}</button>
         <button type="button" className="btn-primary flex-[2]" disabled={busy}
           onClick={() => {
-            if (!slot.time) return setError('Elegí un horario libre en la grilla.')
+            if (!slot.time) return setError(t('err.pickTime'))
             void run(() => api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim()),
-              'Listo: la escuela va a confirmar tu clase', onClose)
+              t('ask.sent'), onClose)
           }}>
-          {busy && <Spinner />} Enviar pedido
+          {busy && <Spinner />} {t('ask.send')}
         </button>
       </>}>
       <div className="space-y-5">
         {open && <SlotPicker value={slot} onChange={setSlot} refreshKey={conflicts} />}
-        <Field label="Instructor (opcional)">
+        <Field label={t('ask.instructor')}>
           {(id) => (
             <select id={id} className="input" value={instructor} onChange={(e) => setInstructor(e.target.value)}>
-              <option value="">El que esté disponible</option>
+              <option value="">{t('ask.anyInstructor')}</option>
               {people.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
             </select>
           )}
         </Field>
-        <Field label="Mensaje para la escuela (opcional)">
+        <Field label={t('ask.message')}>
           {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: es mi primera clase, vengo con un amigo…" />}
+            placeholder={t('ask.messagePh')} />}
         </Field>
         {slot.time && (
           <p className="rounded-xl bg-brand-soft px-4 py-3 text-sm text-brand-deep">
-            <b>{longDay(slot.date, true)}</b>, de {slot.time} a {endTime(slot.time, slot.hours)}. La clase queda <b>pendiente</b> hasta que la escuela la confirme.
+            {t('ask.summary', { day: longDay(slot.date, true), from: slot.time, to: endTime(slot.time, slot.hours) })}
           </p>
         )}
         {error && <ErrorBox message={error} />}
@@ -192,50 +194,50 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
   }, [open, lesson, isAdmin, myInstructorId, setError])
 
   function submit() {
-    if (!lesson && !student) return setError('Elegí el alumno.')
-    if (!instructor) return setError('Elegí quién da la clase.')
-    if (!slot.time) return setError('Elegí un horario libre en la grilla.')
+    if (!lesson && !student) return setError(t('err.pickStudent'))
+    if (!instructor) return setError(t('err.pickInstructor'))
+    if (!slot.time) return setError(t('err.pickTime'))
     void run(
       () => lesson
         ? api.confirmLesson(lesson.id, instructor, slot.date, slot.time, slot.hours, note.trim())
         : api.scheduleLesson(student, instructor, slot.date, slot.time, slot.hours, note.trim()),
-      lesson ? 'Clase confirmada' : 'Clase agendada',
+      t(lesson ? 'schedule.confirmed' : 'schedule.scheduled'),
       onClose,
     )
   }
 
   return (
-    <Modal open={open} title={lesson ? `Confirmar clase de ${lesson.student_name}` : 'Agendar una clase'} onClose={onClose}
+    <Modal open={open} title={lesson ? t('schedule.titleConfirm', { name: lesson.student_name }) : t('schedule.titleNew')} onClose={onClose}
       footer={<>
-        <button type="button" className="btn-ghost flex-1" onClick={onClose}>Cancelar</button>
+        <button type="button" className="btn-ghost flex-1" onClick={onClose}>{t('common.cancel')}</button>
         <button type="button" className="btn-primary flex-[2]" disabled={busy} onClick={submit}>
-          {busy && <Spinner />} {lesson ? 'Confirmar' : 'Agendar'}
+          {busy && <Spinner />} {lesson ? t('common.confirm') : t('schedule.do')}
         </button>
       </>}>
       <div className="space-y-5">
         {!lesson && (
-          <Field label="Alumno">
+          <Field label={t('schedule.student')}>
             {(id) => (
               <select id={id} className="input" value={student} onChange={(e) => setStudent(e.target.value)}>
-                <option value="">Elegí el alumno…</option>
+                <option value="">{t('schedule.pickStudent')}</option>
                 {students.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
               </select>
             )}
           </Field>
         )}
         {lesson?.student_note && <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink-soft">“{lesson.student_note}”</p>}
-        <Field label="Quién da la clase">
+        <Field label={t('schedule.who')}>
           {(id) => (
             <select id={id} className="input" value={instructor} disabled={!isAdmin} onChange={(e) => setInstructor(e.target.value)}>
-              <option value="">Elegí el instructor…</option>
+              <option value="">{t('schedule.pickInstructor')}</option>
               {people.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
             </select>
           )}
         </Field>
         {open && <SlotPicker value={slot} onChange={setSlot} excludeId={lesson?.id ?? null} refreshKey={conflicts} allowPast />}
-        <Field label="Mensaje para el alumno (opcional)">
+        <Field label={t('schedule.message')}>
           {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: nos vemos en la escuela, traé protector solar" />}
+            placeholder={t('schedule.messagePh')} />}
         </Field>
         {error && <ErrorBox message={error} />}
       </div>
@@ -283,27 +285,27 @@ export function CompleteModal({ lesson, onClose }: { lesson: Lesson | null; onCl
 
   if (!lesson) return null
   return (
-    <Modal open title={`Clase de ${lesson.student_name}`} onClose={onClose}
+    <Modal open title={t('complete.title', { name: lesson.student_name })} onClose={onClose}
       footer={<>
-        <button type="button" className="btn-ghost flex-1" onClick={onClose}>Cancelar</button>
+        <button type="button" className="btn-ghost flex-1" onClick={onClose}>{t('common.cancel')}</button>
         <button type="button" className="btn-primary flex-[2]" disabled={busy}
           onClick={() => void run(() => api.completeLesson(lesson.id, hours, note.trim(),
             Object.keys(marks).filter((k) => marks[k] === 'learning'),
-            Object.keys(marks).filter((k) => marks[k] === 'done')), 'Clase guardada', onClose)}>
-          {busy && <Spinner />} Guardar clase
+            Object.keys(marks).filter((k) => marks[k] === 'done')), t('complete.saved'), onClose)}>
+          {busy && <Spinner />} {t('complete.save')}
         </button>
       </>}>
       <div className="space-y-5">
         <p className="text-sm text-ink-soft">
-          {longDay(lesson.lesson_date)} · {shortTime(lesson.start_time)}. Al guardarla queda registrada para la escuela (horas y pago) y el alumno ve su progreso.
+          {t('complete.intro', { day: longDay(lesson.lesson_date, true), time: shortTime(lesson.start_time) })}
         </p>
         <DurationPicker value={hours} onChange={setHours} />
-        <Field label="¿Cómo le fue? (lo ve el alumno)">
+        <Field label={t('complete.how')}>
           {(id) => <textarea id={id} className="input min-h-24" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: muy bien el control del kite. Próxima clase: body drag." />}
+            placeholder={t('complete.howPh')} />}
         </Field>
         <div>
-          <div className="field-label">¿Qué trabajó hoy? <span className="font-normal text-ink-mute">Tocá una vez: practicando · dos veces: logrado</span></div>
+          <div className="field-label">{t('complete.what')} <span className="font-normal text-ink-mute">{t('complete.whatHint')}</span></div>
           <div className="space-y-4">
             {levels.map((l) => (
               <div key={l}>
@@ -312,16 +314,17 @@ export function CompleteModal({ lesson, onClose }: { lesson: Lesson | null; onCl
                   {skills.filter((s) => s.level === l).map((s) => {
                     const st = statusOf(s.id)
                     const locked = current[s.id] === 'done'
+                    const [name] = skillText(s.name, s.description)
                     return (
                       <button key={s.id} type="button" onClick={() => cycle(s.id)} disabled={locked}
-                        aria-label={`${s.name}: ${st === 'done' ? 'logrado' : st === 'learning' ? 'practicando' : 'sin marcar'}`}
+                        aria-label={`${name}: ${st === 'done' ? t('progress.done') : st === 'learning' ? t('progress.learning') : t('progress.unmarked')}`}
                         className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition active:scale-95 ${
                           st === 'done' ? 'border-violet bg-violet text-white' + (locked ? ' opacity-70' : '')
                             : st === 'learning' ? 'border-brand bg-brand-soft text-brand-deep'
                               : 'border-line bg-surface text-ink-soft'}`}>
                         {st === 'done' && <Icon name="check" className="h-4 w-4" />}
                         {st === 'learning' && <span className="h-2 w-2 rounded-full bg-brand" />}
-                        {s.name}
+                        {name}
                       </button>
                     )
                   })}
