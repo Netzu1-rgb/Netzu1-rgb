@@ -26,3 +26,23 @@ export function langFromPhone(phone: string | null | undefined): 'es' | 'pt' | '
   if (/^(54|598|595|56|57|58|51|52|591|593|34|506|507|502|503|504|505|53|1809)/.test(n)) return 'es'
   return 'en'
 }
+
+/**
+ * Opens the chat. On iPhone the WhatsApp app opens straight away (whatsapp://), with
+ * no web page in between; if it is not installed, the normal wa.me page opens instead.
+ */
+export function openWhatsApp(e: { preventDefault: () => void }, href: string) {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  const m = /^https:\/\/wa\.me\/(\d+)(?:\?text=(.*))?$/.exec(href)
+  if (!ios || !m) return // the link opens as usual
+  e.preventDefault()
+  const app = `whatsapp://send?phone=${m[1]}${m[2] ? `&text=${m[2]}` : ''}`
+  let left = false
+  const onHide = () => { left = true }
+  document.addEventListener('visibilitychange', onHide, { once: true })
+  window.location.href = app
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', onHide)
+    if (!left && document.visibilityState === 'visible') window.open(href, '_blank', 'noopener')
+  }, 1200)
+}

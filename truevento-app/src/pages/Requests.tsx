@@ -10,7 +10,7 @@ import { NotificationsCard } from '../components/NotificationsCard'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { STUDENTS_APP_URL } from '../components/InviteButton'
 import { requestsChanged } from '../lib/requestCount'
-import { waLink } from '../lib/whatsapp'
+import { openWhatsApp, waLink } from '../lib/whatsapp'
 import { requestMessage } from '../lib/requestMessage'
 
 const toInput = (n: number | null) => (n == null ? '' : String(n).replace('.', ','))
@@ -144,7 +144,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
             {!isNew && <span>Paga {formatMoney(s.hourly_rate, currency)}/h</span>}
           </div>
           {wa && (
-            <a href={wa} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
+            <a href={wa} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, wa)} className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
               <Icon name="phone" className="h-4 w-4" /> {s.phone}
             </a>
           )}
@@ -161,7 +161,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
 
       {/* 1. agree on the price with the student; 2. write it below and confirm */}
       {agreeLink ? (
-        <a href={agreeLink} target="_blank" rel="noreferrer"
+        <a href={agreeLink} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, agreeLink)}
           className="btn mt-4 w-full bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110">
           <Icon name="whatsapp" /> Acordar precio por WhatsApp
         </a>
@@ -236,7 +236,7 @@ function PricelessCard({ group: g, onDone }: { group: PricelessStudent; onDone: 
         <span className="badge bg-coral-soft text-coral-ink">Pendiente: falta el precio</span>
       </div>
       {wa && (
-        <a href={wa} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
+        <a href={wa} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, wa)} className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
           <Icon name="whatsapp" className="h-4 w-4" /> {s.phone}
         </a>
       )}

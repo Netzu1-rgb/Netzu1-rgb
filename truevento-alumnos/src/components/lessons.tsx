@@ -219,7 +219,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
               </div>
               <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
               {needPhone && (
-                <Field label={t('data.phone')} hint={t('ask.phoneWhy')}>
+                <Field label={t('data.phone')} hint={<>{t('data.phoneHint')}<br />{t('ask.phoneWhy')}</>}>
                   {(id) => <input id={id} type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="+55 88 99999-1234"
                     value={phone} onChange={(e) => setPhone(e.target.value)} />}
                 </Field>

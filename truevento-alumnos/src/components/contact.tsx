@@ -1,5 +1,5 @@
 import { SCHOOL_WHATSAPP } from './Privacy'
-import { waLink } from '../lib/whatsapp'
+import { openWhatsApp, waLink } from '../lib/whatsapp'
 import { formatHours, longDay, shortTime } from '../lib/format'
 import { t } from '../i18n'
 import { Icon } from './ui'
@@ -18,7 +18,7 @@ export function AgreePriceButton({ me, date, time, hours, label = 'wa.agree', cl
   const href = schoolMessageLink({ me, date, time, hours })
   if (!href) return null
   return (
-    <a href={href} target="_blank" rel="noreferrer"
+    <a href={href} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, href)}
       className={`btn bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110 ${className}`}>
       <Icon name="whatsapp" /> {t(label)}
     </a>

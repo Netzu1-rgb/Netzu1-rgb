@@ -97,6 +97,9 @@ export function PersonalFields({ value, onChange, withName = true }: {
         {(id) => <input id={id} className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={40}
           value={value.phone} onChange={(e) => onChange({ ...value, phone: e.target.value })} />}
       </Field>
+      <p className="-mt-2 flex gap-2 rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-brand-deep">
+        <Icon name="whatsapp" className="mt-0.5 h-4 w-4 shrink-0" /> {t('ask.phoneWhy')}
+      </p>
       <Field label={t('data.weight')} hint={t('data.weightHint')}>
         {(id) => <input id={id} className="input" inputMode="numeric" maxLength={3}
           value={value.weight_kg ?? ''} onChange={(e) => {
