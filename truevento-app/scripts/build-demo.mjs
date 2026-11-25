@@ -33,7 +33,7 @@ const js = html.match(/<script type="module"[^>]*src="([^"]+)"[^>]*><\/script>/)
 const styles = inlineAssets(read(css[1]).toString('utf8'))
 const script = inlineAssets(read(js[1]).toString('utf8')).replace(/<\/script/gi, '<\\/script')
 
-const title = '<title>TRUEVENTO App</title>'
+const title = '<title>TRUEVENTO Gestión</title>'
 const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'))
   .replace(js[0], '')
 const headStyle = html.match(/<style>[\s\S]*?<\/style>/)[0]
