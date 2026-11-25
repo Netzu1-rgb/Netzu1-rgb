@@ -1,3 +1,4 @@
+import { instructorKey } from '../lib/instructors'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -46,7 +47,8 @@ export default function Dashboard() {
   const byInstructor = useMemo(() => {
     const m = new Map<string, { name: string; hours: number }>()
     for (const r of rows) {
-      const k = r.instructor_id
+      // one bar per person: the same name adds up even if saved twice
+      const k = instructorKey(r.instructor?.full_name ?? r.instructor_id)
       const cur = m.get(k) ?? { name: r.instructor?.full_name ?? '—', hours: 0 }
       cur.hours = sumHours([cur.hours, r.hours])
       m.set(k, cur)

@@ -1,3 +1,4 @@
+import { findInstructorByName } from '../lib/instructors'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { createLogin, fetchClasses, fetchPendingPayouts, fetchProfiles, saveInstructor, updateLogin } from '../lib/api'
@@ -120,6 +121,7 @@ function InstructorForm({ open, instructor, onClose, onSaved }: {
   open: boolean; instructor: Instructor | null; onClose: () => void; onSaved: () => void
 }) {
   const toast = useToast()
+  const instructors = useInstructors().data
   const [name, setName] = useState('')
   const [pay, setPay] = useState('')
   const [phone, setPhone] = useState('')
@@ -142,6 +144,10 @@ function InstructorForm({ open, instructor, onClose, onSaved }: {
     const e: Record<string, string> = {}
     const payN = parseDecimal(pay)
     if (!name.trim()) e.name = 'Escribí el nombre y apellido.'
+    else {
+      const twin = findInstructorByName(instructors, name, instructor?.id)
+      if (twin) e.name = twin.active ? `Ya existe ${twin.full_name}.` : `Ya existe ${twin.full_name} (inactivo): abrilo en la lista de inactivos y activalo.`
+    }
     if (payN === null) e.pay = 'Ingresá el pago por hora.'
     else if (!hasAtMostTwoDecimals(payN)) e.pay = 'Usá como máximo 2 decimales.'
     setErrors(e)

@@ -75,6 +75,10 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Un registro por instructor
+
+Si al cargar una clase se escribe como "Otro instructor" un nombre que ya existe (sin importar mayúsculas, acentos o espacios), la app usa ese mismo instructor y avisa "ya está cargado: esta clase se suma a sus horas". La migración `20261126000000_merge_instructors.sql` une los instructores externos que ya estaban repetidos: pasa todas sus clases, liquidaciones, alumnos y accesos a uno solo, sin cambiar ningún importe (prueba: `supabase/tests/merge.sql`).
+
 ## Funcionamiento sin conexión
 
 - El service worker guarda la app completa: abre sin internet.
@@ -87,7 +91,7 @@ Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/p
 ### 1. Supabase
 
 1. Creá un proyecto en [supabase.com](https://supabase.com).
-2. Aplicá la migración. Con la CLI:
+2. Aplicá las migraciones (en orden). Antes, hacé una copia de los datos. Con la CLI:
    ```bash
    npx supabase login
    npx supabase link --project-ref TU_PROJECT_REF

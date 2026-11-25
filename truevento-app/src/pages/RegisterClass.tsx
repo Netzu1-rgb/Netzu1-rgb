@@ -1,8 +1,9 @@
+import { findInstructorByName } from '../lib/instructors'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { useInstructors, useStudents } from '../lib/hooks'
-import { createClass, createInstructor, fetchClass, updateClass, updateStudent } from '../lib/api'
+import { createClass, createInstructor, fetchClass, saveInstructor, updateClass, updateStudent } from '../lib/api'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, hoursToInput, parseDecimal, parseHours } from '../lib/money'
 import { formatDate, today } from '../lib/dates'
@@ -69,6 +70,8 @@ export default function RegisterClass() {
     [instructors.data, instructorId],
   )
   const instructor: Instructor | undefined = instructors.data?.find((i) => i.id === instructorId)
+  // a "new" instructor whose name is already saved is the same person: reuse them
+  const sameName = newIns ? findInstructorByName(instructors.data, newIns.name) : undefined
   const isExternal = newIns !== null || instructor?.kind === 'external'
   const isOwner = newIns === null && instructor?.kind === 'owner'
   const settled = Boolean(editing.data?.settlement_id)
@@ -188,11 +191,18 @@ export default function RegisterClass() {
     try {
       let instructorInput: NewInstructorInput | undefined
       let instructorQueued = false
-      if (newIns) {
+      let reused: string | undefined
+      if (newIns && sameName) {
+        reused = sameName.id
+        // asked to keep them in the list: bring them back if they were hidden
+        if (!newIns.oneOff && !sameName.active) {
+          await saveInstructor({ ...sameName, active: true }).catch(() => { /* the class is what matters */ })
+        }
+      } else if (newIns) {
         instructorInput = { id: crypto.randomUUID(), full_name: newIns.name.trim().replace(/\s+/g, ' '), hourly_pay: payN!, active: !newIns.oneOff }
         instructorQueued = (await createInstructor(instructorInput, session.user.id)) === 'queued'
       }
-      const instructorIdToUse = instructorInput?.id ?? instructorId
+      const instructorIdToUse = reused ?? instructorInput?.id ?? instructorId
       let studentInput: NewStudentInput | undefined
       if (!chosen) {
         studentInput = {
@@ -415,6 +425,12 @@ export default function RegisterClass() {
                 <input id="f-newins" className={errors.newIns ? 'input-error' : 'input'} autoFocus autoCapitalize="words"
                   placeholder="Nombre y apellido" value={newIns.name} onChange={(e) => setNewIns({ ...newIns, name: e.target.value })} />
                 <FieldError text={errors.newIns} />
+                {sameName && (
+                  <p className="flex items-start gap-2 rounded-lg bg-surface px-3 py-2 text-sm text-heading" role="status">
+                    <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-deep" />
+                    <span><b>{sameName.full_name}</b> ya está cargado: esta clase se suma a sus horas.</span>
+                  </p>
+                )}
                 <label className="flex items-start gap-3 text-sm text-heading">
                   <input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand" checked={newIns.oneOff}
                     onChange={(e) => setNewIns({ ...newIns, oneOff: e.target.checked })} />
