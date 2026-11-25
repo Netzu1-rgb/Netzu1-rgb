@@ -7,7 +7,7 @@ import type {
 } from '../lib/types'
 
 interface User { id: string; username: string; password: string; role: Me['role']; student_id: string | null; instructor_id: string | null; full_name: string }
-interface Row { id: string; student_id: string; instructor_id: string | null; lesson_date: string; start_time: string; hours: number; status: Lesson['status']; student_note: string | null; staff_note: string | null; created_at: string }
+interface Row { id: string; student_id: string; instructor_id: string | null; lesson_date: string; start_time: string | null; hours: number; status: Lesson['status']; student_note: string | null; staff_note: string | null; created_at: string }
 interface Db {
   users: User[]
   session: string | null
@@ -70,7 +70,7 @@ function seed(): Db {
     ],
     lessons: [
       { id: uid(), student_id: ana.id, instructor_id: victoria.id, lesson_date: past, start_time: '10:00', hours: 1.5, status: 'done', student_note: null, staff_note: null, created_at: now() },
-      { id: uid(), student_id: ana.id, instructor_id: null, lesson_date: addDays(today(), 1), start_time: '15:00', hours: 2, status: 'requested', student_note: 'Es mi segunda clase', staff_note: null, created_at: now() },
+      { id: uid(), student_id: ana.id, instructor_id: null, lesson_date: addDays(today(), 1), start_time: null, hours: 2, status: 'requested', student_note: 'Es mi segunda clase', staff_note: null, created_at: now() },
     ],
     notes: [{ id: uid(), student_id: ana.id, instructor_id: victoria.id, body: 'Muy buena primera clase: entendiste la ventana de viento. La próxima practicamos el armado.', created_at: new Date(Date.now() - 3 * 86400e3).toISOString() }],
     news: [],
@@ -176,7 +176,7 @@ export async function agenda(from: string, to: string): Promise<Lesson[]> {
   const u = me()
   return db.lessons
     .filter((l) => l.lesson_date >= from && l.lesson_date <= to && (staff() || l.student_id === u?.student_id))
-    .sort((a, b) => (a.lesson_date + a.start_time).localeCompare(b.lesson_date + b.start_time))
+    .sort((a, b) => (a.lesson_date + (a.start_time ?? '99')).localeCompare(b.lesson_date + (b.start_time ?? '99')))
     .map(view)
 }
 
@@ -184,23 +184,23 @@ export async function busySlots(from: string, to: string, excludeId: string | nu
   await wait()
   return db.lessons
     .filter((l) => l.lesson_date >= from && l.lesson_date <= to && (l.status === 'requested' || l.status === 'confirmed') && l.id !== excludeId)
-    .map((l) => ({ lesson_date: l.lesson_date, start_time: l.start_time.slice(0, 5), hours: l.hours }))
+    .filter((l) => l.start_time).map((l) => ({ lesson_date: l.lesson_date, start_time: l.start_time!.slice(0, 5), hours: l.hours }))
 }
 
 function assertFree(date: string, time: string, hours: number, exclude?: string) {
   const m = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))
   const s = m(time), e = s + hours * 60
   if (db.lessons.some((l) => l.id !== exclude && l.lesson_date === date && (l.status === 'requested' || l.status === 'confirmed')
-    && m(l.start_time) < e && s < m(l.start_time) + l.hours * 60)) fail('Ese horario ya está reservado. Elegí otro.')
+    && l.start_time && m(l.start_time) < e && s < m(l.start_time) + l.hours * 60)) fail('Ese horario ya está reservado. Elegí otro.')
 }
 
 export async function instructorDirectory(): Promise<Person[]> { return db.instructors }
 
-export async function requestLesson(date: string, time: string, hours: number, instructorId: string | null, note: string) {
+export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string) {
   await wait()
   quarter(hours)
   if (date < today()) fail('Elegí una fecha de hoy en adelante.')
-  assertFree(date, time, hours)
+  if (time) assertFree(date, time, hours)
   db.lessons.push({ id: uid(), student_id: me()!.student_id!, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'requested', student_note: note || null, staff_note: null, created_at: now() })
   save()
 }

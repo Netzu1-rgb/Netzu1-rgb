@@ -38,8 +38,8 @@ export function longDay(iso: string, capital = false): string {
   return capital ? cap(s) : s
 }
 
-export function shortTime(t: string): string {
-  return t.slice(0, 5)
+export function shortTime(t: string | null): string {
+  return t ? t.slice(0, 5) : ''
 }
 
 /** End time of a lesson: 10:00 + 1:30 -> 11:30. */

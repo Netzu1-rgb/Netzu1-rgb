@@ -102,7 +102,7 @@ export async function instructorDirectory(): Promise<Person[]> {
   return check(await supabase.rpc('instructor_directory')) as Person[]
 }
 
-export async function requestLesson(date: string, time: string, hours: number, instructorId: string | null, note: string) {
+export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string) {
   check(await supabase.rpc('request_lesson', {
     p_date: date, p_time: time, p_hours: hours, p_instructor: instructorId, p_note: note || null,
   }))

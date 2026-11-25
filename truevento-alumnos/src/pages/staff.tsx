@@ -2,7 +2,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { AnnouncementCard } from '../components/announcements'
-import { CompleteModal, LessonCard, ScheduleModal } from '../components/lessons'
+import { CompleteModal, LessonCard, ScheduleModal, atTime } from '../components/lessons'
 import { NotesList, ProgressPath } from '../components/progress'
 import { EmptyState, ErrorBox, Field, Icon, Loading, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { useWind, WindSummary } from '../components/wind'
@@ -10,7 +10,7 @@ import { schoolToday } from '../lib/wind'
 import { useMe } from '../context/Session'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
-import { addDays, dayLabel, firstName, longDay, shortTime, today } from '../lib/format'
+import { addDays, dayLabel, firstName, longDay, today } from '../lib/format'
 import { notifyChange, useLoad } from '../lib/hooks'
 import type { Lesson } from '../lib/types'
 import { t } from '../i18n'
@@ -30,7 +30,7 @@ function useLessonActions() {
     const rejecting = l.status === 'requested'
     if (!(await confirm({
       title: t(rejecting ? 'staff.rejectTitle' : 'staff.cancelTitle'),
-      message: t(rejecting ? 'staff.rejectMsg' : 'staff.cancelMsg', { name: l.student_name, day: longDay(l.lesson_date), time: shortTime(l.start_time) }),
+      message: t(rejecting ? 'staff.rejectMsg' : 'staff.cancelMsg', { name: l.student_name, day: longDay(l.lesson_date), at: atTime(l.start_time) }),
       confirmLabel: t(rejecting ? 'staff.reject' : 'staff.cancelClass'),
       danger: true,
     }))) return

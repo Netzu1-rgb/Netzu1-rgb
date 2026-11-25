@@ -75,6 +75,10 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Horario y precio por WhatsApp
+
+El alumno pide solo **el día y cuántas horas**; el **horario y el precio** se coordinan por WhatsApp. En **Solicitudes** se elige el *Horario acordado* (los horarios ocupados de ese día aparecen bloqueados), la duración, el precio y el instructor, y se confirma. Un pedido sin horario no ocupa lugar en el calendario; una clase confirmada siempre tiene horario. Migración: `20261129000000_time_by_whatsapp.sql` (prueba: `supabase/tests/time_whatsapp.sql`).
+
 ## Acordar el precio por WhatsApp
 
 Cada alumno tiene que tener su WhatsApp para pedir una clase (se pide al registrarse, o en el último paso del pedido si no lo tenía). El precio se acuerda por WhatsApp antes de confirmar:

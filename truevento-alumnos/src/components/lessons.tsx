@@ -27,6 +27,9 @@ export function StatusBadge({ status }: { status: LessonStatus }) {
   return <span className={`badge ${STATUS[status].cls}`}>{t(STATUS[status].label)}</span>
 }
 
+/** " a las 10:00", or nothing while the time is still to be agreed. */
+export const atTime = (start: string | null) => (start ? t('lesson.at', { time: shortTime(start) }) : '')
+
 // ------------------------------------------------------------------ lesson card
 
 export function LessonCard({ lesson, show, actions, simple = false }: {
@@ -41,7 +44,9 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
     <div className={`card p-4 transition ${muted ? 'opacity-75' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-surface-2 py-2 text-center">
-          <div className="tabular font-display text-lg font-bold leading-none text-heading">{shortTime(lesson.start_time)}</div>
+          {lesson.start_time
+            ? <div className="tabular font-display text-lg font-bold leading-none text-heading">{shortTime(lesson.start_time)}</div>
+            : <Icon name="whatsapp" className="mx-auto h-5 w-5 text-ink-mute" />}
           <div className="mt-1 text-[11px] font-semibold text-ink-mute">{formatHours(lesson.hours)}</div>
         </div>
         <div className="min-w-0 flex-1">
@@ -51,7 +56,7 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
             {lesson.price_pending && lesson.status !== 'done' && lesson.status !== 'cancelled' && <span className="badge bg-sand text-ink-soft">{t('lesson.pricePending')}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-soft">
-            {t('lesson.range', { from: shortTime(lesson.start_time), to: endTime(lesson.start_time, lesson.hours) })}
+            {lesson.start_time ? t('lesson.range', { from: shortTime(lesson.start_time), to: endTime(lesson.start_time, lesson.hours) }) : t('lesson.tbdLong')}
             {show !== 'instructor' && <> · <b className="font-semibold text-ink">{lesson.student_name}</b></>}
             {show !== 'student' && (
               <> · {lesson.instructor_name ? <>{t('lesson.with')} <b className="font-semibold text-ink">{lesson.instructor_name}</b></> : <span className="text-coral-ink">{t('lesson.noInstructor')}</span>}</>
@@ -62,7 +67,7 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
         </div>
       </div>
       {simple && lesson.status === 'requested' && (
-        <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} time={lesson.start_time} hours={lesson.hours} className="mt-3 w-full" />
+        <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} hours={lesson.hours} className="mt-3 w-full" />
       )}
       {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -150,20 +155,18 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
   }, [open, setError])
 
-  // a time taken meanwhile sends the student back to choose again
-  useEffect(() => { if (conflicts) setStep(2) }, [conflicts])
 
   const titles = [t('ask.step1'), t('ask.step2'), t('ask.step3')]
-  const canNext = step === 1 ? Boolean(slot.date) : step === 2 ? Boolean(slot.time) : true
+  const canNext = step === 1 ? Boolean(slot.date) : step === 2 ? slot.hours > 0 : true
 
   function next() {
     setError(null)
-    if (step === 2 && !slot.time) return setError(t('err.pickTime'))
     if (step < 3) return setStep(step + 1)
     if (needPhone && !waNumber(phone)) return setError(t('err.phone'))
     void run(async () => {
       if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })
-      await api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim())
+      // only the day and the hours: the time is agreed on WhatsApp
+      await api.requestLesson(slot.date, null, slot.hours, instructor || null, note.trim())
     }, t('ask.sent'), () => setSent(true))
   }
 
@@ -174,9 +177,9 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
         <div className="page-enter space-y-4 text-center">
           <span className="pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#1fa855] text-white"><Icon name="check" className="h-8 w-8" /></span>
           <h3 className="text-xl font-bold text-heading">{t('ask.sentTitle')}</h3>
-          <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {slot.time} – {endTime(slot.time, slot.hours)}</p>
+          <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {formatHours(slot.hours)}</p>
           <p className="text-ink-soft">{t('ask.sentText')}</p>
-          <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} time={slot.time} hours={slot.hours} label="wa.write" className="w-full" />
+          <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} hours={slot.hours} label="wa.write" className="w-full" />
         </div>
       </Modal>
     )
@@ -207,15 +210,16 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
           {open && step === 2 && (
             <>
               <p className="rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-heading">{longDay(slot.date, true)}</p>
-              <SlotPicker part="time" value={slot} onChange={setSlot} refreshKey={conflicts} />
+              <DurationPicker value={slot.hours} onChange={(h) => setSlot({ ...slot, hours: h })} />
+              <p className="flex gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="mt-0.5 h-4 w-4 shrink-0" /> {t('ask.timeNote')}</p>
             </>
           )}
           {step === 3 && (
             <>
               <div className="rounded-2xl bg-tile p-5 text-white">
                 <div className="text-xs font-semibold uppercase tracking-wide text-brand-200">{t('ask.when')}</div>
-                <div className="mt-1 font-display text-3xl font-bold tabular">{slot.time} – {endTime(slot.time, slot.hours)}</div>
-                <div className="mt-1 text-brand-100">{longDay(slot.date, true)} · {formatHours(slot.hours)}</div>
+                <div className="mt-1 font-display text-2xl font-bold">{longDay(slot.date, true)}</div>
+                <div className="mt-1 text-brand-100">{formatHours(slot.hours)} · {t('lesson.tbdLong')}</div>
               </div>
               <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
               {needPhone && (

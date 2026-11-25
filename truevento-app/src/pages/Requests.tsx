@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { confirmRequest, fetchPriceless, fetchRequests, rejectRequest, updateStudent } from '../lib/api'
+import { busyTimes, confirmRequest, fetchPriceless, fetchRequests, rejectRequest, updateStudent } from '../lib/api'
 import { useInstructors } from '../lib/hooks'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
@@ -68,6 +68,11 @@ export default function Requests() {
   )
 }
 
+// times the school can propose: every half hour, 07:00 to 18:00
+const TIMES = Array.from({ length: 23 }, (_, k) => `${String(7 + Math.floor(k / 2)).padStart(2, '0')}:${k % 2 ? '30' : '00'}`)
+const HOURS = [1, 1.5, 2, 2.5, 3, 3.5, 4]
+const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))
+
 function RequestCard({ request: r, instructors, onDone }: { request: ClassRequest; instructors: Instructor[]; onDone: () => void }) {
   const { currency } = useAuth()
   const toast = useToast()
@@ -76,6 +81,10 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   const isNew = s.hourly_rate == null
   const [rate, setRate] = useState(toInput(s.hourly_rate))
   const [instructorId, setInstructorId] = useState('')
+  // agreed with the student on WhatsApp
+  const [time, setTime] = useState(r.start_time ?? '')
+  const [hours, setHours] = useState(r.hours)
+  const [taken, setTaken] = useState<{ start: string; hours: number }[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -87,12 +96,20 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
     setInstructorId(pick)
   }, [instructors, instructorId, r.instructor_id, s.default_instructor_id])
 
+  useEffect(() => {
+    let alive = true
+    void busyTimes(r.lesson_date, r.id).then((b) => { if (alive) setTaken(b) }).catch(() => {})
+    return () => { alive = false }
+  }, [r.lesson_date, r.id])
+  /** a start time that overlaps a class already on that day */
+  const clashes = (t: string) => taken.some((b) => toMin(b.start) < toMin(t) + hours * 60 && toMin(t) < toMin(b.start) + b.hours * 60)
+
   const rateN = parseDecimal(rate)
   const ins = instructors.find((i) => i.id === instructorId)
-  const amounts = rateN !== null && ins ? classAmounts(r.hours, rateN, ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
+  const amounts = rateN !== null && ins ? classAmounts(hours, rateN, ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
   const agreeLink = waLink(s.phone, requestMessage({
     studentName: s.full_name, lang: s.lang, phone: s.phone,
-    date: r.lesson_date, time: r.start_time, hours: r.hours,
+    date: r.lesson_date, time: time || null, hours,
     price: rateN !== null && rateN > 0 ? formatMoney(rateN, currency) : null,
   }))
   const wa = waLink(s.phone)
@@ -101,10 +118,12 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   async function accept() {
     setError(null)
     if (rateN === null || !hasAtMostTwoDecimals(rateN)) return setError('Escribí el precio por hora (por ejemplo 250 o 250,50).')
+    if (!time) return setError('Elegí el horario que acordaron por WhatsApp.')
+    if (clashes(time)) return setError('Ese horario se superpone con otra clase de ese día. Elegí otro.')
     if (!instructorId) return setError('Elegí quién da la clase.')
     setBusy(true)
     try {
-      await confirmRequest(r.id, rateN, instructorId)
+      await confirmRequest(r.id, rateN, instructorId, time, hours)
       toast(`Clase de ${s.full_name} confirmada. Ya la ve en su app.`)
       onDone()
       requestsChanged()
@@ -154,7 +173,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       <div className="mt-4 rounded-xl bg-brand-soft px-4 py-3 text-brand-deep">
         <div className="flex items-center gap-2 font-semibold"><Icon name="calendar" className="h-4 w-4" /> {longDay(r.lesson_date)}</div>
         <div className="mt-0.5 text-sm">
-          De {r.start_time} a {endTime(r.start_time, r.hours)} · {formatHours(r.hours)}{asked ? ` · pidió con ${asked}` : ''}
+          {formatHours(r.hours)} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ''}
         </div>
       </div>
       {r.student_note && <p className="mt-3 rounded-xl bg-surface-2 px-4 py-2.5 text-sm text-ink-soft">“{r.student_note}”</p>}
@@ -163,14 +182,33 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       {agreeLink ? (
         <a href={agreeLink} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, agreeLink)}
           className="btn mt-4 w-full bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110">
-          <Icon name="whatsapp" /> Acordar precio por WhatsApp
+          <Icon name="whatsapp" /> Coordinar horario y precio por WhatsApp
         </a>
       ) : (
         <p className="mt-4 rounded-xl bg-coral-soft px-4 py-2.5 text-sm text-coral-ink">Este alumno no tiene WhatsApp cargado: pedíselo antes de confirmar.</p>
       )}
       <p className="mt-2 text-center text-xs text-ink-mute">
-        {rateN !== null && rateN > 0 ? 'El mensaje incluye el precio que escribiste abajo.' : 'Escribí el precio abajo y el mensaje lo incluye.'} Cuando lo acuerden, confirmá la clase.
+        {time || (rateN !== null && rateN > 0) ? 'El mensaje incluye el horario y el precio que elijas abajo.' : 'Si elegís horario y precio abajo, el mensaje los propone.'} Cuando lo acuerden, confirmá la clase.
       </p>
+
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <Field label="Horario acordado">
+          {(id) => (
+            <select id={id} className={`input tabular ${time ? '' : 'text-ink-mute'}`} value={time} onChange={(e) => setTime(e.target.value)}>
+              <option value="">Elegí…</option>
+              {TIMES.map((t) => <option key={t} value={t} disabled={clashes(t)}>{t}{clashes(t) ? ' · ocupado' : ''}</option>)}
+            </select>
+          )}
+        </Field>
+        <Field label="Duración">
+          {(id) => (
+            <select id={id} className="input" value={hours} onChange={(e) => setHours(Number(e.target.value))}>
+              {[...new Set([...HOURS, r.hours])].sort((a, b) => a - b).map((h) => <option key={h} value={h}>{formatHours(h)}</option>)}
+            </select>
+          )}
+        </Field>
+      </div>
+      {time && <p className="mt-2 text-sm text-ink-soft">De {time} a {endTime(time, hours)}</p>}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Field label="Precio por hora" hint={isNew ? 'Queda en su ficha para las próximas clases.' : 'Si lo cambiás, queda en su ficha.'}>

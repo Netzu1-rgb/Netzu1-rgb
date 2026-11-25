@@ -48,7 +48,7 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
 
 ## Puesta en marcha
 
-1. **Base de datos**: aplicá las migraciones `../truevento-app/supabase/migrations/20261124000000_students_app.sql`, `20261125000000_push_notifications.sql`, `20261126000000_merge_instructors.sql` y `20261127000000_whatsapp_contact.sql` y `20261128000000_admin_code.sql` (en ese orden) en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
+1. **Base de datos**: aplicá las migraciones `../truevento-app/supabase/migrations/20261124000000_students_app.sql`, `20261125000000_push_notifications.sql`, `20261126000000_merge_instructors.sql` y `20261127000000_whatsapp_contact.sql` , `20261128000000_admin_code.sql` y `20261129000000_time_by_whatsapp.sql` (en ese orden) en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
 2. **Vercel**: nuevo proyecto con *Root Directory* `truevento-alumnos` y estas variables:
 
    | Variable | Valor |

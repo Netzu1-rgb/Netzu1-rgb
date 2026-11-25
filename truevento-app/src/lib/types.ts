@@ -112,7 +112,8 @@ export interface NewStudentInput {
 export interface ClassRequest {
   id: string
   lesson_date: string
-  start_time: string
+  /** null: the time is agreed with the student on WhatsApp */
+  start_time: string | null
   hours: number
   student_note: string | null
   instructor_id: string | null

@@ -303,10 +303,14 @@ async function rpc(name: string, a: any = {}) {
       const l = db.lessons.find((x) => x.id === a.p_lesson)
       if (!l) return fail('Clase inexistente.')
       db.students.find((x) => x.id === l.student_id)!.hourly_rate = a.p_rate
-      Object.assign(l, { status: 'confirmed', instructor_id: a.p_instructor })
+      if (!a.p_time && !l.start_time) return fail('Elegí el horario acordado con el alumno.')
+      Object.assign(l, { status: 'confirmed', instructor_id: a.p_instructor, start_time: a.p_time ?? l.start_time, hours: a.p_hours ?? l.hours })
       save()
       return { data: null, error: null }
     }
+    case 'busy_slots':
+      return { data: db.lessons.filter((x) => x.lesson_date >= a.p_from && x.lesson_date <= a.p_to && x.start_time && x.id !== a.p_exclude
+        && (x.status === 'requested' || x.status === 'confirmed')).map((x) => ({ lesson_date: x.lesson_date, start_time: x.start_time, hours: x.hours })), error: null }
     case 'cancel_lesson': {
       const l = db.lessons.find((x) => x.id === a.p_lesson)
       if (l) l.status = 'cancelled'

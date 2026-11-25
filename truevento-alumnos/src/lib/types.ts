@@ -19,7 +19,8 @@ export interface Lesson {
   instructor_id: string | null
   instructor_name: string | null
   lesson_date: string // YYYY-MM-DD
-  start_time: string // HH:MM[:SS]
+  /** null on a request: the time is agreed on WhatsApp */
+  start_time: string | null // HH:MM[:SS]
   hours: number
   status: LessonStatus
   student_note: string | null

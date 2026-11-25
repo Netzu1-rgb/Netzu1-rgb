@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { AnnouncementCard } from '../components/announcements'
-import { LessonCard, RequestLessonModal } from '../components/lessons'
+import { LessonCard, RequestLessonModal, atTime } from '../components/lessons'
 import { NotesList, ProgressPath } from '../components/progress'
 import { ErrorBox, Icon, Loading, PageHeader, useConfirm, useToast } from '../components/ui'
 import { todayOf, useWind, WindArrow } from '../components/wind'
@@ -25,7 +25,7 @@ function CancelButton({ lesson }: { lesson: Lesson }) {
   const toast = useToast()
   return (
     <button type="button" className="btn-ghost min-h-10 px-4 py-2 text-sm" onClick={async () => {
-      if (!(await confirm({ title: t('classes.cancelTitle'), message: t('classes.cancelMsg', { day: longDay(lesson.lesson_date), time: shortTime(lesson.start_time) }), confirmLabel: t('classes.cancelYes'), danger: true }))) return
+      if (!(await confirm({ title: t('classes.cancelTitle'), message: t('classes.cancelMsg', { day: longDay(lesson.lesson_date), at: atTime(lesson.start_time) }), confirmLabel: t('classes.cancelYes'), danger: true }))) return
       try {
         await api.cancelLesson(lesson.id, '')
         notifyChange()

@@ -265,7 +265,7 @@ export async function fetchRequests(): Promise<ClassRequest[]> {
     .select('id, lesson_date, start_time, hours, student_note, instructor_id, created_at, student:students(*)')
     .eq('status', 'requested').gte('lesson_date', today)
     .order('lesson_date').order('start_time')) as unknown as ClassRequest[]
-  return rows.map((r) => ({ ...r, hours: Number(r.hours), start_time: r.start_time.slice(0, 5), student: normalizeStudent(r.student) }))
+  return rows.map((r) => ({ ...r, hours: Number(r.hours), start_time: r.start_time?.slice(0, 5) ?? null, student: normalizeStudent(r.student) }))
 }
 
 /**
@@ -287,9 +287,15 @@ export async function fetchPriceless(): Promise<PricelessStudent[]> {
   return [...by.values()]
 }
 
-/** Sets the student's price per hour and confirms the class with an instructor. */
-export async function confirmRequest(lessonId: string, rate: number, instructorId: string) {
-  check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId }))
+/** Sets the student's price per hour, the agreed time (and hours) and confirms the class. */
+export async function confirmRequest(lessonId: string, rate: number, instructorId: string, time: string, hours: number) {
+  check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId, p_time: time, p_hours: hours }))
+}
+
+/** Times already taken on a day (confirmed classes and requests with a time). */
+export async function busyTimes(date: string, excludeId: string): Promise<{ start: string; hours: number }[]> {
+  const rows = check(await supabase.rpc('busy_slots', { p_from: date, p_to: date, p_exclude: excludeId })) as { start_time: string; hours: number }[]
+  return rows.map((r) => ({ start: r.start_time.slice(0, 5), hours: Number(r.hours) }))
 }
 
 export async function rejectRequest(lessonId: string) {
