@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
         disable: demo,
         registerType: 'prompt',
         injectRegister: false,
-        includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png'],
+        includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png', 'logo-truevento.svg'],
         manifest: {
           id: '/',
           name: 'TRUEVENTO Kiteschool',
@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,png,woff2,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
           navigateFallback: '/index.html',
           cleanupOutdatedCaches: true,
         },

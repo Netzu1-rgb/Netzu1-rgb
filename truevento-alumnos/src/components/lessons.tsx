@@ -32,7 +32,7 @@ export function LessonCard({ lesson, show, actions }: {
 }) {
   const muted = lesson.status === 'cancelled'
   return (
-    <div className={`card p-4 ${muted ? 'opacity-75' : ''}`}>
+    <div className={`card p-4 transition ${muted ? 'opacity-75' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-surface-2 py-2 text-center">
           <div className="tabular font-display text-lg font-bold leading-none text-heading">{shortTime(lesson.start_time)}</div>

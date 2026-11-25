@@ -1,95 +1,128 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { useMe } from '../context/Session'
-import { Icon } from './ui'
-import { t } from '../i18n'
+import { LanguageMenu, t } from '../i18n'
 import type { Key } from '../i18n/messages'
+import { RequestLessonModal, ScheduleModal } from './lessons'
+import { Icon } from './ui'
 
 interface Tab { to: string; label: Key; icon: string }
 
+// phone bar: two tabs, the big "+" in the middle, two tabs (like the management app)
 const STUDENT_TABS: Tab[] = [
   { to: '/', label: 'nav.home', icon: 'home' },
   { to: '/agenda', label: 'nav.myClasses', icon: 'calendar' },
   { to: '/progreso', label: 'nav.progress', icon: 'star' },
   { to: '/viento', label: 'nav.wind', icon: 'wind' },
 ]
-
 const STAFF_TABS: Tab[] = [
   { to: '/', label: 'nav.today', icon: 'home' },
   { to: '/agenda', label: 'nav.agenda', icon: 'calendar' },
   { to: '/alumnos', label: 'nav.students', icon: 'users' },
   { to: '/avisos', label: 'nav.announcements', icon: 'megaphone' },
-  { to: '/viento', label: 'nav.wind', icon: 'wind' },
 ]
+// the sidebar on big screens has room for everything
+const STAFF_SIDEBAR: Tab[] = [...STAFF_TABS, { to: '/viento', label: 'nav.wind', icon: 'wind' }]
+
+function TabLink({ tab }: { tab: Tab }) {
+  return (
+    <NavLink to={tab.to} end={tab.to === '/'}
+      className={({ isActive }) => `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
+      {({ isActive }) => (
+        <>
+          <span className={`grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-brand-soft' : ''}`}>
+            <Icon name={tab.icon} className="h-5 w-5" />
+          </span>
+          {t(tab.label)}
+        </>
+      )}
+    </NavLink>
+  )
+}
 
 export default function Layout() {
   const me = useMe()
   const tabs = me.isStaff ? STAFF_TABS : STUDENT_TABS
+  const side = me.isStaff ? STAFF_SIDEBAR : STUDENT_TABS
   const { pathname } = useLocation()
+  const [quick, setQuick] = useState(false)
+  const actionLabel = t(me.isStaff ? 'staff.schedule' : 'nav.ask')
 
   return (
     <div className="min-h-dvh lg:flex">
-      {/* desktop sidebar */}
+      {/* big screens: sidebar */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-night-900 p-5 text-white lg:flex">
-        <div className="mb-8 flex items-center gap-3">
-          <img src="/logo-truevento.png" alt="" className="h-11 w-11 rounded-full" />
+        <div className="mb-6 flex items-center gap-3">
+          <img src="/logo-mark.svg" alt="" className="h-12 w-12 rounded-full ring-1 ring-white/15" />
           <div>
-            <div className="font-display text-lg font-bold">TRUEVENTO</div>
+            <div className="font-display text-lg font-extrabold tracking-[0.08em]">TRUEVENTO</div>
             <div className="text-xs text-brand-200">{t(me.isStaff ? 'nav.forInstructors' : 'nav.forStudents')}</div>
           </div>
         </div>
+        <button type="button" onClick={() => setQuick(true)} className="btn-primary mb-6 w-full"><Icon name="plus" /> {actionLabel}</button>
         <nav className="flex flex-col gap-1" aria-label={t('nav.sections')}>
-          {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.to === "/"}
-              className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${isActive ? 'bg-white/12 text-white' : 'text-brand-100/80 hover:bg-white/6'}`}>
+          {side.map((tab) => (
+            <NavLink key={tab.to} to={tab.to} end={tab.to === '/'}
+              className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${isActive ? 'bg-white/12 text-white' : 'text-brand-100/80 hover:bg-white/6 hover:text-white'}`}>
               <Icon name={tab.icon} /> {t(tab.label)}
             </NavLink>
           ))}
         </nav>
-        <NavLink to="/ajustes" className={({ isActive }) => `mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium ${isActive ? 'bg-white/12' : 'text-brand-100/80 hover:bg-white/6'}`}>
-          <Icon name="settings" /> {t('nav.settings')}
-        </NavLink>
+        <div className="mt-auto space-y-2">
+          <div className="flex items-center justify-between rounded-xl px-1">
+            <span className="truncate text-sm text-brand-100/80">{me.full_name}</span>
+            <LanguageMenu />
+          </div>
+          <NavLink to="/ajustes" className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium ${isActive ? 'bg-white/12' : 'text-brand-100/80 hover:bg-white/6'}`}>
+            <Icon name="settings" /> {t('nav.settings')}
+          </NavLink>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* phone header */}
+        {/* phones and tablets: top bar */}
         <header className="safe-top sticky top-0 z-30 bg-night-900 text-white lg:hidden">
-          <div className="flex h-14 items-center gap-3 px-4">
-            <img src="/logo-truevento.png" alt="" className="h-9 w-9 rounded-full" />
-            <div className="min-w-0 flex-1">
-              <div className="font-display font-bold leading-tight">TRUEVENTO</div>
+          <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-4">
+            <img src="/logo-mark.svg" alt="" className="h-10 w-10 rounded-full ring-1 ring-white/15" />
+            <div className="min-w-0 flex-1 pl-1">
+              <div className="font-display font-extrabold leading-tight tracking-[0.06em]">TRUEVENTO</div>
               <div className="truncate text-xs text-brand-200">{me.full_name}</div>
             </div>
+            <LanguageMenu />
             <NavLink to="/ajustes" aria-label={t('nav.settings')}
-              className={`grid h-10 w-10 place-items-center rounded-full ${pathname === '/ajustes' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              className={`grid h-10 w-10 place-items-center rounded-full transition ${pathname === '/ajustes' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
               <Icon name="settings" />
             </NavLink>
           </div>
           <div className="brand-gradient h-[3px]" />
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-28 pt-4 lg:px-8 lg:pb-10 lg:pt-8">
-          <Outlet />
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
+          {/* each screen fades in when you arrive */}
+          <div key={pathname} className="page-enter"><Outlet /></div>
         </main>
 
-        {/* phone bottom bar */}
+        {/* phones and tablets: bottom bar with the main action in the middle */}
         <nav aria-label={t('nav.sections')} className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-lg">
-            {tabs.map((tab) => (
-              <NavLink key={tab.to} to={tab.to} end={tab.to === "/"}
-                className={({ isActive }) => `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
-                {({ isActive }) => (
-                  <>
-                    <span className={`grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-brand-soft' : ''}`}>
-                      <Icon name={tab.icon} className="h-5 w-5" />
-                    </span>
-                    {t(tab.label)}
-                  </>
-                )}
-              </NavLink>
-            ))}
+          <div className="mx-auto grid max-w-xl grid-cols-5 items-center">
+            <TabLink tab={tabs[0]} />
+            <TabLink tab={tabs[1]} />
+            <div className="flex flex-col items-center">
+              <button type="button" onClick={() => setQuick(true)} aria-label={actionLabel}
+                className="brand-gradient -mt-7 grid h-16 w-16 place-items-center rounded-full text-white shadow-[0_10px_24px_-6px_rgba(109,75,233,0.7)] ring-4 ring-surface transition active:scale-95">
+                <Icon name="plus" className="h-8 w-8" strokeWidth={2.6} />
+              </button>
+              <span className="mt-0.5 text-[11px] font-semibold text-ink-mute">{actionLabel}</span>
+            </div>
+            <TabLink tab={tabs[2]} />
+            <TabLink tab={tabs[3]} />
           </div>
         </nav>
       </div>
+
+      {me.isStaff
+        ? <ScheduleModal open={quick} lesson={null} onClose={() => setQuick(false)} myInstructorId={me.instructor_id} isAdmin={me.isAdmin} />
+        : <RequestLessonModal open={quick} onClose={() => setQuick(false)} />}
     </div>
   )
 }

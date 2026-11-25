@@ -20,6 +20,8 @@ const assets = {
   '/icons/icon-192.png': 'image/png',
   '/icons/favicon-64.png': 'image/png',
   '/logo-truevento.png': 'image/png',
+  '/logo-truevento.svg': 'image/svg+xml',
+  '/logo-mark.svg': 'image/svg+xml',
 }
 const inlineAssets = (text) => {
   for (const [path, type] of Object.entries(assets)) {

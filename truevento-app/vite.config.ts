@@ -76,7 +76,7 @@ export default defineConfig(({ mode }) => {
         disable: demo,
         registerType: 'prompt',
         injectRegister: false,
-        includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png'],
+        includeAssets: ['icons/*.png', 'fonts/*.woff2', 'logo-truevento.png', 'logo-truevento.svg'],
         manifest: {
           id: '/',
           name: 'TRUEVENTO · Gestión de la escuela',
@@ -104,7 +104,7 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // the app shell is cached so the app opens without connection;
           // data is cached by the app itself (IndexedDB), never by the service worker
-          globPatterns: ['**/*.{js,css,html,png,woff2,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           cleanupOutdatedCaches: true,

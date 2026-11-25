@@ -333,6 +333,19 @@ export const es = {
   'err.expired': 'Tu sesión expiró. Volvé a ingresar.',
   'err.unexpected': 'Ocurrió un error inesperado.',
   'err.missingPrice': 'Falta el precio por hora de {name}: lo pone la escuela en la app de gestión (Solicitudes).',
+  'nav.ask': 'Pedir clase',
+  'home.countToday': '¡Es hoy!',
+  'home.countTomorrow': 'Es mañana',
+  'home.countDays': 'Faltan {n} días',
+  'home.shortcuts': 'Accesos rápidos',
+  'steps.title': 'Cómo funciona',
+  'steps.1': 'Pedí tu clase eligiendo día y horario en el calendario.',
+  'steps.2': 'La escuela la confirma y la ves acá.',
+  'steps.3': 'Después de cada clase, mirá tu progreso y los comentarios.',
+  'progress.nextGoal': 'Próximo objetivo',
+  'progress.allDone': '¡Completaste todo el camino de aprendizaje!',
+  'progress.percent': '{n}% del camino',
+  'lang.menu': 'Cambiar idioma',
 }
 
 export type Key = keyof typeof es
@@ -653,6 +666,19 @@ export const pt: Dict = {
   'err.expired': 'Sua sessão expirou. Entre de novo.',
   'err.unexpected': 'Ocorreu um erro inesperado.',
   'err.missingPrice': 'Falta o preço por hora de {name}: a escola define no app de gestão (Solicitações).',
+  'nav.ask': 'Pedir aula',
+  'home.countToday': 'É hoje!',
+  'home.countTomorrow': 'É amanhã',
+  'home.countDays': 'Faltam {n} dias',
+  'home.shortcuts': 'Atalhos',
+  'steps.title': 'Como funciona',
+  'steps.1': 'Peça sua aula escolhendo dia e horário no calendário.',
+  'steps.2': 'A escola confirma e você vê aqui.',
+  'steps.3': 'Depois de cada aula, veja seu progresso e os comentários.',
+  'progress.nextGoal': 'Próximo objetivo',
+  'progress.allDone': 'Você completou todo o caminho de aprendizado!',
+  'progress.percent': '{n}% do caminho',
+  'lang.menu': 'Mudar idioma',
 }
 
 export const en: Dict = {
@@ -970,6 +996,19 @@ export const en: Dict = {
   'err.expired': 'Your session expired. Sign in again.',
   'err.unexpected': 'Something went wrong.',
   'err.missingPrice': "{name}'s price per hour is missing: the school sets it in the management app (Requests).",
+  'nav.ask': 'Book',
+  'home.countToday': 'It\'s today!',
+  'home.countTomorrow': 'It\'s tomorrow',
+  'home.countDays': '{n} days to go',
+  'home.shortcuts': 'Shortcuts',
+  'steps.title': 'How it works',
+  'steps.1': 'Book your lesson by choosing a day and time on the calendar.',
+  'steps.2': 'The school confirms it and you see it here.',
+  'steps.3': 'After each lesson, check your progress and notes.',
+  'progress.nextGoal': 'Next goal',
+  'progress.allDone': 'You completed the whole learning path!',
+  'progress.percent': '{n}% of the path',
+  'lang.menu': 'Change language',
 }
 
 /** Messages the database sends in Spanish, translated for the other languages. */

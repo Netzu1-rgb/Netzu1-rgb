@@ -101,7 +101,7 @@ export function StaffToday() {
         <button type="button" className="btn-primary" onClick={newLesson}><Icon name="plus" /> {t('staff.schedule')}</button>
       </div>
 
-      {todayWind && <Link to="/viento" className="card block p-4"><WindSummary day={todayWind} /></Link>}
+      {todayWind && <Link to="/viento" className="tap card block p-4"><WindSummary day={todayWind} /></Link>}
 
       {loading && !data ? <Loading /> : error ? <ErrorBox message={error} onRetry={() => void reload()} /> : <>
         {requests.length > 0 && (
@@ -110,19 +110,19 @@ export function StaffToday() {
               <span className="grid h-6 min-w-6 place-items-center rounded-full bg-coral px-1.5 text-xs text-white">{requests.length}</span>
               {t('staff.requests')}
             </h2>
-            <div className="space-y-3">{requests.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
+            <div className="stagger space-y-3">{requests.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
           </section>
         )}
         {toClose.length > 0 && (
           <section>
             <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('staff.toClose')}</h2>
-            <div className="space-y-3">{toClose.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
+            <div className="stagger space-y-3">{toClose.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>
           </section>
         )}
         <section>
           <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(me.isAdmin ? 'staff.todayAll' : 'staff.todayMine')}</h2>
           {mineToday.length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('staff.noToday')}</p>
-            : <div className="space-y-3">{mineToday.map((l) => <LessonCard key={l.id} lesson={l} show={me.isAdmin ? 'both' : 'student'} actions={actions(l)} />)}</div>}
+            : <div className="stagger space-y-3">{mineToday.map((l) => <LessonCard key={l.id} lesson={l} show={me.isAdmin ? 'both' : 'student'} actions={actions(l)} />)}</div>}
         </section>
       </>}
       {modals}
@@ -168,7 +168,7 @@ export function StaffAgenda() {
               <section key={d}>
                 <h2 className="mb-2 text-sm font-bold text-heading">{dayLabel(d)} <span className="font-normal normal-case text-ink-mute">· {longDay(d)}</span></h2>
                 {list.length === 0 ? <p className="rounded-xl border border-dashed border-line px-4 py-3 text-sm text-ink-mute">{t('staff.noClasses')}</p>
-                  : <div className="space-y-3">{list.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>}
+                  : <div className="stagger space-y-3">{list.map((l) => <LessonCard key={l.id} lesson={l} show="both" actions={actions(l)} />)}</div>}
               </section>
             )
           })}
@@ -195,10 +195,10 @@ export function StaffStudents() {
       {loading && !data ? <Loading /> : error ? <ErrorBox message={error} onRetry={() => void reload()} />
         : list.length === 0 ? <EmptyState title={t(q ? 'staff.noResults' : 'staff.noStudents')} text={q ? undefined : t('staff.noStudentsText')} />
           : (
-            <ul className="card divide-y divide-line overflow-hidden">
+            <ul className="card stagger divide-y divide-line overflow-hidden">
               {list.map((s) => (
                 <li key={s.id}>
-                  <Link to={`/alumnos/${s.id}`} className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-surface-2">
+                  <Link to={`/alumnos/${s.id}`} className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-surface-2 active:bg-surface-2">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft font-display font-bold text-brand-deep">{s.full_name.charAt(0).toUpperCase()}</span>
                     <span className="flex-1 font-medium text-heading">{s.full_name}</span>
                     <Icon name="chevronRight" className="h-5 w-5 text-ink-mute" />
@@ -259,7 +259,7 @@ export function StaffStudentDetail() {
       {data.upcoming.length > 0 && (
         <section>
           <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('staff.upcoming')}</h2>
-          <div className="space-y-3">{data.upcoming.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" />)}</div>
+          <div className="stagger space-y-3">{data.upcoming.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" />)}</div>
         </section>
       )}
       <ProgressPath skills={data.skills} progress={data.progress} studentId={id} editable onChanged={() => void reload()} />

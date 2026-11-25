@@ -15,11 +15,14 @@ function Shell({ children, subtitle }: { children: ReactNode; subtitle: string }
       <div className="safe-top mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8">
         <div className="flex justify-center pt-5"><LanguagePicker dark /></div>
         <div className="flex flex-col items-center pb-6 pt-6 text-center">
-          <img src="/logo-truevento.png" alt="TRUEVENTO kiteschool" className="h-24 w-24 rounded-full shadow-[0_12px_40px_rgba(109,75,233,0.45)]" />
-          <h1 className="mt-4 font-display text-3xl font-bold">TRUEVENTO</h1>
-          <p className="mt-1 text-brand-200">{subtitle}</p>
+          <div className="pop relative">
+            <div className="absolute -inset-6 rounded-full bg-[radial-gradient(circle,rgba(109,75,233,0.55),rgba(230,78,134,0.15)_55%,transparent_70%)] blur-xl" aria-hidden="true" />
+            <img src="/logo-truevento.svg" alt="TRUEVENTO kiteschool" className="relative h-36 w-36 rounded-full ring-1 ring-white/10 sm:h-40 sm:w-40" />
+          </div>
+          <h1 className="sr-only">TRUEVENTO</h1>
+          <p className="mt-4 text-lg text-brand-100">{subtitle}</p>
         </div>
-        <div className="rounded-3xl bg-surface p-5 text-ink shadow-2xl sm:p-6">{children}</div>
+        <div className="page-enter rounded-3xl bg-surface p-5 text-ink shadow-2xl sm:p-6">{children}</div>
       </div>
     </div>
   )

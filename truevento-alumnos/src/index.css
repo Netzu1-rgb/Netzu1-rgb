@@ -172,3 +172,35 @@
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------------------------------------------------------------- motion
+   Short, quiet animations that make the app feel alive. All of them stop when
+   the phone asks for reduced motion. */
+@keyframes tv-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes tv-pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes tv-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes tv-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 78, 134, .45); } 50% { box-shadow: 0 0 0 8px rgba(230, 78, 134, 0); } }
+@keyframes tv-ring { from { stroke-dashoffset: var(--tv-ring-from, 100); } }
+
+/* a screen arriving */
+.page-enter { animation: tv-enter .35s cubic-bezier(.16, 1, .3, 1) both; }
+/* cards in a list arrive one after the other */
+.stagger > * { animation: tv-enter .4s cubic-bezier(.16, 1, .3, 1) both; }
+.stagger > *:nth-child(2) { animation-delay: .04s; }
+.stagger > *:nth-child(3) { animation-delay: .08s; }
+.stagger > *:nth-child(4) { animation-delay: .12s; }
+.stagger > *:nth-child(5) { animation-delay: .16s; }
+.stagger > *:nth-child(n + 6) { animation-delay: .2s; }
+.pop { animation: tv-pop .35s cubic-bezier(.34, 1.56, .64, 1) both; }
+.grow-up { transform-origin: bottom; animation: tv-grow .6s cubic-bezier(.16, 1, .3, 1) both; }
+.pulse { animation: tv-pulse 2s ease-in-out infinite; }
+.ring-draw { animation: tv-ring 1s cubic-bezier(.16, 1, .3, 1) both; }
+/* cards you can tap lift a little */
+.tap { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.tap:active { transform: scale(.98); }
+@media (hover: hover) { .tap:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -12px rgba(22, 19, 43, .25); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .stagger > *, .pop, .grow-up, .pulse, .ring-draw { animation: none !important; }
+  .tap, .tap:hover, .tap:active { transform: none; }
+}

@@ -88,3 +88,35 @@ export function LanguagePicker({ dark = false }: { dark?: boolean }) {
     </div>
   )
 }
+
+/** Compact language switch for the top bar: shows the current code, opens the three options. */
+export function LanguageMenu() {
+  const { lang, setLang } = useLang()
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative">
+      <button type="button" aria-haspopup="menu" aria-expanded={open} aria-label={t('lang.menu')} onClick={() => setOpen(!open)}
+        className="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-white transition hover:bg-white/10">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        {lang.toUpperCase()}
+      </button>
+      {open && (
+        <>
+          <button type="button" aria-hidden="true" tabIndex={-1} className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} />
+          <div role="menu" className="pop absolute right-0 top-12 z-50 w-44 overflow-hidden rounded-2xl border border-line bg-surface py-1 text-ink shadow-xl">
+            {LANGS.map((l) => (
+              <button key={l.value} type="button" role="menuitemradio" aria-checked={lang === l.value} lang={l.value}
+                onClick={() => { setOpen(false); setLang(l.value) }}
+                className={`flex w-full items-center justify-between px-4 py-3 text-left font-semibold transition hover:bg-surface-2 ${lang === l.value ? 'text-brand-deep' : 'text-ink'}`}>
+                {l.label}
+                {lang === l.value && <span aria-hidden="true">✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}

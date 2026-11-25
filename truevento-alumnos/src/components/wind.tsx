@@ -57,7 +57,7 @@ export function WindDayCard({ day }: { day: WindDay }) {
         {day.hours.map((h) => (
           <div key={h.time} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
             <span className="tabular text-[10px] font-semibold text-ink-soft">{h.speed}</span>
-            <div className="relative w-full max-w-5 rounded-t-md bg-surface-2" style={{ height: `${(h.gust / top) * 100}%` }}>
+            <div className="grow-up relative w-full max-w-5 rounded-t-md bg-surface-2" style={{ height: `${(h.gust / top) * 100}%` }}>
               <div className={`absolute inset-x-0 bottom-0 rounded-t-md ${LEVEL_CLS[windLevel(h.speed)].bar}`} style={{ height: `${(h.speed / Math.max(h.gust, 1)) * 100}%` }} />
             </div>
           </div>
@@ -85,7 +85,7 @@ export function WindForecast() {
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-coral" />{t('wind.legendStrong')}</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-surface-2 ring-1 ring-line" />{t('wind.legendGust')}</span>
       </div>
-      {data.days.map((d) => <WindDayCard key={d.date} day={d} />)}
+      <div className="stagger space-y-3">{data.days.map((d) => <WindDayCard key={d.date} day={d} />)}</div>
       <p className="text-center text-xs text-ink-mute">
         {t('wind.footer', { spot: SPOT.name, time: new Date(data.fetchedAt).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }) })}
       </p>

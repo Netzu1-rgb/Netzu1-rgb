@@ -37,6 +37,8 @@ const paths: Record<string, string> = {
   user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
   note: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
   arrow: 'M12 19V5M5 12l7-7 7 7',
+  globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
+  target: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
 }
 
 export function Icon({ name, className = 'h-5 w-5', strokeWidth = 2 }: { name: keyof typeof paths | string; className?: string; strokeWidth?: number }) {
@@ -229,6 +231,8 @@ const ToastCtx = createContext<(text: string, kind?: ToastKind) => void>(() => {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([])
   const push = useCallback((text: string, kind: ToastKind = 'success') => {
+    // a short buzz confirms an action on phones that can vibrate
+    if (kind !== 'info') try { navigator.vibrate?.(kind === 'error' ? [30, 40, 30] : 12) } catch { /* not supported */ }
     const id = Date.now() + Math.random()
     setItems((xs) => [...xs, { id, kind, text }])
     setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== id)), kind === 'error' ? 6000 : 3500)
@@ -243,7 +247,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] flex flex-col items-center gap-2 px-4 pt-[max(env(safe-area-inset-top),12px)]" aria-live="polite">
         {items.map((t) => (
-          <div key={t.id} className={`pointer-events-auto flex max-w-md items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium shadow-lg ${colors[t.kind]}`}>
+          <div key={t.id} className={`pop pointer-events-auto flex max-w-md items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium shadow-lg ${colors[t.kind]}`}>
             <Icon name={t.kind === 'error' ? 'alert' : 'check'} className="h-5 w-5 shrink-0" />
             {t.text}
           </div>
