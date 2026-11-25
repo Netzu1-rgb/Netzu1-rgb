@@ -13,6 +13,8 @@ const Router = import.meta.env.VITE_DEMO === '1' ? MemoryRouter : BrowserRouter
 if (import.meta.env.VITE_DEMO === '1') document.documentElement.classList.add('in-viewer')
 
 applyTheme()
+// the page is in Spanish (also when a host page wraps it without a lang)
+document.documentElement.lang = 'es'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -179,3 +179,14 @@
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* The page's own background, text color and font, outside any layer so they win over
+   styles a host page may inject (the demo viewer adds body{background:#fff;color:#000;
+   font:14px ...}). Without this the dark theme showed a white page with unreadable text. */
+html body {
+  background-color: var(--color-mist);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+}

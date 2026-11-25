@@ -181,11 +181,11 @@ export default function Welcome() {
           <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink-soft">{t('welcome.demoNote')}</p>
           <button type="button" className="btn-dark w-full justify-between" disabled={busy}
             onClick={() => { setBusy(true); void api.signIn('ana', 'demo1234').then(refresh).finally(() => setBusy(false)) }}>
-            <span>{t('welcome.demoStudent')}</span><span className="text-sm text-brand-200">Ana</span>
+            <span>{t('welcome.demoStudent')}</span><span className="text-sm text-white">Ana</span>
           </button>
           <button type="button" className="btn-dark w-full justify-between" disabled={busy}
             onClick={() => { setBusy(true); void api.signIn('victoria', 'demo1234').then(refresh).finally(() => setBusy(false)) }}>
-            <span>{t('welcome.demoInstructor')}</span><span className="text-sm text-brand-200">Victoria</span>
+            <span>{t('welcome.demoInstructor')}</span><span className="text-sm text-white">Victoria</span>
           </button>
           <button type="button" className="btn-ghost w-full" onClick={() => { setMode('join'); setWithCode(false); setError(null) }}>
             {t('welcome.demoNew')}

@@ -51,7 +51,7 @@ export default function Login() {
           {DEMO_LOGINS.map((d) => (
             <button key={d.user} type="button" disabled={busy} onClick={() => void enter(d.user, d.password)}
               className="btn-dark w-full justify-between text-left">
-              <span>{d.label}</span><span className="text-sm font-medium text-brand-200">{d.who}</span>
+              <span>{d.label}</span><span className="text-sm font-medium text-white">{d.who}</span>
             </button>
           ))}
           <p className="pt-2 text-center text-xs text-ink-mute">o con usuario y contraseña (victoria / demo1234)</p>
