@@ -33,7 +33,8 @@ function CodeField({ code, setCode, preview }: { code: string; setCode: (v: stri
   return (
     <Field label={t('code.label')} hint={
       preview ? <span className="flex items-center gap-1.5 font-semibold text-violet-deep"><Icon name="check" className="h-4 w-4" />
-        {t('code.ok', { name: preview.first_name, kind: t(preview.kind === 'student' ? 'code.kindStudent' : 'code.kindInstructor') })}</span>
+        {preview.kind === 'admin' ? t('code.admin')
+          : t('code.ok', { name: preview.first_name ?? '', kind: t(preview.kind === 'student' ? 'code.kindStudent' : 'code.kindInstructor') })}</span>
         : preview === null && code.length === 9 ? <span className="font-semibold text-coral">{t('code.bad')}</span>
           : t('code.hint')}>
       {(id) => (
@@ -49,7 +50,7 @@ function usePreview(code: string) {
   const [preview, setPreview] = useState<InvitePreview | null | undefined>(undefined)
   useEffect(() => {
     setPreview(undefined)
-    if (code.length !== 9) return
+    if (codeLength(code) < 6) return
     let alive = true
     void api.invitePreview(code).then((p) => { if (alive) setPreview(p) }).catch(() => { if (alive) setPreview(undefined) })
     return () => { alive = false }
@@ -57,8 +58,24 @@ function usePreview(code: string) {
   return preview
 }
 
-const DEMO = import.meta.env.VITE_DEMO === '1'
-const demoApi = api as unknown as { demoInvite?: () => string }
+/** Letters and digits typed: invitations have 8, the admin code fewer. */
+const codeLength = (code: string) => code.replace(/-/g, '').length
+const isInvitation = (code: string) => codeLength(code) === 8
+
+/** An invitation links the account to its person; the admin code makes it an admin. */
+async function claim(code: string, name: string) {
+  if (isInvitation(code)) await api.claimInvite(code)
+  else await api.claimAdminCode(code, name.trim())
+}
+
+function AdminName({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <Field label={t('data.name')}>
+      {(id) => <input id={id} className="input" autoComplete="name" autoCapitalize="words" value={value} onChange={(e) => onChange(e.target.value)} />}
+    </Field>
+  )
+}
+
 
 const EMPTY: PersonalData = { full_name: '', phone: '', weight_kg: null, experience: null }
 
@@ -140,13 +157,16 @@ export default function Welcome() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [forgot, setForgot] = useState(false)
+  const [adminName, setAdminName] = useState('')
   const preview = usePreview(code)
+  const asAdmin = withCode && !isInvitation(code)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     if (mode === 'join') {
-      if (withCode && code.length !== 9) return setError(t('err.codeIncomplete'))
+      if (withCode && codeLength(code) < 6) return setError(t('err.codeIncomplete'))
+      if (asAdmin && adminName.trim().length < 3) return setError(t('err.name'))
       if (!withCode) { const msg = personalError(data); if (msg) return setError(msg) }
       if (!api.validUsername(username)) return setError(t('err.username'))
       if (password.length < 8) return setError(t('err.password'))
@@ -158,7 +178,7 @@ export default function Welcome() {
     try {
       if (mode === 'join') {
         await api.signUpAccount(username, password)
-        if (withCode) await api.claimInvite(code)
+        if (withCode) await claim(code, adminName)
         else await api.registerStudent({ ...data, full_name: data.full_name.trim(), phone: data.phone.trim() })
       } else {
         await api.signIn(username, password)
@@ -176,22 +196,6 @@ export default function Welcome() {
 
   return (
     <Shell subtitle={t('welcome.subtitle')}>
-      {DEMO && (
-        <div className="mb-5 space-y-2">
-          <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink-soft">{t('welcome.demoNote')}</p>
-          <button type="button" className="btn-dark w-full justify-between" disabled={busy}
-            onClick={() => { setBusy(true); void api.signIn('ana', 'demo1234').then(refresh).finally(() => setBusy(false)) }}>
-            <span>{t('welcome.demoStudent')}</span><span className="text-sm text-white">Ana</span>
-          </button>
-          <button type="button" className="btn-dark w-full justify-between" disabled={busy}
-            onClick={() => { setBusy(true); void api.signIn('victoria', 'demo1234').then(refresh).finally(() => setBusy(false)) }}>
-            <span>{t('welcome.demoInstructor')}</span><span className="text-sm text-white">Victoria</span>
-          </button>
-          <button type="button" className="btn-ghost w-full" onClick={() => { setMode('join'); setWithCode(false); setError(null) }}>
-            {t('welcome.demoNew')}
-          </button>
-        </div>
-      )}
       <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1" role="tablist">
         {(['login', 'join'] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null) }}
@@ -204,6 +208,7 @@ export default function Welcome() {
         {mode === 'join' && (withCode ? (
           <>
             <CodeField code={code} setCode={setCode} preview={preview} />
+            {asAdmin && <AdminName value={adminName} onChange={setAdminName} />}
             <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2"
               onClick={() => { setWithCode(false); setError(null) }}>{t('welcome.noCode')}</button>
           </>
@@ -211,7 +216,7 @@ export default function Welcome() {
           <>
             <PersonalFields value={data} onChange={setData} />
             <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2"
-              onClick={() => { setWithCode(true); setError(null); if (DEMO && !code) setCode(demoApi.demoInvite?.() ?? '') }}>
+              onClick={() => { setWithCode(true); setError(null) }}>
               {t('welcome.haveCode')}
             </button>
           </>
@@ -259,16 +264,19 @@ export function ClaimCode() {
   const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [adminName, setAdminName] = useState('')
   const preview = usePreview(code)
+  const asAdmin = withCode && !isInvitation(code)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     if (!withCode) { const msg = personalError(data); if (msg) return setError(msg) }
+    if (asAdmin && adminName.trim().length < 3) return setError(t('err.name'))
     if (!consent) return setError(t('err.privacy'))
     setBusy(true)
     try {
-      if (withCode) await api.claimInvite(code)
+      if (withCode) await claim(code, adminName)
       else await api.registerStudent({ ...data, full_name: data.full_name.trim(), phone: data.phone.trim() })
       await refresh()
     } catch (err) {
@@ -283,12 +291,13 @@ export function ClaimCode() {
       <form onSubmit={submit} className="space-y-4" noValidate>
         <p className="text-ink-soft">{t('welcome.accountReady')} {t(withCode ? 'welcome.enterCode' : 'welcome.completeData')}</p>
         {withCode ? <CodeField code={code} setCode={setCode} preview={preview} /> : <PersonalFields value={data} onChange={setData} />}
+        {asAdmin && <AdminName value={adminName} onChange={setAdminName} />}
         <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => { setWithCode(!withCode); setError(null) }}>
           {t(withCode ? 'welcome.noCode' : 'welcome.haveCode')}
         </button>
         <PrivacyConsent checked={consent} onChange={setConsent} />
         {error && <ErrorBox message={error} />}
-        <button type="submit" className="btn-primary w-full text-lg" disabled={busy || (withCode && code.length !== 9)}>
+        <button type="submit" className="btn-primary w-full text-lg" disabled={busy || (withCode && codeLength(code) < 6)}>
           {busy && <Spinner />} {t('welcome.continue')}
         </button>
         <button type="button" className="btn-ghost w-full" onClick={() => void signOut()}>{t('welcome.exit')}</button>

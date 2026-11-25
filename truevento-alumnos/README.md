@@ -48,7 +48,7 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
 
 ## Puesta en marcha
 
-1. **Base de datos**: aplicá las migraciones `../truevento-app/supabase/migrations/20261124000000_students_app.sql`, `20261125000000_push_notifications.sql`, `20261126000000_merge_instructors.sql` y `20261127000000_whatsapp_contact.sql` (en ese orden) en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
+1. **Base de datos**: aplicá las migraciones `../truevento-app/supabase/migrations/20261124000000_students_app.sql`, `20261125000000_push_notifications.sql`, `20261126000000_merge_instructors.sql` y `20261127000000_whatsapp_contact.sql` y `20261128000000_admin_code.sql` (en ese orden) en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
 2. **Vercel**: nuevo proyecto con *Root Directory* `truevento-alumnos` y estas variables:
 
    | Variable | Valor |
@@ -60,6 +60,19 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
 
 3. **Dominio `app.truevento.com`**: en Vercel, *Settings → Domains* del proyecto, agregá `app.truevento.com`. En Cloudflare (DNS de truevento.com) creá un registro **CNAME** `app` → `cname.vercel-dns.com` con el proxy desactivado (nube gris).
 4. En el proyecto de **gestión**, `VITE_STUDENTS_APP_URL=https://app.truevento.com` (es el valor por defecto) y volvé a publicar.
+
+## Acceso de administración (código)
+
+Los administradores (la dueña y quien gestiona el sistema) entran con un código en vez de una invitación: **Crear cuenta → ¿La escuela te mandó un código? → el código**, su nombre y apellido, usuario y contraseña. Después entran con el login normal. Quien se registra con el nombre de una dueña (por ejemplo Victoria Linde) queda vinculada a sus clases.
+
+El código no está en el repositorio: se carga al publicar, guardado como hash, con usos y vencimiento:
+
+```sql
+insert into private.admin_codes (code_hash, uses_left, expires_at)
+values (public.admin_code_hash('EL-CODIGO'), 2, now() + interval '30 days');
+```
+
+Cuando se gastan los usos o vence, deja de funcionar. Prueba: `../truevento-app/supabase/tests/admin_code.sql`.
 
 ## Desarrollo
 

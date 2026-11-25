@@ -72,6 +72,11 @@ export async function claimInvite(code: string) {
   check(await supabase.rpc('claim_invite', { p_code: code }))
 }
 
+/** The school's admin code: this account becomes an admin. */
+export async function claimAdminCode(code: string, name: string) {
+  check(await supabase.rpc('claim_admin_code', { p_code: code, p_name: name }))
+}
+
 export async function invitePreview(code: string): Promise<InvitePreview | null> {
   return check(await supabase.rpc('invite_preview', { p_code: code })) as InvitePreview | null
 }

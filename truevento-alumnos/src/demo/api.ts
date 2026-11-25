@@ -150,7 +150,16 @@ export async function claimInvite(code: string) {
   save()
 }
 
+export async function claimAdminCode(code: string, name: string) {
+  await wait()
+  if (code.toUpperCase().replace(/[^A-Z0-9]/g, '') !== 'ADMIN7') fail('El código no es válido o ya se usó. Pedile uno nuevo a la escuela.')
+  if (name.trim().length < 3) fail('Escribí tu nombre y apellido.')
+  Object.assign(me()!, { role: 'admin', full_name: name.trim() })
+  save()
+}
+
 export async function invitePreview(code: string): Promise<InvitePreview | null> {
+  if (code.toUpperCase().replace(/[^A-Z0-9]/g, '') === 'ADMIN7') return { kind: 'admin', first_name: null }
   const inv = db.invites.find((i) => i.code === code && !i.used)
   if (!inv) return null
   const name = nameOf(inv.target, inv.kind === 'student' ? db.students : db.instructors) ?? ''

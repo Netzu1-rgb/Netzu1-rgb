@@ -18,6 +18,8 @@ describe('format', () => {
   it('normalizes invite codes typed any way', () => {
     expect(normalizeCode('abcd efgh')).toBe('ABCD-EFGH')
     expect(normalizeCode('ab')).toBe('AB')
+    expect(normalizeCode('Admin7')).toBe('ADMIN7')
+    expect(normalizeCode('abcdefg')).toBe('ABCDEFG')
     expect(normalizeCode('ABCD-EFGH-XX')).toBe('ABCD-EFGH')
   })
 })

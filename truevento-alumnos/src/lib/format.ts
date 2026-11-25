@@ -72,8 +72,9 @@ export function firstName(full: string | null | undefined): string {
 
 /** Invite codes are shown as ABCD-EFGH; people may type them any way. */
 export function normalizeCode(input: string): string {
+  // invitations are XXXX-XXXX; the school's admin code is shorter (e.g. ADMIN7)
   const c = input.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
-  return c.length > 4 ? `${c.slice(0, 4)}-${c.slice(4)}` : c
+  return c.length === 8 ? `${c.slice(0, 4)}-${c.slice(4)}` : c
 }
 
 export const DURATIONS = [1, 1.5, 2, 2.5, 3]

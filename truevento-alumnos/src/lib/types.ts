@@ -98,8 +98,8 @@ export interface StudentSummary {
 }
 
 export interface InvitePreview {
-  kind: 'student' | 'instructor'
-  first_name: string
+  kind: 'student' | 'instructor' | 'admin'
+  first_name: string | null
 }
 
 export const levelName = (n: number) => n >= 1 && n <= 4 ? t(`level.${n}` as 'level.1') : t('level.n', { n })
