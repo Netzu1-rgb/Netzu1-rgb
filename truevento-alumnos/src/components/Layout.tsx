@@ -5,6 +5,9 @@ import { LanguageMenu, t } from '../i18n'
 import type { Key } from '../i18n/messages'
 import { RequestLessonModal, ScheduleModal } from './lessons'
 import { Icon } from './ui'
+import * as api from '../lib/api'
+import { addDays, today } from '../lib/format'
+import { useLoad } from '../lib/hooks'
 
 interface Tab { to: string; label: Key; icon: string }
 
@@ -24,14 +27,15 @@ const STAFF_TABS: Tab[] = [
 // the sidebar on big screens has room for everything
 const STAFF_SIDEBAR: Tab[] = [...STAFF_TABS, { to: '/viento', label: 'nav.wind', icon: 'wind' }]
 
-function TabLink({ tab }: { tab: Tab }) {
+function TabLink({ tab, badge = 0 }: { tab: Tab; badge?: number }) {
   return (
-    <NavLink to={tab.to} end={tab.to === '/'}
-      className={({ isActive }) => `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
+    <NavLink to={tab.to} end={tab.to === '/'} aria-label={badge > 0 ? `${t(tab.label)} (${badge})` : undefined}
+      className={({ isActive }) => `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${isActive ? 'text-brand-deep' : badge > 0 ? 'text-coral-ink' : 'text-ink-mute'}`}>
       {({ isActive }) => (
         <>
-          <span className={`grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-brand-soft' : ''}`}>
+          <span className={`relative grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-brand-soft' : ''}`}>
             <Icon name={tab.icon} className="h-5 w-5" />
+            {badge > 0 && <span className="pop absolute -top-1 right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1 text-[11px] font-bold leading-none text-white ring-2 ring-surface" aria-hidden="true">{badge}</span>}
           </span>
           {t(tab.label)}
         </>
@@ -47,6 +51,11 @@ export default function Layout() {
   const { pathname } = useLocation()
   const [quick, setQuick] = useState(false)
   const actionLabel = t(me.isStaff ? 'staff.schedule' : 'nav.ask')
+  // instructors: class requests waiting for them (or for anyone), shown on "Today"
+  const reqs = useLoad(async () => me.isStaff
+    ? (await api.agenda(today(), addDays(today(), 180))).filter((l) => l.status === 'requested' && (me.isAdmin || !l.instructor_id || l.instructor_id === me.instructor_id)).length
+    : 0, [me.isStaff])
+  const pendingRequests = reqs.data ?? 0
 
   return (
     <div className="min-h-dvh lg:flex">
@@ -64,7 +73,8 @@ export default function Layout() {
           {side.map((tab) => (
             <NavLink key={tab.to} to={tab.to} end={tab.to === '/'}
               className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${isActive ? 'bg-white/12 text-white' : 'text-brand-100/80 hover:bg-white/6 hover:text-white'}`}>
-              <Icon name={tab.icon} /> {t(tab.label)}
+              <Icon name={tab.icon} /> <span className="flex-1">{t(tab.label)}</span>
+              {tab.to === '/' && pendingRequests > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1 text-[11px] font-bold text-white">{pendingRequests}</span>}
             </NavLink>
           ))}
         </nav>
@@ -105,7 +115,7 @@ export default function Layout() {
         {/* phones and tablets: bottom bar with the main action in the middle */}
         <nav aria-label={t('nav.sections')} className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
           <div className="mx-auto grid max-w-xl grid-cols-5 items-center">
-            <TabLink tab={tabs[0]} />
+            <TabLink tab={tabs[0]} badge={pendingRequests} />
             <TabLink tab={tabs[1]} />
             <div className="flex flex-col items-center">
               <button type="button" onClick={() => setQuick(true)} aria-label={actionLabel}

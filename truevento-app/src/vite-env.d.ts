@@ -5,6 +5,8 @@ declare const __APP_VERSION__: string
 interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string
   readonly VITE_SUPABASE_ANON_KEY?: string
+  /** public key for notifications on the phone (Web Push) */
+  readonly VITE_VAPID_PUBLIC_KEY?: string
   readonly VITE_USERNAME_DOMAIN?: string
   /** address of the students & instructors app (for invitations) */
   readonly VITE_STUDENTS_APP_URL?: string

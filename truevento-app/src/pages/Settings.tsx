@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase'
 import { SINGLE_USER } from '../lib/singleUser'
 import { DemoReset } from '../components/Layout'
 import { useTheme, type ThemeChoice } from '../lib/theme'
+import { NotificationsCard } from '../components/NotificationsCard'
 
 export default function Settings() {
   const { isAdmin, profile, session, signOut, pendingSync } = useAuth()
@@ -33,6 +34,7 @@ export default function Settings() {
       <PageHeader title="Configuración" />
       {isAdmin && <SchoolSettingsForm />}
       {import.meta.env.VITE_DEMO === '1' && <DemoReset />}
+      {isAdmin && <NotificationsCard />}
       <ThemeCard />
       <PendingSyncCard />
       <InstallCard />

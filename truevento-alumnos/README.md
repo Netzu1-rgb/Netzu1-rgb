@@ -48,7 +48,7 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
 
 ## Puesta en marcha
 
-1. **Base de datos**: aplicá la migración `../truevento-app/supabase/migrations/20261124000000_students_app.sql` en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
+1. **Base de datos**: aplicá las migraciones `../truevento-app/supabase/migrations/20261124000000_students_app.sql` y `20261125000000_push_notifications.sql` en el mismo proyecto Supabase (SQL Editor o `npx supabase db push`). En **Authentication → Sign In / Providers → Email** tienen que estar activados *Allow new users to sign up* y desactivado *Confirm email* (los usuarios no usan correos reales).
 2. **Vercel**: nuevo proyecto con *Root Directory* `truevento-alumnos` y estas variables:
 
    | Variable | Valor |
@@ -56,6 +56,7 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
    | `VITE_SUPABASE_URL` | la misma URL de Supabase que la gestión |
    | `VITE_SUPABASE_ANON_KEY` | la misma clave publishable / anon |
    | `VITE_USERNAME_DOMAIN` | `truevento.com` (igual que la gestión) |
+   | `VITE_VAPID_PUBLIC_KEY` | la clave pública de notificaciones (la misma que en la gestión; ver su README, *Notificaciones en el celular*) |
 
 3. **Dominio `app.truevento.com`**: en Vercel, *Settings → Domains* del proyecto, agregá `app.truevento.com`. En Cloudflare (DNS de truevento.com) creá un registro **CNAME** `app` → `cname.vercel-dns.com` con el proxy desactivado (nube gris).
 4. En el proyecto de **gestión**, `VITE_STUDENTS_APP_URL=https://app.truevento.com` (es el valor por defecto) y volvé a publicar.

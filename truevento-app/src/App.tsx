@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from './context/AuthContext'
 import { isConfigured } from './lib/supabase'
 import Layout from './components/Layout'
+import { RequestCountProvider } from './lib/requestCount'
 import UpdateBanner from './components/UpdateBanner'
 import Login from './pages/Login'
 import FirstAdmin from './pages/FirstAdmin'
@@ -76,6 +77,7 @@ function Screens() {
   if (!profile?.role || !profile.active) return <NoAccess />
 
   return (
+    <RequestCountProvider>
     <Layout>
       <Suspense fallback={<Loading />}>
       <Routes>
@@ -93,5 +95,6 @@ function Screens() {
       </Routes>
       </Suspense>
     </Layout>
+    </RequestCountProvider>
   )
 }

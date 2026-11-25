@@ -14,6 +14,7 @@ import { addDays, firstName, formatHours, longDay, shortTime, today } from '../l
 import { notifyChange, useLoad } from '../lib/hooks'
 import type { Lesson } from '../lib/types'
 import { t } from '../i18n'
+import { NotificationsPrompt } from '../components/Notifications'
 
 function useMyLessons(daysBack = 90) {
   return useLoad(() => api.agenda(addDays(today(), -daysBack), addDays(today(), 365)))
@@ -103,6 +104,7 @@ export function StudentHome() {
           <Icon name="chevronRight" className="h-4 w-4" />
         </Link>
       )}
+      {pending > 0 && <NotificationsPrompt />}
 
       {/* 2. today's wind in one line */}
       {todayWind && (

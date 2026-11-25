@@ -6,8 +6,10 @@ import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
 import { friendlyError } from '../lib/errors'
 import { EXPERIENCE_LABEL, type ClassRequest, type Instructor } from '../lib/types'
+import { NotificationsCard } from '../components/NotificationsCard'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { STUDENTS_APP_URL } from '../components/InviteButton'
+import { requestsChanged } from '../lib/requestCount'
 
 const toInput = (n: number | null) => (n == null ? '' : String(n).replace('.', ','))
 
@@ -34,6 +36,7 @@ export default function Requests() {
   return (
     <div>
       <PageHeader title="Solicitudes" subtitle="Clases que los alumnos pidieron desde su app" />
+      <NotificationsCard compact />
       {requests.offline && <OfflineNote savedAt={requests.savedAt} />}
       {requests.error && <ErrorBox message={requests.error} onRetry={requests.reload} />}
       {requests.loading && !requests.data ? <Loading /> : list.length === 0 ? (
@@ -82,6 +85,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       await confirmRequest(r.id, rateN, instructorId)
       toast(`Clase de ${s.full_name} confirmada. Ya la ve en su app.`)
       onDone()
+      requestsChanged()
     } catch (err) {
       setError(friendlyError(err))
     } finally {
@@ -95,6 +99,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       await rejectRequest(r.id)
       toast('Solicitud rechazada.')
       onDone()
+      requestsChanged()
     } catch (err) {
       toast(friendlyError(err), 'error')
     }

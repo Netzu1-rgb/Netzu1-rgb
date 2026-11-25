@@ -12,9 +12,11 @@ function devApi(): Plugin {
   return {
     name: 'truevento-dev-api',
     configureServer(server) {
-      server.middlewares.use('/api/users', async (req, res) => {
+      server.middlewares.use(async (req, res, next) => {
+        const name = /^\/api\/(users|push)(?:[/?]|$)/.exec(req.originalUrl ?? req.url ?? '')?.[1]
+        if (!name) return next()
         try {
-          const mod = (await server.ssrLoadModule('/api/users.ts')) as Record<string, (r: Request) => Promise<Response>>
+          const mod = (await server.ssrLoadModule(`/api/${name}.ts`)) as Record<string, (r: Request) => Promise<Response>>
           const handler = mod[req.method ?? 'GET']
           if (!handler) {
             res.statusCode = 405
@@ -108,6 +110,8 @@ export default defineConfig(({ mode }) => {
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           cleanupOutdatedCaches: true,
+          // notifications on the phone (public/push-sw.js)
+          importScripts: ['push-sw.js'],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         },
         devOptions: { enabled: false },

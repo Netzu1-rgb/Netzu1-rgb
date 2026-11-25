@@ -65,6 +65,8 @@ export default defineConfig(({ mode }) => {
           globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
           navigateFallback: '/index.html',
           cleanupOutdatedCaches: true,
+          // notifications on the phone (public/push-sw.js)
+          importScripts: ['push-sw.js'],
         },
         devOptions: { enabled: false },
       }),

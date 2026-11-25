@@ -249,7 +249,7 @@ function RequestsBanner() {
   const fresh = requests.data!.filter((r) => r.student.hourly_rate == null).length
   return (
     <Link to="/solicitudes" className="mb-4 flex items-center gap-3 rounded-2xl border border-coral/30 bg-coral-soft px-4 py-3 text-coral-ink transition hover:brightness-[0.98]">
-      <span className="grid h-9 min-w-9 place-items-center rounded-full bg-coral px-2 font-display font-bold text-white">{n}</span>
+      <span className="pulse grid h-9 min-w-9 place-items-center rounded-full bg-coral px-2 font-display font-bold text-white">{n}</span>
       <span className="flex-1">
         <b className="block">{n === 1 ? '1 clase pedida desde la app' : `${n} clases pedidas desde la app`}</b>
         <span className="text-sm">{fresh ? `${fresh === 1 ? '1 alumno nuevo' : `${fresh} alumnos nuevos`}: poné el precio y confirmá.` : 'Revisá y confirmá.'}</span>

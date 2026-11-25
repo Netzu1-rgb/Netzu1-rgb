@@ -190,3 +190,10 @@ html body {
   font-size: 16px;
   line-height: 1.5;
 }
+
+/* small motion for counters (stops when the phone asks for reduced motion) */
+@keyframes tv-pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes tv-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 78, 134, .45); } 50% { box-shadow: 0 0 0 8px rgba(230, 78, 134, 0); } }
+.pop { animation: tv-pop .35s cubic-bezier(.34, 1.56, .64, 1) both; }
+.pulse { animation: tv-pulse 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pop, .pulse { animation: none !important; } }

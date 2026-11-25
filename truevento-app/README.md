@@ -57,6 +57,24 @@ Los alumnos nuevos se registran solos en esa app con sus datos y piden su clase;
 
 Requiere la migración `20261124000000_students_app.sql` y la variable `VITE_STUDENTS_APP_URL` con la dirección de esa app.
 
+## Notificaciones en el celular
+
+Cuando un alumno pide una clase, al administrador le llega una notificación (aunque la app esté cerrada); cuando la escuela confirma, cambia, rechaza o cancela una clase, le llega al alumno en su idioma; si un alumno cancela, le llega al administrador. Se activan en cada dispositivo: **Solicitudes → Activar notificaciones** o **Configuración → Notificaciones** (en la app de alumnos, **Ajustes → Notificaciones** o el aviso en Inicio). En iPhone (iOS 16.4 o más) primero hay que instalar la app en la pantalla de inicio.
+
+Cómo funciona: la migración `20261125000000_push_notifications.sql` guarda los dispositivos y, con un trigger en `lessons`, arma los mensajes y los manda por `pg_net` a la función **`/api/push`** de esta app, que los firma (VAPID) y los entrega. Si algo falla, la clase se guarda igual.
+
+Para activarlo en producción:
+
+1. Generá las claves una sola vez: `npx web-push generate-vapid-keys`, y un secreto largo: `openssl rand -hex 32`.
+2. Vercel (gestión): `VAPID_PUBLIC_KEY`, `VITE_VAPID_PUBLIC_KEY` (la misma pública), `VAPID_PRIVATE_KEY`, `PUSH_SECRET`, `SUPABASE_ANON_KEY` y opcional `VAPID_SUBJECT` (`mailto:` de la escuela). Vercel (alumnos): `VITE_VAPID_PUBLIC_KEY`.
+3. En el SQL Editor de Supabase, una vez:
+   ```sql
+   insert into private.push_config (url, secret)
+   values ('https://TU-APP-DE-GESTION.vercel.app/api/push', 'EL_MISMO_PUSH_SECRET');
+   ```
+
+Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
+
 ## Funcionamiento sin conexión
 
 - El service worker guarda la app completa: abre sin internet.

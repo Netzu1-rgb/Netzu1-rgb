@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { useOnline } from '../lib/pwa'
 import { Icon } from './ui'
+import { CountBadge, useRequestCount } from '../lib/requestCount'
 
 interface NavItem {
   to: string
@@ -50,10 +51,13 @@ function Brand({ name }: { name: string }) {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { isAdmin, schoolName, profile } = useAuth()
+  const { count: requests } = useRequestCount()
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
   const items = NAV.filter((n) => !n.adminOnly || isAdmin)
-  const bottom = ['/', '/alumnos', '/registrar', '/historial']
+  // the bottom bar: admins get the class requests next to the main button
+  const second = isAdmin ? { to: '/solicitudes', label: 'Solicitudes', icon: 'calendar' } : { to: '/historial', label: 'Historial', icon: 'list' }
+  const bottom = ['/', '/alumnos', '/registrar', second.to]
   const more = items.filter((i) => !bottom.includes(i.to))
   const moreActive = more.some((i) => location.pathname.startsWith(i.to))
 
@@ -68,7 +72,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition ${
                 isActive ? 'bg-white/10 text-white' : 'text-brand-100/70 hover:bg-white/5 hover:text-white'}`}>
               <Icon name={n.icon} />
-              {n.label}
+              <span className="flex-1">{n.label}</span>
+              {n.to === '/solicitudes' && <CountBadge n={requests} className="ring-night-900" />}
             </NavLink>
           ))}
         </nav>
@@ -99,17 +104,15 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* mobile bottom navigation */}
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
         <div className="mx-auto grid h-[68px] max-w-lg grid-cols-5 items-center">
-          {[
-            { to: '/', label: 'Inicio', icon: 'home' },
-            { to: '/alumnos', label: 'Alumnos', icon: 'users' },
-          ].map((n) => <TabLink key={n.to} {...n} />)}
+          <TabLink to="/" label="Inicio" icon="home" />
+          <TabLink {...second} badge={isAdmin ? requests : 0} />
           <div className="flex justify-center">
             <NavLink to="/registrar" aria-label="Registrar clase"
               className="brand-gradient -mt-7 grid h-16 w-16 place-items-center rounded-full text-white shadow-[0_10px_24px_-6px_rgba(109,75,233,0.7)] ring-4 ring-surface active:scale-95">
               <Icon name="plus" className="h-8 w-8" strokeWidth={2.6} />
             </NavLink>
           </div>
-          <TabLink to="/historial" label="Historial" icon="list" />
+          <TabLink to="/alumnos" label="Alumnos" icon="users" />
           <button type="button" onClick={() => setMoreOpen(true)}
             className={`flex flex-col items-center gap-1 text-[11px] font-semibold ${moreActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
             <Icon name="menu" className="h-6 w-6" />
@@ -161,11 +164,14 @@ export function DemoReset() {
   )
 }
 
-function TabLink({ to, label, icon }: { to: string; label: string; icon: string }) {
+function TabLink({ to, label, icon, badge = 0 }: { to: string; label: string; icon: string; badge?: number }) {
   return (
-    <NavLink to={to} end={to === '/'}
-      className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold ${isActive ? 'text-brand-deep' : 'text-ink-mute'}`}>
-      <Icon name={icon} className="h-6 w-6" />
+    <NavLink to={to} end={to === '/'} aria-label={badge > 0 ? `${label} (${badge})` : undefined}
+      className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-semibold ${isActive ? 'text-brand-deep' : badge > 0 ? 'text-coral-ink' : 'text-ink-mute'}`}>
+      <span className="relative">
+        <Icon name={icon} className="h-6 w-6" />
+        <CountBadge n={badge} className="absolute -right-3 -top-2" />
+      </span>
       {label}
     </NavLink>
   )

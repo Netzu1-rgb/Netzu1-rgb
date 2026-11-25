@@ -13,6 +13,7 @@ import * as api from '../lib/api'
 import { LanguagePicker, t } from '../i18n'
 import type { Key } from '../i18n/messages'
 import { PrivacyModal } from '../components/Privacy'
+import { NotificationsCard } from '../components/Notifications'
 
 const demoApi = api as unknown as { resetDemo?: () => void }
 
@@ -53,6 +54,7 @@ export function SettingsPage() {
       </section>
 
       {me.role === 'student' && <MyDetails />}
+      {me.role === 'student' && <NotificationsCard />}
 
       <section className="card p-4">
         <h2 className="mb-3 font-semibold text-heading">{t('settings.language')}</h2>
