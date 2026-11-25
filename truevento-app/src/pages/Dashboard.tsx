@@ -5,7 +5,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import { useAuth } from '../context/AuthContext'
 import PeriodFilter from '../components/PeriodFilter'
 import { ErrorBox, Icon, Loading, OfflineNote, PageHeader, Stat } from '../components/ui'
-import { fetchClasses, fetchPendingPayouts, fetchRequests, fetchStudents } from '../lib/api'
+import { fetchClasses, fetchPendingPayouts, fetchPriceless, fetchRequests, fetchStudents } from '../lib/api'
 import { useData } from '../lib/useData'
 import { chartBuckets, describePeriod, periodFor, type Period } from '../lib/dates'
 import { formatHours, formatMoney, formatNumber, sumAmounts, sumHours } from '../lib/money'
@@ -244,6 +244,29 @@ function buildSeries(rows: ClassRow[], period: Period) {
 
 /** New class requests from the students app, at the top of the dashboard. */
 function RequestsBanner() {
+  return <><PricelessBanner /><NewRequestsBanner /></>
+}
+
+/** Confirmed classes whose student has no price per hour: pending until it is set. */
+function PricelessBanner() {
+  const { session } = useAuth()
+  const priceless = useData(`${session!.user.id}:priceless`, fetchPriceless)
+  const groups = priceless.data ?? []
+  if (!groups.length) return null
+  const n = groups.reduce((a, g) => a + g.lessons.length, 0)
+  return (
+    <Link to="/solicitudes#sin-precio" className="mb-4 flex items-center gap-3 rounded-2xl border border-coral/30 bg-coral-soft px-4 py-3 text-coral-ink transition hover:brightness-[0.98]">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-coral text-white"><Icon name="alert" className="h-5 w-5" /></span>
+      <span className="flex-1">
+        <b className="block">{n === 1 ? '1 clase sin precio' : `${n} clases sin precio`}</b>
+        <span className="text-sm">{groups.map((g) => g.student.full_name).join(', ')}: completá el precio por hora.</span>
+      </span>
+      <Icon name="chevronRight" className="h-5 w-5" />
+    </Link>
+  )
+}
+
+function NewRequestsBanner() {
   const { session } = useAuth()
   const requests = useData(`${session!.user.id}:requests`, fetchRequests)
   const n = requests.data?.length ?? 0

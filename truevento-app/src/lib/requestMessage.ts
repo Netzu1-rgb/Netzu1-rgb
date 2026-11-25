@@ -19,7 +19,7 @@ function hoursText(h: number, lang: Lang): string {
  * student's language (or guessed from their number), with the price when it is known.
  */
 export function requestMessage(o: {
-  studentName: string; lang?: string | null; phone?: string | null; from: string
+  studentName: string; lang?: string | null; phone?: string | null
   date: string; time: string; hours: number; price?: string | null
 }): string {
   const lang: Lang = o.lang === 'es' || o.lang === 'pt' || o.lang === 'en' ? o.lang : langFromPhone(o.phone)
@@ -28,13 +28,13 @@ export function requestMessage(o: {
   const day = `${DAYS[lang][new Date(y, m - 1, d).getDay()]} ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`
   const dur = hoursText(o.hours, lang)
   if (lang === 'pt') {
-    return `Oi ${first}! Sou ${o.from}, da Truevento Kiteschool. Recebi seu pedido de aula para ${day} às ${o.time} (${dur}). ` +
-      (o.price ? `O valor é ${o.price} por hora. Está bom pra você? Se confirmar, reservo sua aula.` : 'Vamos combinar o valor por hora?')
+    return `Olá, ${first}! Aqui é a Truevento Kiteschool. Recebemos seu pedido de aula para ${day} às ${o.time} (${dur}). ` +
+      (o.price ? `O valor é ${o.price} por hora. Está de acordo? Assim que confirmar, reservamos sua aula.` : 'Gostaríamos de combinar o valor por hora com você.')
   }
   if (lang === 'en') {
-    return `Hi ${first}! I'm ${o.from} from Truevento Kiteschool. I got your lesson request for ${day} at ${o.time} (${dur}). ` +
-      (o.price ? `The price is ${o.price} per hour. Is that OK for you? If you confirm, I'll book your lesson.` : 'Shall we agree on the price per hour?')
+    return `Hello ${first}! This is Truevento Kiteschool. We received your lesson request for ${day} at ${o.time} (${dur}). ` +
+      (o.price ? `The price is ${o.price} per hour. Does that work for you? Once you confirm, we will book your lesson.` : 'We would like to agree on the price per hour with you.')
   }
-  return `¡Hola ${first}! Soy ${o.from}, de Truevento Kiteschool. Recibí tu pedido de clase para el ${day} a las ${o.time} (${dur}). ` +
-    (o.price ? `El precio es ${o.price} por hora. ¿Te parece bien? Si confirmás, te reservo la clase.` : '¿Acordamos el precio por hora?')
+  return `¡Hola, ${first}! Te escribimos de Truevento Kiteschool. Recibimos tu pedido de clase para el ${day} a las ${o.time} (${dur}). ` +
+    (o.price ? `El precio es de ${o.price} por hora. ¿Estás de acuerdo? Una vez que nos confirmes, reservamos tu clase.` : 'Queremos acordar con vos el precio por hora.')
 }

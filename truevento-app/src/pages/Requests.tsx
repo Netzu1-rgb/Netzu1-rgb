@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { confirmRequest, fetchRequests, rejectRequest } from '../lib/api'
+import { confirmRequest, fetchPriceless, fetchRequests, rejectRequest, updateStudent } from '../lib/api'
 import { useInstructors } from '../lib/hooks'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
 import { friendlyError } from '../lib/errors'
-import { EXPERIENCE_LABEL, type ClassRequest, type Instructor } from '../lib/types'
+import { EXPERIENCE_LABEL, type ClassRequest, type Instructor, type PricelessStudent } from '../lib/types'
 import { NotificationsCard } from '../components/NotificationsCard'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { STUDENTS_APP_URL } from '../components/InviteButton'
@@ -34,6 +34,9 @@ export default function Requests() {
   const instructors = useInstructors()
   const active = (instructors.data ?? []).filter((i) => i.active)
   const list = requests.data ?? []
+  const priceless = useData(`${uid}:priceless`, fetchPriceless)
+  const noPrice = priceless.data ?? []
+  const reloadAll = () => { requests.reload(); priceless.reload() }
 
   return (
     <div>
@@ -41,12 +44,24 @@ export default function Requests() {
       <NotificationsCard compact />
       {requests.offline && <OfflineNote savedAt={requests.savedAt} />}
       {requests.error && <ErrorBox message={requests.error} onRetry={requests.reload} />}
-      {requests.loading && !requests.data ? <Loading /> : list.length === 0 ? (
+      {noPrice.length > 0 && (
+        <section id="sin-precio" className="mb-6" aria-labelledby="sin-precio-title">
+          <h2 id="sin-precio-title" className="mb-1 flex items-center gap-2 text-lg font-semibold text-heading">
+            <Icon name="alert" className="h-5 w-5 text-coral" /> Clases sin precio
+          </h2>
+          <p className="mb-3 text-sm text-ink-mute">Ya están confirmadas pero el alumno no tiene precio por hora. Quedan pendientes hasta que lo completes.</p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {noPrice.map((g) => <PricelessCard key={g.student.id} group={g} onDone={reloadAll} />)}
+          </div>
+        </section>
+      )}
+      {noPrice.length > 0 && list.length > 0 && <h2 className="mb-3 text-lg font-semibold text-heading">Pedidos nuevos</h2>}
+      {requests.loading && !requests.data ? <Loading /> : list.length === 0 ? (noPrice.length > 0 ? null :
         <EmptyState title="No hay solicitudes nuevas"
           text={`Cuando un alumno pida una clase en ${STUDENTS_APP_URL.replace(/^https?:\/\//, '')}, aparece acá con sus datos, el día y el horario. Vos solo ponés el precio por hora.`} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {list.map((r) => <RequestCard key={r.id} request={r} instructors={active} onDone={requests.reload} />)}
+          {list.map((r) => <RequestCard key={r.id} request={r} instructors={active} onDone={reloadAll} />)}
         </div>
       )}
     </div>
@@ -54,7 +69,7 @@ export default function Requests() {
 }
 
 function RequestCard({ request: r, instructors, onDone }: { request: ClassRequest; instructors: Instructor[]; onDone: () => void }) {
-  const { currency, profile } = useAuth()
+  const { currency } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
   const s = r.student
@@ -75,10 +90,8 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   const rateN = parseDecimal(rate)
   const ins = instructors.find((i) => i.id === instructorId)
   const amounts = rateN !== null && ins ? classAmounts(r.hours, rateN, ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
-  // who writes: the main owner (Victoria), else this account's name
-  const from = (instructors.find((i) => i.owner_slot === 1)?.full_name ?? profile?.full_name ?? 'Truevento').split(' ')[0]
   const agreeLink = waLink(s.phone, requestMessage({
-    studentName: s.full_name, lang: s.lang, phone: s.phone, from,
+    studentName: s.full_name, lang: s.lang, phone: s.phone,
     date: r.lesson_date, time: r.start_time, hours: r.hours,
     price: rateN !== null && rateN > 0 ? formatMoney(rateN, currency) : null,
   }))
@@ -186,6 +199,65 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
           {busy ? <Spinner /> : <Icon name="check" />} Confirmar clase
         </button>
       </div>
+    </article>
+  )
+}
+
+/** A student with confirmed classes and no price: one box for the price, then they are done. */
+function PricelessCard({ group: g, onDone }: { group: PricelessStudent; onDone: () => void }) {
+  const toast = useToast()
+  const s = g.student
+  const [rate, setRate] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const wa = waLink(s.phone)
+
+  async function save() {
+    setError(null)
+    const n = parseDecimal(rate)
+    if (n === null || n <= 0 || !hasAtMostTwoDecimals(n)) return setError('Escribí el precio por hora (por ejemplo 250 o 250,50).')
+    setBusy(true)
+    try {
+      await updateStudent(s.id, { hourly_rate: n })
+      toast(`Precio de ${s.full_name} guardado.`)
+      onDone()
+      requestsChanged()
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <article className="card flex flex-col border-coral/40 p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-lg font-semibold text-heading">{s.full_name}</h3>
+        <span className="badge bg-coral-soft text-coral-ink">Pendiente: falta el precio</span>
+      </div>
+      {wa && (
+        <a href={wa} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep">
+          <Icon name="whatsapp" className="h-4 w-4" /> {s.phone}
+        </a>
+      )}
+      <ul className="mt-3 space-y-1.5">
+        {g.lessons.map((l) => (
+          <li key={l.id} className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm text-ink-soft">
+            <Icon name="calendar" className="h-4 w-4 shrink-0" />
+            <span><b className="text-heading">{longDay(l.lesson_date)}</b> · {l.start_time} a {endTime(l.start_time, l.hours)}{l.instructor_name ? ` · ${l.instructor_name}` : ''}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 flex items-end gap-2">
+        <Field label="Precio por hora" className="flex-1" hint="Queda en su ficha para todas sus clases.">
+          {(id) => <input id={id} className="input tabular text-lg font-semibold" inputMode="decimal" placeholder="Ej: 250"
+            value={rate} onChange={(e) => setRate(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void save() }} />}
+        </Field>
+      </div>
+      {error && <div className="mt-3"><ErrorBox message={error} /></div>}
+      <button type="button" className="btn-primary mt-3 w-full" disabled={busy} onClick={() => void save()}>
+        {busy ? <Spinner /> : <Icon name="check" />} Guardar precio
+      </button>
     </article>
   )
 }

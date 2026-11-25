@@ -120,6 +120,12 @@ export interface ClassRequest {
   student: Student
 }
 
+/** A student with confirmed classes and no price per hour yet: those classes stay pending. */
+export interface PricelessStudent {
+  student: Student
+  lessons: { id: string; lesson_date: string; start_time: string; hours: number; instructor_name: string | null }[]
+}
+
 export const EXPERIENCE_LABEL: Record<string, string> = {
   none: 'Nunca hizo kite',
   some: 'Tomó algunas clases',

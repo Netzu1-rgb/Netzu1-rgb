@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchRequests } from './api'
+import { fetchPriceless, fetchRequests } from './api'
 
 // How many class requests from the students app are waiting. Shared by the menu,
 // the bottom bar, the dashboard and the app icon; refreshed every minute, when the
@@ -18,7 +18,9 @@ export function RequestCountProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(() => {
     if (!isAdmin || !session) return
-    fetchRequests().then((r) => setCount(r.length)).catch(() => { /* keep the last number offline */ })
+    // requests to answer + students whose confirmed classes still have no price
+    Promise.all([fetchRequests(), fetchPriceless().catch(() => [])])
+      .then(([r, p]) => setCount(r.length + p.length)).catch(() => { /* keep the last number offline */ })
   }, [isAdmin, session])
 
   useEffect(() => {

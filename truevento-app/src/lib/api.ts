@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { enqueue } from './offline'
 import { isNetworkError } from './errors'
 import type {
-  ClassRequest, ClassRow, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
+  ClassRequest, ClassRow, PricelessStudent, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
 } from './types'
 
 // All reads and writes go through here. Every function throws on error so callers
@@ -266,6 +266,25 @@ export async function fetchRequests(): Promise<ClassRequest[]> {
     .eq('status', 'requested').gte('lesson_date', today)
     .order('lesson_date').order('start_time')) as unknown as ClassRequest[]
   return rows.map((r) => ({ ...r, hours: Number(r.hours), start_time: r.start_time.slice(0, 5), student: normalizeStudent(r.student) }))
+}
+
+/**
+ * Confirmed classes (scheduled from the students app) whose student has no price per
+ * hour yet, grouped by student. They stay pending here until the price is set.
+ */
+export async function fetchPriceless(): Promise<PricelessStudent[]> {
+  const rows = check(await supabase.from('lessons')
+    .select('id, lesson_date, start_time, hours, instructor:instructors(full_name), student:students!inner(*)')
+    .eq('status', 'confirmed').is('student.hourly_rate', null)
+    .order('lesson_date').order('start_time')) as unknown as
+    { id: string; lesson_date: string; start_time: string; hours: number; instructor: { full_name: string } | null; student: Student }[]
+  const by = new Map<string, PricelessStudent>()
+  for (const r of rows) {
+    const g = by.get(r.student.id) ?? { student: normalizeStudent(r.student), lessons: [] }
+    g.lessons.push({ id: r.id, lesson_date: r.lesson_date, start_time: r.start_time.slice(0, 5), hours: Number(r.hours), instructor_name: r.instructor?.full_name ?? null })
+    by.set(r.student.id, g)
+  }
+  return [...by.values()]
 }
 
 /** Sets the student's price per hour and confirms the class with an instructor. */

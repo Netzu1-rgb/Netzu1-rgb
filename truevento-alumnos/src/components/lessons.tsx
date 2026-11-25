@@ -10,7 +10,7 @@ import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
 import { skillText, t } from '../i18n'
 import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
-import { AgreePriceButton, SCHOOL_CONTACT } from './contact'
+import { AgreePriceButton } from './contact'
 import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
 
@@ -175,7 +175,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
           <span className="pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#1fa855] text-white"><Icon name="check" className="h-8 w-8" /></span>
           <h3 className="text-xl font-bold text-heading">{t('ask.sentTitle')}</h3>
           <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {slot.time} – {endTime(slot.time, slot.hours)}</p>
-          <p className="text-ink-soft">{t('ask.sentText', { name: SCHOOL_CONTACT })}</p>
+          <p className="text-ink-soft">{t('ask.sentText')}</p>
           <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} time={slot.time} hours={slot.hours} label="wa.write" className="w-full" />
         </div>
       </Modal>
@@ -217,7 +217,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
                 <div className="mt-1 font-display text-3xl font-bold tabular">{slot.time} – {endTime(slot.time, slot.hours)}</div>
                 <div className="mt-1 text-brand-100">{longDay(slot.date, true)} · {formatHours(slot.hours)}</div>
               </div>
-              <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote', { name: SCHOOL_CONTACT })}</p>
+              <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
               {needPhone && (
                 <Field label={t('data.phone')} hint={t('ask.phoneWhy')}>
                   {(id) => <input id={id} type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="+55 88 99999-1234"
