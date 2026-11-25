@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useLoad } from '../lib/hooks'
 import {
-  compass, fetchWind, schoolHour, schoolToday, SPOT, windLabel, windLevel,
+  compass, fetchWind, schoolHour, schoolToday, windLabel, windLevel,
   type WindDay, type WindForecastData, type WindHour, type WindLevel,
 } from '../lib/wind'
 import { locale, t } from '../i18n'
@@ -80,13 +81,7 @@ export function WindDayCard({ day, top }: { day: WindDay; top: number }) {
           <ol className="flex h-32 items-end gap-0.5 sm:gap-1" aria-label={t('wind.byHour')}>
             {day.hours.map((h) => <HourBar key={h.time} h={h} top={top} now={h.time === now} />)}
           </ol>
-          {/* direction of each hour */}
-          <div className="mt-1 flex gap-0.5 text-ink-soft sm:gap-1" aria-hidden="true">
-            {day.hours.map((h) => (
-              <span key={h.time} className="flex flex-1 justify-center"><WindArrow deg={h.direction} className="h-3 w-3" /></span>
-            ))}
-          </div>
-          <div className="mt-0.5 flex gap-0.5 sm:gap-1" aria-hidden="true">
+          <div className="mt-1.5 flex gap-0.5 sm:gap-1" aria-hidden="true">
             {day.hours.map((h) => (
               <span key={h.time} className={`tabular flex-1 text-center text-[10px] ${h.time === now ? 'font-bold text-brand-deep' : 'text-ink-mute'}`}>
                 {Number(h.time.slice(11, 13)) % 3 === 0 || h.time === now ? h.time.slice(11, 13) : ''}
@@ -117,13 +112,15 @@ function HourBar({ h, top, now }: { h: WindHour; top: number; now: boolean }) {
 
 export function WindForecast() {
   const { data, error, loading, reload } = useWind()
+  const [picked, setPicked] = useState<string | null>(null)
   if (loading && !data) return <Loading label={t('wind.loading')} />
   if (error && !data) return <ErrorBox message={t('wind.error')} onRetry={() => void reload()} />
-  if (!data) return null
+  if (!data || !data.days.length) return null
   // one scale for every day, so the bars can be compared between days
   const top = Math.max(30, ...data.days.flatMap((d) => d.hours.map((h) => h.gust ?? h.speed)))
   const updated = new Date(data.fetchedAt).toLocaleString(locale(), { weekday: 'short', hour: '2-digit', minute: '2-digit' })
   const source = t(data.source === 'open-meteo' ? 'wind.sourceOM' : data.source === 'met-norway' ? 'wind.sourceMET' : 'wind.sourceEx')
+  const day = data.days.find((d) => d.date === picked) ?? todayOf(data) ?? data.days[0]
   return (
     <div className="space-y-3">
       {data.stale && (
@@ -131,17 +128,34 @@ export function WindForecast() {
           <Icon name="cloudOff" className="h-4 w-4 shrink-0" /> {t('wind.stale', { time: updated })}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-line-strong" />{t('wind.legendLow')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-brand" />{t('wind.legendGood')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-coral" />{t('wind.legendStrong')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-gust" />{t('wind.legendGust')}</span>
-        <span className="flex items-center gap-1.5"><Icon name="clock" className="h-3.5 w-3.5" />{t('wind.tz')}</span>
+      {/* one day at a time: pick it here */}
+      <div className="-mx-4 overflow-x-auto px-4 pb-1" role="tablist" aria-label={t('wind.title')}>
+        <div className="flex gap-2">
+          {data.days.map((d) => {
+            const on = d.date === day.date
+            return (
+              <button key={d.date} type="button" role="tab" aria-selected={on} onClick={() => setPicked(d.date)}
+                className={`flex min-w-[4.75rem] shrink-0 flex-col items-center rounded-2xl border px-3 py-2 transition active:scale-95 ${on ? 'border-selected bg-selected text-white' : 'border-line bg-surface text-ink'}`}>
+                <span className={`text-xs font-semibold ${on ? 'text-white' : 'text-ink-mute'}`}>{shortDayLabel(d.date)}</span>
+                <span className="font-display text-xl font-bold tabular">{d.avg}</span>
+                <span className={`h-1.5 w-8 rounded-full ${LEVEL_CLS[d.level].bar}`} aria-hidden="true" />
+              </button>
+            )
+          })}
+        </div>
       </div>
-      <div className="stagger space-y-3">{data.days.map((d) => <WindDayCard key={d.date} day={d} top={top} />)}</div>
-      <p className="text-center text-xs text-ink-mute">
-        {t('wind.footer2', { spot: SPOT.name, source, time: updated })}
-      </p>
+      <div key={day.date} className="page-enter"><WindDayCard day={day} top={top} /></div>
+      <p className="text-center text-xs text-ink-mute">{t('wind.colors')}</p>
+      <p className="text-center text-xs text-ink-mute">{t('wind.footerShort', { source, time: updated })}</p>
     </div>
   )
+}
+
+/** Short tab label: "Hoy", "Mañana" or "Jue 27". */
+function shortDayLabel(date: string): string {
+  const today = schoolToday()
+  if (date === today) return t('date.today')
+  if (date === schoolToday(new Date(Date.now() + 86400_000))) return t('date.tomorrow')
+  const s = new Date(`${date}T12:00`).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric' }).replace(/[.,]/g, '')
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }

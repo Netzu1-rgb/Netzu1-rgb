@@ -25,10 +25,12 @@ export function StatusBadge({ status }: { status: LessonStatus }) {
 
 // ------------------------------------------------------------------ lesson card
 
-export function LessonCard({ lesson, show, actions }: {
+export function LessonCard({ lesson, show, actions, simple = false }: {
   lesson: Lesson
   show: 'student' | 'instructor' | 'both'
   actions?: ReactNode
+  /** the student's own view: without their own message, only what the school says */
+  simple?: boolean
 }) {
   const muted = lesson.status === 'cancelled'
   return (
@@ -51,7 +53,7 @@ export function LessonCard({ lesson, show, actions }: {
               <> · {lesson.instructor_name ? <>{t('lesson.with')} <b className="font-semibold text-ink">{lesson.instructor_name}</b></> : <span className="text-coral-ink">{t('lesson.noInstructor')}</span>}</>
             )}
           </div>
-          {lesson.student_note && <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-soft">“{lesson.student_note}”</p>}
+          {lesson.student_note && !simple && <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-soft">“{lesson.student_note}”</p>}
           {lesson.staff_note && <p className="mt-2 flex gap-2 text-sm text-ink-soft"><Icon name="note" className="mt-0.5 h-4 w-4 shrink-0" />{lesson.staff_note}</p>}
         </div>
       </div>
@@ -111,52 +113,99 @@ function useSubmit() {
 
 // ------------------------------------------------------------------ student asks for a class
 
+/** Three short steps: the day, the time, then a summary to send. */
 export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [step, setStep] = useState(1)
   const [slot, setSlot] = useState<Slot>({ date: addDays(today(), 1), time: '', hours: 1.5 })
   const [instructor, setInstructor] = useState('')
   const [note, setNote] = useState('')
+  const [extras, setExtras] = useState(false)
   const [people, setPeople] = useState<Person[]>([])
   const { busy, error, setError, run, conflicts } = useSubmit()
 
   useEffect(() => {
     if (!open) return
     setError(null)
+    setStep(1)
+    setExtras(false)
+    setInstructor('')
+    setNote('')
     setSlot({ date: addDays(today(), 1), time: '', hours: 1.5 })
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
   }, [open, setError])
 
+  // a time taken meanwhile sends the student back to choose again
+  useEffect(() => { if (conflicts) setStep(2) }, [conflicts])
+
+  const titles = [t('ask.step1'), t('ask.step2'), t('ask.step3')]
+  const canNext = step === 1 ? Boolean(slot.date) : step === 2 ? Boolean(slot.time) : true
+
+  function next() {
+    setError(null)
+    if (step === 2 && !slot.time) return setError(t('err.pickTime'))
+    if (step < 3) return setStep(step + 1)
+    void run(() => api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim()), t('ask.sent'), onClose)
+  }
+
   return (
     <Modal open={open} title={t('ask.title')} onClose={onClose}
       footer={<>
-        <button type="button" className="btn-ghost flex-1" onClick={onClose}>{t('common.cancel')}</button>
-        <button type="button" className="btn-primary flex-[2]" disabled={busy}
-          onClick={() => {
-            if (!slot.time) return setError(t('err.pickTime'))
-            void run(() => api.requestLesson(slot.date, slot.time, slot.hours, instructor || null, note.trim()),
-              t('ask.sent'), onClose)
-          }}>
-          {busy && <Spinner />} {t('ask.send')}
+        {step > 1
+          ? <button type="button" className="btn-ghost flex-1" onClick={() => { setError(null); setStep(step - 1) }}><Icon name="chevronLeft" /> {t('ask.back')}</button>
+          : <button type="button" className="btn-ghost flex-1" onClick={onClose}>{t('common.cancel')}</button>}
+        <button type="button" className="btn-primary flex-[2]" disabled={busy || !canNext} onClick={next}>
+          {busy && <Spinner />} {step < 3 ? <>{t('ask.next')} <Icon name="chevronRight" /></> : t('ask.send')}
         </button>
       </>}>
       <div className="space-y-5">
-        {open && <SlotPicker value={slot} onChange={setSlot} refreshKey={conflicts} />}
-        <Field label={t('ask.instructor')}>
-          {(id) => (
-            <select id={id} className="input" value={instructor} onChange={(e) => setInstructor(e.target.value)}>
-              <option value="">{t('ask.anyInstructor')}</option>
-              {people.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-            </select>
+        {/* where you are: 1 · 2 · 3 */}
+        <div>
+          <div className="mb-2 flex gap-1.5" aria-hidden="true">
+            {[1, 2, 3].map((n) => <span key={n} className={`h-1.5 flex-1 rounded-full transition-colors ${n <= step ? 'brand-gradient' : 'bg-surface-2'}`} />)}
+          </div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">{t('ask.stepOf', { n: step })}</p>
+          <h3 className="mt-0.5 text-xl font-bold text-heading">{titles[step - 1]}</h3>
+        </div>
+
+        <div key={step} className="page-enter space-y-5">
+          {open && step === 1 && <SlotPicker part="day" value={slot} onChange={setSlot} refreshKey={conflicts} />}
+          {open && step === 2 && (
+            <>
+              <p className="rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-heading">{longDay(slot.date, true)}</p>
+              <SlotPicker part="time" value={slot} onChange={setSlot} refreshKey={conflicts} />
+            </>
           )}
-        </Field>
-        <Field label={t('ask.message')}>
-          {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder={t('ask.messagePh')} />}
-        </Field>
-        {slot.time && (
-          <p className="rounded-xl bg-brand-soft px-4 py-3 text-sm text-brand-deep">
-            {t('ask.summary', { day: longDay(slot.date, true), from: slot.time, to: endTime(slot.time, slot.hours) })}
-          </p>
-        )}
+          {step === 3 && (
+            <>
+              <div className="rounded-2xl bg-tile p-5 text-white">
+                <div className="text-xs font-semibold uppercase tracking-wide text-brand-200">{t('ask.when')}</div>
+                <div className="mt-1 font-display text-3xl font-bold tabular">{slot.time} – {endTime(slot.time, slot.hours)}</div>
+                <div className="mt-1 text-brand-100">{longDay(slot.date, true)} · {formatHours(slot.hours)}</div>
+              </div>
+              <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="clock" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
+              {!extras ? (
+                <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setExtras(true)}>
+                  {t('ask.extras')}
+                </button>
+              ) : (
+                <div className="page-enter space-y-4">
+                  <Field label={t('ask.instructor')}>
+                    {(id) => (
+                      <select id={id} className="input" value={instructor} onChange={(e) => setInstructor(e.target.value)}>
+                        <option value="">{t('ask.anyInstructor')}</option>
+                        {people.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                      </select>
+                    )}
+                  </Field>
+                  <Field label={t('ask.message')}>
+                    {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
+                      placeholder={t('ask.messagePh')} />}
+                  </Field>
+                </div>
+              )}
+            </>
+          )}
+        </div>
         {error && <ErrorBox message={error} />}
       </div>
     </Modal>

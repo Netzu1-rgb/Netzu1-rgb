@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ErrorBox, PageHeader, Icon, Spinner, useConfirm, useToast } from '../components/ui'
 import { friendlyError } from '../lib/errors'
 import type { PersonalData } from '../lib/types'
+import { experienceLabel } from '../lib/types'
 import { PersonalFields, personalError } from './Welcome'
 import { WindForecast } from '../components/wind'
 import { useMe, useSession } from '../context/Session'
@@ -18,7 +19,7 @@ const demoApi = api as unknown as { resetDemo?: () => void }
 export function WindPage() {
   return (
     <div>
-      <PageHeader title={t('wind.title')} subtitle={t('wind.subtitle')} />
+      <PageHeader title={t('wind.title')} />
       <WindForecast />
     </div>
   )
@@ -114,9 +115,22 @@ function MyDetails() {
     void api.myStudentSummary().then((s) => s && setData({ full_name: s.full_name, phone: s.phone ?? '', weight_kg: s.weight_kg, experience: s.experience }))
       .catch(() => setError(t('mydata.loadFailed')))
   }, [])
+  const [open, setOpen] = useState(false)
   if (!data) return error ? <ErrorBox message={error} /> : null
+  if (!open) {
+    return (
+      <button type="button" className="tap card flex w-full items-center gap-3 p-4 text-left" aria-expanded={false} onClick={() => setOpen(true)}>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-deep"><Icon name="phone" className="h-5 w-5" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-heading">{t('mydata.title')}</span>
+          <span className="block truncate text-sm text-ink-mute">{data.phone}{data.experience ? ` · ${experienceLabel(data.experience)}` : ''}</span>
+        </span>
+        <Icon name="chevronRight" className="h-5 w-5 text-ink-mute" />
+      </button>
+    )
+  }
   return (
-    <form className="card space-y-4 p-4" noValidate onSubmit={async (e) => {
+    <form className="page-enter card space-y-4 p-4" noValidate onSubmit={async (e) => {
       e.preventDefault()
       const msg = personalError(data, false)
       if (msg) return setError(msg)
@@ -125,6 +139,7 @@ function MyDetails() {
       try {
         await api.updateMyDetails({ phone: data.phone.trim(), weight_kg: data.weight_kg, experience: data.experience })
         toast(t('mydata.saved'))
+        setOpen(false)
       } catch (err) {
         setError(friendlyError(err))
       } finally {

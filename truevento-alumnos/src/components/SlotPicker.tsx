@@ -33,13 +33,15 @@ function shiftMonth(first: string, n: number) {
   return isoDate(new Date(y, m - 1 + n, 1))
 }
 
-export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0, allowPast = false }: {
+export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0, allowPast = false, part = 'all' }: {
   value: Slot
   onChange: (v: Slot) => void
   excludeId?: string | null
   refreshKey?: number
   /** staff may log a class that already happened earlier today */
   allowPast?: boolean
+  /** show everything, or only the day (calendar) or only the time (duration + times) */
+  part?: 'all' | 'day' | 'time'
 }) {
   const [month, setMonth] = useState(() => monthStart(value.date || today()))
   const [busy, setBusy] = useState<BusySlot[] | null>(null)
@@ -92,8 +94,8 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
   return (
     <div className="space-y-5">
       {/* 1. day */}
-      <fieldset>
-        <legend className="field-label">{t('slot.day')}</legend>
+      {part !== 'time' && <fieldset>
+        <legend className={part === 'day' ? 'sr-only' : 'field-label'}>{t('slot.day')}</legend>
         <div className="rounded-2xl border border-line bg-surface p-3">
           <div className="mb-2 flex items-center justify-between">
             <button type="button" className="grid h-10 w-10 place-items-center rounded-full hover:bg-surface-2 disabled:opacity-30"
@@ -137,10 +139,10 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
             <span className="line-through decoration-2">{t('slot.full')}</span>
           </div>
         </div>
-      </fieldset>
+      </fieldset>}
 
       {/* 2. duration */}
-      <fieldset>
+      {part !== 'day' && <fieldset>
         <legend className="field-label">{t('lesson.duration')}</legend>
         <div className="flex flex-wrap gap-2">
           {DURATIONS.map((h) => (
@@ -148,10 +150,10 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
               className={value.hours === h ? 'chip-on' : 'chip'}>{formatHours(h)}</button>
           ))}
         </div>
-      </fieldset>
+      </fieldset>}
 
       {/* 3. time */}
-      <fieldset>
+      {part !== 'day' && <fieldset>
         <legend className="field-label">{t('slot.time')}</legend>
         {!value.date ? <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink-mute">{t('slot.pickDayFirst')}</p>
           : !busy ? <div className="flex items-center gap-2 py-4 text-sm text-ink-mute"><Spinner className="h-4 w-4" /> {t('slot.searching')}</div> : (
@@ -178,7 +180,7 @@ export default function SlotPicker({ value, onChange, excludeId, refreshKey = 0,
               {failed && <p className="mt-2 text-sm text-coral-ink">{t('slot.loadFailed')}</p>}
             </>
           )}
-      </fieldset>
+      </fieldset>}
     </div>
   )
 }

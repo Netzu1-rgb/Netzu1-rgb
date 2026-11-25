@@ -8,15 +8,20 @@ import { Icon, useToast } from './ui'
 import { skillText, t } from '../i18n'
 
 /** Learning path by level. Staff can tap a skill to change it; students only see it. */
-export function ProgressPath({ skills, progress, studentId, editable, onChanged }: {
+export function ProgressPath({ skills, progress, studentId, editable, onChanged, compact = false, summaryExtra }: {
   skills: Skill[]
   progress: StudentSkill[]
   studentId: string
   editable: boolean
   onChanged?: () => void
+  /** students: only the current level is open, the rest fold into one tap */
+  compact?: boolean
+  /** a line under the ring (hours and lessons) */
+  summaryExtra?: string
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState<string | null>(null)
+  const [openLevels, setOpenLevels] = useState<Set<number>>(new Set())
   const status = new Map(progress.map((p) => [p.skill_id, p.status]))
   const levels = [...new Set(skills.map((s) => s.level))]
   const doneTotal = skills.filter((s) => status.get(s.id) === 'done').length
@@ -39,7 +44,7 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
 
   return (
     <div className="space-y-3">
-      <ProgressSummary done={doneTotal} total={skills.length}
+      <ProgressSummary done={doneTotal} total={skills.length} extra={summaryExtra}
         next={skills.find((s) => status.get(s.id) !== 'done') ?? null} editable={editable} />
 
       {levels.map((l) => {
@@ -47,9 +52,13 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
         const done = items.filter((s) => status.get(s.id) === 'done').length
         const complete = done === items.length
         const isCurrent = l === currentLevel && !complete
+        const expanded = !compact || isCurrent || openLevels.has(l)
+        const toggle = () => setOpenLevels((o) => { const n = new Set(o); if (n.has(l)) n.delete(l); else n.add(l); return n })
+        const Header = compact && !isCurrent ? 'button' : 'div'
         return (
           <section key={l} className={`card overflow-hidden ${isCurrent ? 'ring-2 ring-brand/40' : ''}`}>
-            <div className="flex items-center gap-3 border-b border-line px-4 py-3">
+            <Header {...(compact && !isCurrent ? { type: 'button' as const, onClick: toggle, 'aria-expanded': expanded } : {})}
+              className={`flex w-full items-center gap-3 px-4 py-3 text-left ${expanded ? 'border-b border-line' : ''} ${compact && !isCurrent ? 'transition hover:bg-surface-2' : ''}`}>
               <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-display font-bold ${complete ? 'bg-violet text-white' : isCurrent ? 'bg-brand-soft text-brand-deep' : 'bg-surface-2 text-ink-mute'}`}>
                 {complete ? <Icon name="check" className="h-5 w-5" /> : l}
               </span>
@@ -57,7 +66,9 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
                 <h3 className="font-semibold text-heading">{levelName(l)}</h3>
                 <div className="text-xs text-ink-mute">{complete ? t('progress.levelDone') : isCurrent ? t('progress.inProgress', { done, total: items.length }) : t('progress.count', { done, total: items.length })}</div>
               </div>
-            </div>
+              {compact && !isCurrent && <Icon name="chevronRight" className={`h-5 w-5 shrink-0 text-ink-mute transition-transform ${expanded ? 'rotate-90' : ''}`} />}
+            </Header>
+            {expanded && (
             <ul className="divide-y divide-line">
               {items.map((s) => {
                 const st = status.get(s.id) ?? null
@@ -69,7 +80,7 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block font-medium ${st ? 'text-heading' : 'text-ink-soft'}`}>{name}</span>
-                      {description && <span className="block text-sm text-ink-mute">{description}</span>}
+                      {description && !compact && <span className="block text-sm text-ink-mute">{description}</span>}
                     </span>
                     <span className={`shrink-0 text-xs font-semibold ${st === 'done' ? 'text-violet-deep' : st === 'learning' ? 'text-brand-deep' : 'text-ink-mute'}`}>
                       {st === 'done' ? t('progress.done') : st === 'learning' ? t('progress.learning') : ''}
@@ -90,6 +101,7 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
                 )
               })}
             </ul>
+            )}
           </section>
         )
       })}
@@ -98,7 +110,7 @@ export function ProgressPath({ skills, progress, studentId, editable, onChanged 
 }
 
 /** Ring with the share of the learning path achieved and the next skill to work on. */
-function ProgressSummary({ done, total, next, editable }: { done: number; total: number; next: Skill | null; editable: boolean }) {
+function ProgressSummary({ done, total, next, editable, extra }: { done: number; total: number; next: Skill | null; editable: boolean; extra?: string }) {
   const pct = total ? Math.round((done / total) * 100) : 0
   const r = 42
   const len = 2 * Math.PI * r
@@ -127,6 +139,7 @@ function ProgressSummary({ done, total, next, editable }: { done: number; total:
         </div>
         <div className="min-w-0">
           <div className="font-semibold text-heading">{t('progress.path')}</div>
+          {extra && <div className="mt-0.5 text-sm text-ink-mute">{extra}</div>}
           {nextName ? (
             <div className="mt-2 rounded-xl bg-brand-soft px-3 py-2">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand-deep"><Icon name="target" className="h-4 w-4" /> {t('progress.nextGoal')}</div>

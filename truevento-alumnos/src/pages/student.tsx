@@ -4,16 +4,16 @@ import { Link } from 'react-router'
 import { AnnouncementCard } from '../components/announcements'
 import { LessonCard, RequestLessonModal } from '../components/lessons'
 import { NotesList, ProgressPath } from '../components/progress'
-import { ErrorBox, Icon, Loading, PageHeader, Stat, useConfirm, useToast } from '../components/ui'
-import { todayOf, useWind, WindSummary } from '../components/wind'
-import { schoolToday } from '../lib/wind'
+import { ErrorBox, Icon, Loading, PageHeader, useConfirm, useToast } from '../components/ui'
+import { todayOf, useWind, WindArrow } from '../components/wind'
+import { compass, schoolToday, windLabel } from '../lib/wind'
 import { useMe } from '../context/Session'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { addDays, firstName, formatHours, longDay, shortTime, today } from '../lib/format'
 import { notifyChange, useLoad } from '../lib/hooks'
 import type { Lesson } from '../lib/types'
-import { locale, t } from '../i18n'
+import { t } from '../i18n'
 
 function useMyLessons(daysBack = 90) {
   return useLoad(() => api.agenda(addDays(today(), -daysBack), addDays(today(), 365)))
@@ -64,12 +64,6 @@ function NextLessonHero({ lesson }: { lesson: Lesson }) {
   )
 }
 
-const SHORTCUTS: { to: string; icon: string; label: 'nav.myClasses' | 'nav.progress' | 'nav.wind'; tone: string }[] = [
-  { to: '/agenda', icon: 'calendar', label: 'nav.myClasses', tone: 'bg-brand-soft text-brand-deep' },
-  { to: '/progreso', icon: 'star', label: 'nav.progress', tone: 'bg-violet-soft text-violet-deep' },
-  { to: '/viento', icon: 'wind', label: 'nav.wind', tone: 'bg-coral-soft text-coral-ink' },
-]
-
 export function StudentHome() {
   const me = useMe()
   const lessons = useMyLessons(365)
@@ -81,73 +75,55 @@ export function StudentHome() {
   const upcoming = all.filter((l) => (l.status === 'confirmed' || l.status === 'requested') && l.lesson_date >= today())
   const next = upcoming.find((l) => l.status === 'confirmed')
   const pending = upcoming.filter((l) => l.status === 'requested').length
-  // new students (no class yet) get a short guide
-  const isNew = lessons.data !== null && all.every((l) => l.status === 'cancelled')
   const todayWind = todayOf(wind.data)
+  const latest = (news.data ?? [])[0]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-heading sm:text-3xl">{t('home.hello', { name: firstName(me.full_name) })}</h1>
-        <p className="text-ink-mute">{t('home.ready')}</p>
-      </div>
+    <div className="space-y-5">
+      <h1 className="text-2xl font-bold text-heading sm:text-3xl">{t('home.hello', { name: firstName(me.full_name) })}</h1>
 
-      <section aria-labelledby="next-h" className="space-y-3">
-        <h2 id="next-h" className="text-sm font-bold uppercase tracking-wide text-ink-mute">{t('home.next')}</h2>
-        {lessons.loading && !lessons.data ? <Loading /> : lessons.error ? <ErrorBox message={lessons.error} onRetry={() => void lessons.reload()} />
-          : next ? <NextLessonHero lesson={next} />
-            : <div className="card p-5 text-center text-ink-soft">{t('home.noConfirmed')}</div>}
-        {pending > 0 && (
-          <Link to="/agenda" className="tap flex items-center gap-2 rounded-xl bg-coral-soft px-4 py-3 text-sm font-medium text-coral-ink">
-            <span className="pulse grid h-6 min-w-6 place-items-center rounded-full bg-coral px-1.5 text-xs font-bold text-white">{pending}</span>
-            {pending === 1 ? t('home.pendingOne') : t('home.pendingMany', { n: pending })}
-            <Icon name="chevronRight" className="ml-auto h-4 w-4" />
-          </Link>
-        )}
-        <button type="button" className="btn-primary w-full text-lg" onClick={() => setAsking(true)}>
-          <Icon name="plus" /> {t('home.ask')}
-        </button>
-      </section>
+      {/* 1. the next lesson, or the way to book one */}
+      {lessons.loading && !lessons.data ? <Loading /> : lessons.error ? <ErrorBox message={lessons.error} onRetry={() => void lessons.reload()} />
+        : next ? <NextLessonHero lesson={next} />
+          : (
+            <div className="card px-5 py-7 text-center">
+              <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-deep"><Icon name="calendar" className="h-7 w-7" /></div>
+              <h2 className="text-lg font-semibold text-heading">{t(pending ? 'home.noConfirmed' : 'home.empty')}</h2>
+              {!pending && <p className="mt-1 text-sm text-ink-mute">{t('home.emptyText')}</p>}
+              <button type="button" className="btn-primary mt-5 w-full text-lg" onClick={() => setAsking(true)}>
+                <Icon name="plus" /> {t(all.length ? 'home.ask' : 'home.emptyCta')}
+              </button>
+            </div>
+          )}
 
-      {isNew && (
-        <section className="card p-5" aria-labelledby="steps-h">
-          <h2 id="steps-h" className="mb-3 font-semibold text-heading">{t('steps.title')}</h2>
-          <ol className="stagger space-y-3">
-            {(['steps.1', 'steps.2', 'steps.3'] as const).map((k, i) => (
-              <li key={k} className="flex items-start gap-3">
-                <span className="brand-gradient grid h-8 w-8 shrink-0 place-items-center rounded-full font-display font-bold text-white">{i + 1}</span>
-                <span className="pt-1 text-ink-soft">{t(k)}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+      {pending > 0 && (
+        <Link to="/agenda" className="tap flex items-center gap-3 rounded-2xl bg-coral-soft px-4 py-3 text-sm font-medium text-coral-ink">
+          <span className="pulse grid h-7 min-w-7 place-items-center rounded-full bg-coral px-1.5 text-xs font-bold text-white">{pending}</span>
+          <span className="flex-1">{pending === 1 ? t('home.pendingOne') : t('home.pendingMany', { n: pending })}</span>
+          <Icon name="chevronRight" className="h-4 w-4" />
+        </Link>
       )}
 
-      <nav aria-label={t('home.shortcuts')} className="stagger grid grid-cols-3 gap-3">
-        {SHORTCUTS.map((sc) => (
-          <Link key={sc.to} to={sc.to} className="tap card flex flex-col items-center gap-2 px-2 py-4 text-center">
-            <span className={`grid h-11 w-11 place-items-center rounded-2xl ${sc.tone}`}><Icon name={sc.icon} className="h-6 w-6" /></span>
-            <span className="text-sm font-semibold text-heading">{t(sc.label)}</span>
-          </Link>
-        ))}
-      </nav>
-
+      {/* 2. today's wind in one line */}
       {todayWind && (
-        <section aria-labelledby="wind-h">
-          <h2 id="wind-h" className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(todayWind.date === schoolToday() ? 'home.windToday' : 'home.windNext')}</h2>
-          <Link to="/viento" className="tap card block p-4">
-            <WindSummary day={todayWind} />
-            <span className="mt-3 flex items-center gap-1 text-sm font-semibold text-brand-deep">{t('home.nextDays')} <Icon name="chevronRight" className="h-4 w-4" /></span>
-          </Link>
-        </section>
+        <Link to="/viento" className="tap card flex items-center gap-3 p-3 pr-4" aria-label={`${t('home.windToday')}: ${todayWind.avg} ${t('wind.knots')}, ${windLabel(todayWind.level)}`}>
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-tile text-white">
+            <span className="text-center leading-none"><span className="block font-display text-lg font-bold tabular">{todayWind.avg}</span><span className="text-[9px] font-semibold text-brand-200">kn</span></span>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-semibold uppercase tracking-wide text-ink-mute">{t(todayWind.date === schoolToday() ? 'home.windToday' : 'home.windNext')}</span>
+            <span className="block font-semibold text-heading">{windLabel(todayWind.level)} · {compass(todayWind.direction)} <WindArrow deg={todayWind.direction} /></span>
+          </span>
+          <Icon name="chevronRight" className="h-5 w-5 text-ink-mute" />
+        </Link>
       )}
 
-      <section aria-labelledby="news-h">
-        <h2 id="news-h" className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('home.news')}</h2>
-        {news.error ? <ErrorBox message={news.error} />
-          : (news.data ?? []).length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('home.noNews')}</p>
-            : <div className="stagger space-y-3">{news.data!.slice(0, 5).map((a) => <AnnouncementCard key={a.id} a={a} />)}</div>}
-      </section>
+      {/* 3. only the latest notice */}
+      {latest && (
+        <section aria-label={t('home.news')}>
+          <AnnouncementCard a={latest} />
+        </section>
+      )}
 
       <RequestLessonModal open={asking} onClose={() => setAsking(false)} />
     </div>
@@ -156,33 +132,30 @@ export function StudentHome() {
 
 export function StudentAgenda() {
   const { data, error, loading, reload } = useMyLessons()
-  const [asking, setAsking] = useState(false)
+  const [showPast, setShowPast] = useState(false)
   const lessons = data ?? []
   const upcoming = lessons.filter((l) => (l.status === 'confirmed' || l.status === 'requested') && l.lesson_date >= today())
   const past = lessons.filter((l) => !upcoming.includes(l)).reverse()
 
   return (
     <div>
-      <PageHeader title={t('classes.title')} action={<button type="button" className="btn-primary" onClick={() => setAsking(true)}><Icon name="plus" /> {t('classes.ask')}</button>} />
+      <PageHeader title={t('classes.title')} />
       {loading && !data ? <Loading /> : error ? <ErrorBox message={error} onRetry={() => void reload()} /> : (
-        <div className="space-y-6">
-          <section>
-            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('classes.upcoming')}</h2>
-            {upcoming.length === 0 ? <p className="card px-4 py-6 text-center text-sm text-ink-mute">{t('classes.noneUpcoming')}</p> : (
-              <div className="stagger space-y-3">
-                {upcoming.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" actions={<CancelButton lesson={l} />} />)}
-              </div>
-            )}
-          </section>
+        <div className="space-y-4">
+          {upcoming.length === 0
+            ? <p className="card px-4 py-8 text-center text-ink-mute">{t('classes.noneUpcoming')}</p>
+            : <div className="stagger space-y-3">{upcoming.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" simple actions={<CancelButton lesson={l} />} />)}</div>}
           {past.length > 0 && (
-            <section>
-              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('classes.past')}</h2>
-              <div className="stagger space-y-3">{past.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" />)}</div>
-            </section>
+            <>
+              <button type="button" className="btn-ghost w-full" aria-expanded={showPast} onClick={() => setShowPast(!showPast)}>
+                {showPast ? t('classes.hidePast') : t('classes.showPast', { n: past.length })}
+                <Icon name="chevronRight" className={`h-4 w-4 transition-transform ${showPast ? '-rotate-90' : 'rotate-90'}`} />
+              </button>
+              {showPast && <div className="stagger space-y-3">{past.map((l) => <LessonCard key={l.id} lesson={l} show="instructor" simple />)}</div>}
+            </>
           )}
         </div>
       )}
-      <RequestLessonModal open={asking} onClose={() => setAsking(false)} />
     </div>
   )
 }
@@ -190,6 +163,7 @@ export function StudentAgenda() {
 export function StudentProgress() {
   const me = useMe()
   const sid = me.student_id!
+  const [allNotes, setAllNotes] = useState(false)
   const { data, error, loading, reload } = useLoad(async () => {
     const [summary, skills, progress, notes, people] = await Promise.all([
       api.myStudentSummary(), api.listSkills(), api.studentSkills(sid), api.lessonNotes(sid), api.instructorDirectory(),
@@ -200,20 +174,23 @@ export function StudentProgress() {
   if (loading && !data) return <Loading />
   if (error || !data) return <ErrorBox message={error ?? t('common.loadFailed')} onRetry={() => void reload()} />
   const s = data.summary
+  const notes = allNotes ? data.notes : data.notes.slice(0, 1)
   return (
-    <div className="space-y-6">
-      <PageHeader title={t('progress.title')} subtitle={s ? t('progress.since', { date: new Date(s.start_date + 'T12:00').toLocaleDateString(locale(), { month: 'long', year: 'numeric' }) }) : undefined} />
-      {s && (
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label={t('progress.hours')} value={formatHours(s.hours)} tone="dark" />
-          <Stat label={t('progress.classes')} value={s.classes} tone="sky" />
-        </div>
+    <div className="space-y-5">
+      <PageHeader title={t('progress.title')} />
+      <ProgressPath skills={data.skills} progress={data.progress} studentId={sid} editable={false} compact
+        summaryExtra={s ? (s.classes === 1 ? t('progress.lineOne', { hours: formatHours(s.hours) }) : t('progress.line', { hours: formatHours(s.hours), n: s.classes })) : undefined} />
+      {data.notes.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t(allNotes ? 'progress.notes' : 'progress.lastNote')}</h2>
+          <NotesList notes={notes} instructorNames={data.names} />
+          {data.notes.length > 1 && (
+            <button type="button" className="mt-3 w-full text-center text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setAllNotes(!allNotes)}>
+              {allNotes ? t('progress.fewerNotes') : t('progress.allNotes', { n: data.notes.length })}
+            </button>
+          )}
+        </section>
       )}
-      <ProgressPath skills={data.skills} progress={data.progress} studentId={sid} editable={false} />
-      <section>
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-mute">{t('progress.notes')}</h2>
-        <NotesList notes={data.notes} instructorNames={data.names} />
-      </section>
     </div>
   )
 }
