@@ -35,7 +35,7 @@ export default function StudentDetail() {
 
       <div className="card mb-5 p-5">
         <div className="flex items-start gap-4">
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-night-900 font-display text-xl font-bold text-white">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-tile font-display text-xl font-bold text-white">
             {s.full_name.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -54,7 +54,7 @@ export default function StudentDetail() {
                 <Icon name="phone" className="h-4 w-4" /> {s.phone}
               </a>
             )}
-            {s.notes && <p className="mt-3 whitespace-pre-line rounded-xl bg-mist px-3 py-2 text-sm text-ink-soft">{s.notes}</p>}
+            {s.notes && <p className="mt-3 whitespace-pre-line rounded-xl bg-surface-2 px-3 py-2 text-sm text-ink-soft">{s.notes}</p>}
           </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">

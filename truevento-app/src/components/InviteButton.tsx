@@ -59,7 +59,7 @@ export default function InviteButton({ kind, targetId, name, phone, className = 
               ? `Con este código, ${first} crea su cuenta en la app de alumnos. Ve sus clases y su progreso, nunca los precios ni los datos de otros alumnos.`
               : `Con este código, ${first} entra a la app de alumnos como instructor: agenda, pedidos y progreso de los alumnos.`}
           </p>
-          <div className="rounded-2xl bg-night-900 px-4 py-5 text-center text-white">
+          <div className="rounded-2xl bg-tile px-4 py-5 text-center text-white">
             <div className="text-xs font-semibold uppercase tracking-widest text-brand-200">Código</div>
             <div className="tabular mt-1 font-display text-3xl font-bold tracking-[0.15em]">{code}</div>
             <div className="mt-1 text-xs text-brand-200">Vale 30 días y se usa una sola vez</div>

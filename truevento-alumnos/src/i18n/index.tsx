@@ -94,7 +94,7 @@ export function LanguageMenu() {
   const { lang, setLang } = useLang()
   const [open, setOpen] = useState(false)
   return (
-    <div className="relative">
+    <div className="relative" onKeyDown={(e) => { if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false) } }}>
       <button type="button" aria-haspopup="menu" aria-expanded={open} aria-label={t('lang.menu')} onClick={() => setOpen(!open)}
         className="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-white transition hover:bg-white/10">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">

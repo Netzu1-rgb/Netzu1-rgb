@@ -74,13 +74,13 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
   return (
     <div className={`card p-4 ${i.active ? '' : 'border-dashed border-line-strong'}`}>
       <div className="flex items-start gap-3">
-        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-bold ${i.kind === 'owner' ? 'bg-night-900 text-white' : 'bg-brand-soft text-brand-deep'}`}>
+        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-bold ${i.kind === 'owner' ? 'bg-tile text-white' : 'bg-brand-soft text-brand-deep'}`}>
           {i.full_name.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-heading">{i.full_name}</span>
-            {i.kind === 'owner' ? <span className="badge bg-night-900 text-white">Dueño</span>
+            {i.kind === 'owner' ? <span className="badge bg-tile text-white">Dueño</span>
               : <span className={`badge ${i.active ? 'bg-violet-soft text-violet-deep' : 'bg-surface-2 text-ink-mute'}`}>{i.active ? 'Activo' : 'Inactivo'}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-mute">
@@ -95,11 +95,11 @@ function InstructorCard({ instructor: i, login, currency, hours, pending, onEdit
         )}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-xl bg-mist px-3 py-2">
+        <div className="rounded-xl bg-surface-2 px-3 py-2">
           <div className="text-xs text-ink-mute">Horas este mes</div>
           <div className="tabular font-semibold">{formatHours(hours)}</div>
         </div>
-        <div className="rounded-xl bg-mist px-3 py-2">
+        <div className="rounded-xl bg-surface-2 px-3 py-2">
           <div className="text-xs text-ink-mute">{i.kind === 'owner' ? 'Pagos' : 'Pendiente de pago'}</div>
           <div className="tabular font-semibold">{i.kind === 'owner' ? 'No genera' : formatMoney(pending, currency)}</div>
         </div>
@@ -226,7 +226,7 @@ function AccessDialog({ instructor, login, onClose, onSaved }: {
     <Modal open title={`Acceso de ${instructor.full_name}`} onClose={onClose}>
       {login ? (
         <div className="space-y-5">
-          <div className="rounded-xl bg-mist px-4 py-3 text-sm">
+          <div className="rounded-xl bg-surface-2 px-4 py-3 text-sm">
             <div>Usuario: <b>{login.username ?? '(ingresa con email)'}</b></div>
             <div className="mt-1">Rol: <b>{login.role === 'admin' ? 'Administrador' : 'Instructor'}</b> · {login.active ? 'activo' : 'desactivado'}</div>
           </div>

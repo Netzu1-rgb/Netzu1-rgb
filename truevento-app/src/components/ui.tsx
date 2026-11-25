@@ -226,7 +226,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== id)), kind === 'error' ? 6000 : 3500)
   }, [])
   const colors: Record<ToastKind, string> = {
-    success: 'bg-night-900 text-white',
+    success: 'bg-tile text-white ring-1 ring-white/10',
     error: 'bg-coral text-white',
     info: 'bg-surface text-ink border border-line',
   }

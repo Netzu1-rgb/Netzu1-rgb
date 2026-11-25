@@ -43,7 +43,7 @@ export function WindArrow({ deg, className = 'h-3.5 w-3.5' }: { deg: number; cla
 export function WindSummary({ day }: { day: WindDay }) {
   return (
     <div className="flex items-center gap-4">
-      <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-night-900 text-white">
+      <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-tile text-white">
         <div className="text-center">
           <div className="tabular font-display text-2xl font-bold leading-none">{day.avg}</div>
           <div className="text-[10px] font-semibold text-brand-200">{t('wind.knots')}</div>
@@ -106,7 +106,7 @@ function HourBar({ h, top, now }: { h: WindHour; top: number; now: boolean }) {
     <li className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
       aria-label={t('wind.hourA11y', { h: h.time.slice(11, 13), kn: speed, gust: h.gust !== null ? Math.round(h.gust) : '—', dir: compass(h.direction) }) + (now ? ` (${t('wind.now')})` : '')}>
       <span className={`tabular text-[10px] font-semibold ${now ? 'text-brand-deep' : 'text-ink-soft'}`}>{speed}</span>
-      <div className={`grow-up relative w-full max-w-5 rounded-t-md bg-surface-2 ${now ? 'ring-2 ring-brand ring-offset-1 ring-offset-surface' : ''}`}
+      <div className={`grow-up relative w-full max-w-5 rounded-t-md bg-gust ${now ? 'ring-2 ring-brand ring-offset-1 ring-offset-surface' : ''}`}
         style={{ height: `${Math.min(100, (gust / top) * 100)}%` }}>
         <div className={`absolute inset-x-0 bottom-0 rounded-t-md ${LEVEL_CLS[windLevel(h.speed, h.gust)].bar}`}
           style={{ height: `${(h.speed / Math.max(gust, 0.1)) * 100}%` }} />
@@ -135,7 +135,7 @@ export function WindForecast() {
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-line-strong" />{t('wind.legendLow')}</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-brand" />{t('wind.legendGood')}</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-coral" />{t('wind.legendStrong')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-surface-2 ring-1 ring-line" />{t('wind.legendGust')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-gust" />{t('wind.legendGust')}</span>
         <span className="flex items-center gap-1.5"><Icon name="clock" className="h-3.5 w-3.5" />{t('wind.tz')}</span>
       </div>
       <div className="stagger space-y-3">{data.days.map((d) => <WindDayCard key={d.date} day={d} top={top} />)}</div>

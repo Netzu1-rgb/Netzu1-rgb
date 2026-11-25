@@ -156,9 +156,9 @@ export default function History() {
           </ul>
 
           {/* tablets and computers: table */}
-          <div className="card hidden overflow-x-auto md:block">
+          <div className="card relative hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
-              <thead className="border-b border-line bg-mist text-left text-xs font-semibold uppercase tracking-wide text-ink-mute">
+              <thead className="border-b border-line bg-surface-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-mute">
                 <tr>
                   <th className="px-4 py-3">Fecha</th>
                   <th className="px-4 py-3">Alumno</th>
@@ -174,7 +174,7 @@ export default function History() {
               </thead>
               <tbody className="tabular divide-y divide-line">
                 {rows.map((r) => (
-                  <tr key={r.id} className="hover:bg-mist/60">
+                  <tr key={r.id} className="hover:bg-surface-2/60">
                     <td className="whitespace-nowrap px-4 py-3">{formatShortDate(r.class_date)}</td>
                     <td className="px-4 py-3 font-medium">{r.student?.full_name}</td>
                     <td className="px-4 py-3">{r.instructor?.full_name}</td>
@@ -197,7 +197,7 @@ export default function History() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="tabular border-t-2 border-line bg-mist font-semibold">
+              <tfoot className="tabular border-t-2 border-line bg-surface-2 font-semibold">
                 <tr>
                   <td className="px-4 py-3" colSpan={3}>Totales</td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">{formatHours(totals.hours)}</td>

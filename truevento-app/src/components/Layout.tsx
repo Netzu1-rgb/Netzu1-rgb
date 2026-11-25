@@ -81,7 +81,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-h-dvh flex-1 flex-col">
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         {/* mobile top bar */}
         <header className="safe-top sticky top-0 z-30 bg-night-900 lg:hidden">
           <div className="flex h-14 items-center justify-between px-4">

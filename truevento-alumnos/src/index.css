@@ -54,6 +54,11 @@
   --color-heading: #110d24;
   --color-selected: #110d24;
   --color-coral-ink: #9d1c48;
+  /* emphasised panels inside cards (wind number, next lesson, codes): night in the
+     light theme, a lifted violet-night in the dark one so they never look like holes */
+  --color-tile: #110d24;
+  /* gust bars and other quiet fills in charts */
+  --color-gust: #e3dff1;
   /* destructive buttons: white text needs a deep red in both themes */
   --color-danger: #c22f59;
 }
@@ -83,6 +88,8 @@
   --color-sand: #1e1939;
   --color-sand-deep: #2b2452;
   --color-selected: #5b5fe8;
+  --color-tile: #2c2560;
+  --color-gust: #3d356f;
 }
 
 @layer base {

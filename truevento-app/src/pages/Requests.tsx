@@ -103,7 +103,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   return (
     <article className="card flex flex-col p-5">
       <div className="flex items-start gap-3">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-night-900 font-display text-lg font-bold text-white">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-tile font-display text-lg font-bold text-white">
           {s.full_name.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">

@@ -46,7 +46,7 @@ function countdown(date: string): string {
 
 function NextLessonHero({ lesson }: { lesson: Lesson }) {
   return (
-    <Link to="/agenda" className="tap relative block overflow-hidden rounded-3xl bg-night-900 p-5 text-white shadow-[0_18px_40px_-20px_rgba(109,75,233,0.8)]">
+    <Link to="/agenda" className="tap relative block overflow-hidden rounded-3xl bg-tile p-5 text-white ring-1 ring-white/10 shadow-[0_18px_40px_-20px_rgba(109,75,233,0.8)]">
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-violet/40 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute -bottom-12 left-10 h-32 w-32 rounded-full bg-pink/25 blur-3xl" aria-hidden="true" />
       <div className="relative">

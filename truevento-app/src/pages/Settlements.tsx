@@ -188,7 +188,7 @@ function PayDialog({ open, onClose, instructorName, instructorId, period, classe
         <button type="button" className="btn-dark flex-1" disabled={busy || !paidAt} onClick={() => void pay()}>{busy && <Spinner />} Confirmar pago</button>
       </>}>
       <div className="space-y-4">
-        <div className="rounded-2xl bg-night-900 p-5 text-white">
+        <div className="rounded-2xl bg-tile p-5 text-white">
           <div className="text-sm text-brand-200">{instructorName}</div>
           <div className="tabular mt-1 font-display text-3xl font-bold">{formatMoney(amount, currency)}</div>
           <div className="mt-1 text-sm text-brand-100/80">
@@ -247,7 +247,7 @@ function SettlementItem({ s, currency, canCancel, onChanged }: { s: Settlement; 
         </div>
       </button>
       {open && (
-        <div className="border-t border-line bg-mist/60 px-4 py-3">
+        <div className="border-t border-line bg-surface-2/60 px-4 py-3">
           {s.notes && <p className="mb-2 text-sm text-ink-soft">Notas: {s.notes}</p>}
           {detail.loading && !detail.data ? <Loading /> : (
             <ul className="divide-y divide-line text-sm">
