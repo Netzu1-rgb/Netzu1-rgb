@@ -40,12 +40,12 @@ function useActions(setState: (s: PushState) => void, lang: string) {
   return { busy, on, off }
 }
 
-/** Ajustes: notifications on this phone. */
-export function NotificationsCard() {
+/** Ajustes: notifications on this phone (for an admin: new requests and cancellations). */
+export function NotificationsCard({ admin = false }: { admin?: boolean }) {
   const { state, setState, lang } = usePush()
   const { busy, on, off } = useActions(setState, lang)
   if (state === null || state === 'unsupported') return null
-  const text = state === 'on' ? 'notif.on' : state === 'off' ? 'notif.off' : state === 'denied' ? 'notif.denied' : 'notif.ios'
+  const text = state === 'on' ? (admin ? 'notif.onAdmin' : 'notif.on') : state === 'off' ? (admin ? 'notif.offAdmin' : 'notif.off') : state === 'denied' ? 'notif.denied' : 'notif.ios'
   return (
     <section className="card p-4" aria-labelledby="notif-title">
       <h2 id="notif-title" className="flex items-center gap-2 font-semibold text-heading"><Icon name="bell" /> {t('notif.title')}</h2>

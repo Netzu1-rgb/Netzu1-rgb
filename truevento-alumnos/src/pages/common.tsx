@@ -54,6 +54,7 @@ export function SettingsPage() {
 
       {me.role === 'student' && <MyDetails />}
       {me.role === 'student' && <NotificationsCard />}
+      {me.role === 'admin' && <NotificationsCard admin />}
 
       <section className="card p-4">
         <h2 className="mb-3 font-semibold text-heading">{t('settings.language')}</h2>

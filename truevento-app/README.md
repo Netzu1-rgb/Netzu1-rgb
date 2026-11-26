@@ -131,7 +131,7 @@ Ojo: el bloqueo de gestión es de la app (pantalla "sin acceso"); la base de dat
 
 - **26/11/2026:** aplicadas en producción las 9 migraciones (de `20261124000000_students_app.sql` a `20261202000000_school_rules.sql`), con una copia de seguridad tomada justo antes (fuera de git, en `backups/`). Comprobado después: las 42 clases quedaron idénticas (mismos montos, horas y alumnos) y los 9 registros de "Fran" quedaron en uno solo con sus 9 clases. Publicada la app de gestión nueva en Vercel (proyecto `truevento-app`).
 - **26/11/2026 (noche):** aplicada `20261203000000_agenda_contact.sql` (las 42 clases idénticas), activado el código de administración (2 usos, 30 días), `truevento7` con rol de administradora (gestión la rechaza). Publicadas la app de alumnos (proyecto Vercel `truevento-alumnos`, https://truevento-alumnos.vercel.app, dominio `app.truevento.com` agregado) y la versión nueva de gestión.
-- Falta: el registro CNAME `app` en Cloudflare (DNS de truevento.com) y las notificaciones al celular (claves VAPID y `private.push_config`).
+- Falta: el registro CNAME `app` en Cloudflare (DNS de truevento.com). Notificaciones al celular activadas el 26/11/2026 (claves VAPID en Vercel, `private.push_config` apuntando a gestión). Falta aplicar `20261204000000_admin_alerts_in_students_app.sql` y publicar alumnos, para que los avisos de administración lleguen también a la app de alumnos.
 
 ## Puesta en marcha
 
