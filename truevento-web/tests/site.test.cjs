@@ -328,7 +328,8 @@ async function behaviourChecks(browser, base) {
   fs.mkdirSync(OUT, { recursive: true })
   staticChecks()
   const server = await serve()
-  const base = `http://localhost:${server.address().port}`
+  // SITE_URL=https://www.truevento.com checks the published page instead of this folder
+  const base = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "") : `http://localhost:${server.address().port}`
   const browser = await chromium.launch()
   try {
     await sizeChecks(browser, base)

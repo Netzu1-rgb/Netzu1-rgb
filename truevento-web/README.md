@@ -12,7 +12,7 @@ Esta carpeta es la versión publicada (bajada de truevento.com el 26/11/2026) m�
 - Fotos: redimensionadas (1280 px; equipo 640 px), con un retoque suave de contraste, color y nitidez (−37 % de peso). Los originales están en la versión publicada en Vercel.
 - La sección de la app reemplaza al bloque de las 4 características (intercomunicadores, viento, agua plana, multilingüe), debajo de la portada.
 
-Publicar esta sección junto con la app de alumnos: hasta que app.truevento.com funcione, los dos enlaces no abren nada.
+**Publicada en truevento.com el 26/11/2026**, junto con la app de alumnos en https://app.truevento.com.
 - Sin formulario de reserva: los botones "Reservar" del menú y de cada curso abren la app. En Contacto quedan la ubicación, el WhatsApp, el email y el mapa.
 
 ## Test
@@ -23,4 +23,4 @@ Publicar esta sección junto con la app de alumnos: hasta que app.truevento.com 
 - **6 tamaños de pantalla** (celular de 320 px, iPhone, Android, tablet, computadora y pantalla grande): nada se corre de costado, sin imágenes rotas, el video arranca, texto legible, botones fáciles de tocar, el menú abre y cierra, los botones iPhone/Android llevan a la guía, en cada paso de la guía el teléfono muestra ese paso sin tapar el texto, y sin errores en la consola.
 - **Funciones:** idiomas (se recuerdan al volver), aviso de cookies, ventanas de privacidad y términos (también con Escape), carrusel (flechas, puntos y deslizar con el dedo), enlaces externos, navegador con almacenamiento bloqueado (Safari privado) y la opción de movimiento reducido.
 
-Las capturas quedan en `tests/out/` (fuera de git).
+Las capturas quedan en `tests/out/` (fuera de git). Para revisar la página publicada: `SITE_URL=https://www.truevento.com node tests/site.test.cjs`.
