@@ -146,8 +146,9 @@
         class="hero-bg relative min-h-screen flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
         <!-- Video Background -->
         <video autoplay loop muted playsinline preload="auto" poster="assets/hero-poster.jpg" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
-            <source src="assets/video-720.mp4" type="video/mp4" media="(max-width: 900px)">
-            <source src="assets/video-1080.mp4" type="video/mp4">
+            <!-- HEVC: sharper at the same weight (iPhone, Mac, most current browsers); H.264 for the rest -->
+            <source src="assets/video-hevc.mp4" type='video/mp4; codecs="hvc1"'>
+            <source src="assets/video-h264.mp4" type="video/mp4">
         </video>
 
         <!-- Overlay Gradient -->
