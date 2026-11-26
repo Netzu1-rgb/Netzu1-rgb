@@ -105,16 +105,16 @@ El número de la escuela es el de la página (+54 9 221 545-1174); se cambia con
 
 Si al cargar una clase se escribe como "Otro instructor" un nombre que ya existe (sin importar mayúsculas, acentos o espacios), la app usa ese mismo instructor y avisa "ya está cargado: esta clase se suma a sus horas". La migración `20261126000000_merge_instructors.sql` une los instructores externos que ya estaban repetidos: pasa todas sus clases, liquidaciones, alumnos y accesos a uno solo, sin cambiar ningún importe (prueba: `supabase/tests/merge.sql`).
 
-## Administración de la app de alumnos (cuenta `truevento7`)
+## Administración de la app de alumnos (cuenta `administracion7`)
 
-La cuenta de usuario `truevento7` está creada en producción desde el 26/11/2026 (la contraseña la tiene la escuela; conviene cambiarla después del primer ingreso). Está marcada como **solo alumnos** (`app_metadata.only_app = 'alumnos'`), así que la app de gestión no la deja entrar (`src/App.tsx`); las demás cuentas no cambian.
+La cuenta de usuario `administracion7` (antes `truevento7`; email interno `administracion7@truevento.com`) está creada en producción desde el 26/11/2026 (la contraseña la tiene la escuela; conviene cambiarla después del primer ingreso). Está marcada como **solo alumnos** (`app_metadata.only_app = 'alumnos'`), así que la app de gestión no la deja entrar (`src/App.tsx`); las demás cuentas no cambian.
 
 Al publicar la app de alumnos (después de aplicar las migraciones) se le da el rol de administrador:
 
 ```sql
 insert into public.profiles (id, role, full_name, username, active)
-select id, 'admin', 'Administración Truevento', 'truevento7', true from auth.users
- where email = 'truevento7@truevento.com'
+select id, 'admin', 'Administración Truevento', 'administracion7', true from auth.users
+ where email = 'administracion7@truevento.com'
 on conflict (id) do update set role = 'admin', active = true;
 ```
 
@@ -130,7 +130,7 @@ Ojo: el bloqueo de gestión es de la app (pantalla "sin acceso"); la base de dat
 ## Estado de producción
 
 - **26/11/2026:** aplicadas en producción las 9 migraciones (de `20261124000000_students_app.sql` a `20261202000000_school_rules.sql`), con una copia de seguridad tomada justo antes (fuera de git, en `backups/`). Comprobado después: las 42 clases quedaron idénticas (mismos montos, horas y alumnos) y los 9 registros de "Fran" quedaron en uno solo con sus 9 clases. Publicada la app de gestión nueva en Vercel (proyecto `truevento-app`).
-- **26/11/2026 (noche):** aplicada `20261203000000_agenda_contact.sql` (las 42 clases idénticas), activado el código de administración (2 usos, 30 días), `truevento7` con rol de administradora (gestión la rechaza). Publicadas la app de alumnos (proyecto Vercel `truevento-alumnos`, https://truevento-alumnos.vercel.app, dominio `app.truevento.com` agregado) y la versión nueva de gestión.
+- **26/11/2026 (noche):** la app de alumnos lista solo a los alumnos con cuenta (`20261205000000_app_students.sql`; los de gestión no se borran).  aplicada `20261203000000_agenda_contact.sql` (las 42 clases idénticas), activado el código de administración (2 usos, 30 días), `administracion7` (antes `truevento7`) con rol de administradora (gestión la rechaza). Publicadas la app de alumnos (proyecto Vercel `truevento-alumnos`, https://truevento-alumnos.vercel.app, dominio `app.truevento.com` agregado) y la versión nueva de gestión.
 - Falta: el registro CNAME `app` en Cloudflare (DNS de truevento.com). Notificaciones al celular activadas el 26/11/2026 (claves VAPID en Vercel, `private.push_config` apuntando a gestión). Aplicada `20261204000000_admin_alerts_in_students_app.sql`: los avisos de administración también llegan a la app de alumnos.
 
 ## Puesta en marcha
