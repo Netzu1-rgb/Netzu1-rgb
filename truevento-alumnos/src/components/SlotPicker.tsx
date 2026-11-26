@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as api from '../lib/api'
-import { addDays, DURATIONS, endTime, formatHours, isoDate, START_TIMES, today } from '../lib/format'
+import { addDays, DURATIONS, endTime, formatHours, isoDate, START_TIMES, today, schoolMinutesNow } from '../lib/format'
 import type { BusySlot } from '../lib/types'
 import { Icon, Spinner } from './ui'
 import { locale, t } from '../i18n'
@@ -19,7 +19,7 @@ type TimeState = 'free' | 'taken' | 'noRoom' | 'past'
 /** State of a start time on a day, given the taken classes and the chosen duration. */
 export function timeState(date: string, time: string, hours: number, busy: BusySlot[], allowPast = false): TimeState {
   const start = toMin(time)
-  if (!allowPast && date === today() && start <= new Date().getHours() * 60 + new Date().getMinutes()) return 'past'
+  if (!allowPast && date === today() && start <= schoolMinutesNow()) return 'past'
   const day = busy.filter((b) => b.lesson_date === date)
   const end = start + Math.round(hours * 60)
   if (day.some((b) => { const s = toMin(b.start_time); return start >= s && start < s + Math.round(b.hours * 60) })) return 'taken'

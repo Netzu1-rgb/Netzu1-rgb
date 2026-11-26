@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { t } from '../i18n'
+import { locale, t } from '../i18n'
 
 // ------------------------------------------------------------------ icons (inline, no extra dependency)
 
@@ -101,7 +101,7 @@ export function OfflineNote({ savedAt }: { savedAt: string | null }) {
       <Icon name="cloudOff" className="h-4 w-4 shrink-0" />
       <span>
         Sin conexión: mostrando lo último guardado en este dispositivo
-        {savedAt ? ` (${new Date(savedAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })})` : ''}.
+        {savedAt ? ` (${new Date(savedAt).toLocaleString(locale(), { dateStyle: 'short', timeStyle: 'short' })})` : ''}.
       </span>
     </div>
   )
@@ -156,8 +156,10 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 
 // ------------------------------------------------------------------ dialogs
 
-export function Modal({ open, title, onClose, children, footer }: {
+export function Modal({ open, title, onClose, children, footer, readOnly = false }: {
   open: boolean; title: string; onClose: () => void; children: ReactNode; footer?: ReactNode
+  /** only text inside (rules, privacy): the text area can be focused and scrolled with the keyboard */
+  readOnly?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
@@ -177,7 +179,8 @@ export function Modal({ open, title, onClose, children, footer }: {
               <Icon name="x" />
             </button>
           </div>
-          <div className="overflow-y-auto px-5 py-5">{children}</div>
+          <div className="overflow-y-auto px-5 py-5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+            tabIndex={readOnly ? 0 : undefined} role={readOnly ? 'document' : undefined}>{children}</div>
           {footer && <div className="safe-bottom flex gap-3 border-t border-line px-5 py-4">{footer}</div>}
         </div>
       )}

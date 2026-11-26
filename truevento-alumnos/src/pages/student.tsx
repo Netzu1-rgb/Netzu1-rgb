@@ -25,7 +25,14 @@ function CancelButton({ lesson }: { lesson: Lesson }) {
   const toast = useToast()
   return (
     <button type="button" className="btn-ghost min-h-10 px-4 py-2 text-sm" onClick={async () => {
-      if (!(await confirm({ title: t('classes.cancelTitle'), message: t('classes.cancelMsg', { day: longDay(lesson.lesson_date), at: atTime(lesson.start_time) }), confirmLabel: t('classes.cancelYes'), danger: true }))) return
+      // rule 5: classes are cancelled at least 24 hours before (the school is in Ceará, UTC-3)
+      const start = lesson.start_time ? new Date(`${lesson.lesson_date}T${lesson.start_time.slice(0, 5)}:00-03:00`).getTime() : NaN
+      const late = lesson.status === 'confirmed' && start - Date.now() < 24 * 3600e3
+      const message = <>
+        <p>{t('classes.cancelMsg', { day: longDay(lesson.lesson_date), at: atTime(lesson.start_time) })}</p>
+        {late && <p className="mt-3 rounded-xl bg-coral-soft px-3 py-2 text-sm font-medium text-coral-ink">{t('classes.cancelLate')}</p>}
+      </>
+      if (!(await confirm({ title: t('classes.cancelTitle'), message, confirmLabel: t('classes.cancelYes'), danger: true }))) return
       try {
         await api.cancelLesson(lesson.id, '')
         notifyChange()

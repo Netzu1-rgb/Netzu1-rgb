@@ -23,7 +23,7 @@ export function SchoolRules() {
 
 export function SchoolRulesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} title={t('rules.title')} onClose={onClose}
+    <Modal open={open} title={t('rules.title')} onClose={onClose} readOnly
       footer={<button type="button" className="btn-primary w-full" onClick={onClose}>{t('rules.understood')}</button>}>
       <SchoolRules />
     </Modal>

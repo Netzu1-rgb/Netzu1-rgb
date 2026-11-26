@@ -267,7 +267,16 @@ function readCache(): WindForecastData | null {
   }
 }
 
-export async function fetchWind(fetcher: Fetcher = fetch, now: number = Date.now()): Promise<WindForecastData> {
+// screens that ask for the forecast at the same time share one request
+let inflight: Promise<WindForecastData> | null = null
+
+export function fetchWind(fetcher: Fetcher = fetch, now: number = Date.now()): Promise<WindForecastData> {
+  if (fetcher !== fetch) return loadWind(fetcher, now)
+  inflight ??= loadWind(fetcher, now).finally(() => { inflight = null })
+  return inflight
+}
+
+async function loadWind(fetcher: Fetcher, now: number): Promise<WindForecastData> {
   const cached = readCache()
   if (cached && now - cached.fetchedAt < MAX_AGE) return cached
 

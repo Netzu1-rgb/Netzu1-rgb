@@ -84,7 +84,7 @@ export default function Layout() {
         <div className="mt-auto space-y-2">
           <div className="flex items-center justify-between rounded-xl px-1">
             <span className="truncate text-sm text-brand-100/80">{me.full_name}</span>
-            <LanguageMenu />
+            <LanguageMenu up />
           </div>
           <NavLink to="/ajustes" className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium ${isActive ? 'bg-white/12' : 'text-brand-100/80 hover:bg-white/6'}`}>
             <Icon name="settings" /> {t('nav.settings')}

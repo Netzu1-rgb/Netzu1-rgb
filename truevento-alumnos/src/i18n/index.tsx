@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { DB_MESSAGES, en, es, pt, SKILLS, type Key } from './messages'
 
 export type Lang = 'es' | 'pt' | 'en'
@@ -90,11 +90,19 @@ export function LanguagePicker({ dark = false }: { dark?: boolean }) {
 }
 
 /** Compact language switch for the top bar: shows the current code, opens the three options. */
-export function LanguageMenu() {
+/** `up`: opens above the button (at the bottom of the sidebar). */
+export function LanguageMenu({ up = false }: { up?: boolean }) {
   const { lang, setLang } = useLang()
   const [open, setOpen] = useState(false)
+  // Escape closes the menu
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false) } }
+    document.addEventListener('keydown', onKey, true)
+    return () => document.removeEventListener('keydown', onKey, true)
+  }, [open])
   return (
-    <div className="relative" onKeyDown={(e) => { if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false) } }}>
+    <div className="relative">
       <button type="button" aria-haspopup="menu" aria-expanded={open} aria-label={t('lang.menu')} onClick={() => setOpen(!open)}
         className="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-white transition hover:bg-white/10">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
@@ -105,7 +113,7 @@ export function LanguageMenu() {
       {open && (
         <>
           <button type="button" aria-hidden="true" tabIndex={-1} className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} />
-          <div role="menu" className="pop absolute right-0 top-12 z-50 w-44 overflow-hidden rounded-2xl border border-line bg-surface py-1 text-ink shadow-xl">
+          <div role="menu" className={`pop absolute z-50 ${up ? 'bottom-12 left-0' : 'right-0 top-12'} w-44 overflow-hidden rounded-2xl border border-line bg-surface py-1 text-ink shadow-xl`}>
             {LANGS.map((l) => (
               <button key={l.value} type="button" role="menuitemradio" aria-checked={lang === l.value} lang={l.value}
                 onClick={() => { setOpen(false); setLang(l.value) }}

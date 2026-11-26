@@ -7,8 +7,22 @@ export function isoDate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+/** The school is in Ceará (UTC−3, no daylight saving): "today" is the school's day,
+ *  also for someone opening the app from another time zone. */
+const SCHOOL_UTC_OFFSET_MIN = -180
+function schoolClock(now = new Date()): Date {
+  return new Date(now.getTime() + SCHOOL_UTC_OFFSET_MIN * 60_000)
+}
+
 export function today(): string {
-  return isoDate(new Date())
+  const d = schoolClock()
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
+}
+
+/** Minutes since midnight at the school right now. */
+export function schoolMinutesNow(): number {
+  const d = schoolClock()
+  return d.getUTCHours() * 60 + d.getUTCMinutes()
 }
 
 export function addDays(iso: string, days: number): string {

@@ -7,7 +7,7 @@ export const schoolWhatsAppLink = () => `https://wa.me/${SCHOOL_WHATSAPP.replace
 
 export function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} title={t('privacy.title')} onClose={onClose}
+    <Modal open={open} title={t('privacy.title')} onClose={onClose} readOnly
       footer={<button type="button" className="btn-primary w-full" onClick={onClose}>{t('common.close')}</button>}>
       <p className="leading-relaxed text-ink-soft">{t('privacy.body')}</p>
     </Modal>

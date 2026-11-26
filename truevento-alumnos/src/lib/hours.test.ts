@@ -51,3 +51,17 @@ describe('languages', () => {
     expect(dbMessage('Clase inexistente.')).toBe('Clase inexistente.')
   })
 })
+
+describe("the school's day", () => {
+  it('is the day in Ceará, wherever the phone is', async () => {
+    const { vi } = await import('vitest')
+    const { today, schoolMinutesNow } = await import('./format')
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-11-26T02:30:00Z')) // 23:30 of the 25th in Ceará, already the 26th in Europe
+    expect(today()).toBe('2026-11-25')
+    expect(schoolMinutesNow()).toBe(23 * 60 + 30)
+    vi.setSystemTime(new Date('2026-11-26T03:10:00Z')) // 00:10 of the 26th in Ceará
+    expect(today()).toBe('2026-11-26')
+    vi.useRealTimers()
+  })
+})
