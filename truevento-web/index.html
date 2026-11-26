@@ -79,7 +79,7 @@
                         class="px-2.5 py-1 rounded-full text-white/60 hover:text-white transition-all">EN</button>
                 </div>
 
-                <a href="#contact" data-i18n="nav_book"
+                <a href="https://app.truevento.com" target="_blank" rel="noopener" data-i18n="nav_book"
                     class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 lg:px-8 py-2.5 lg:py-3 rounded-full font-bold transition-all shadow-[0_0_20px_rgba(14,165,233,0.35)] hover:shadow-[0_0_30px_rgba(14,165,233,0.6)] transform hover:-translate-y-0.5 text-sm lg:text-base">Reservar</a>
             </div>
 
@@ -136,7 +136,7 @@
             class="text-white text-2xl font-display font-bold mb-6 hover:text-primary mobile-link transition-colors">Instructores</a>
         <a href="#app" data-i18n="nav_app"
             class="text-white text-2xl font-display font-bold mb-8 hover:text-primary mobile-link transition-colors">App</a>
-        <a href="#contact" data-i18n="nav_book_spot"
+        <a href="https://app.truevento.com" target="_blank" rel="noopener" data-i18n="nav_book_spot"
             class="bg-gradient-to-r from-primary to-secondary text-white px-9 py-3.5 rounded-full font-bold text-lg mobile-link shadow-[0_0_25px_rgba(14,165,233,0.4)]">Reservar
             Spot</a>
     </div>
@@ -400,7 +400,7 @@
                                         data-i18n="c1_b3">Primeras sensaciones con el equipo de kite</span></li>
                             </ul>
                         </div>
-                        <a href="#contact" data-i18n="course_btn_reserve" onclick="selectCourseOption('ninos')"
+                        <a href="https://app.truevento.com" target="_blank" rel="noopener" data-i18n="course_btn_reserve"
                             class="block w-full text-center bg-primary hover:bg-secondary text-white font-bold py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(14,165,233,0.25)] hover:shadow-[0_0_25px_rgba(14,165,233,0.45)] mt-auto text-sm">Reservar
                             Curso</a>
                     </div>
@@ -432,7 +432,7 @@
                                         data-i18n="c2_b3">Transiciones básicas sin frenar</span></li>
                             </ul>
                         </div>
-                        <a href="#contact" data-i18n="course_btn_reserve" onclick="selectCourseOption('inicial')"
+                        <a href="https://app.truevento.com" target="_blank" rel="noopener" data-i18n="course_btn_reserve"
                             class="block w-full text-center bg-primary hover:bg-secondary text-white font-bold py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(14,165,233,0.25)] hover:shadow-[0_0_25px_rgba(14,165,233,0.45)] mt-auto text-sm">Reservar
                             Curso</a>
                     </div>
@@ -464,7 +464,7 @@
                                         data-i18n="c3_b3">Navegada inolvidable en spot de agua plana</span></li>
                             </ul>
                         </div>
-                        <a href="#contact" data-i18n="course_btn_reserve" onclick="selectCourseOption('lagoa')"
+                        <a href="https://app.truevento.com" target="_blank" rel="noopener" data-i18n="course_btn_reserve"
                             class="block w-full text-center bg-primary hover:bg-secondary text-white font-bold py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(14,165,233,0.25)] hover:shadow-[0_0_25px_rgba(14,165,233,0.45)] mt-auto text-sm">Reservar
                             Curso</a>
                     </div>
@@ -537,95 +537,26 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
-                <!-- Contact Form -->
-                <div class="reveal">
+                <!-- Book in the app (no form on the website) -->
+                <div class="reveal flex flex-col justify-center">
                     <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block"
                         data-i18n="contact_tag">Contacto</span>
-                    <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-8" data-i18n="contact_title">
-                        Reserva tu spot</h2>
-
-                    <form class="space-y-5" id="contact-form" onsubmit="submitContactForm(event)">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="input-float">
-                                <input type="text" id="name" placeholder=" " required>
-                                <label for="name" data-i18n="form_name">Nombre Completo</label>
-                            </div>
-                            <div class="input-float">
-                                <input type="email" id="email" placeholder=" " required>
-                                <label for="email" data-i18n="form_email">Correo Electrónico</label>
-                            </div>
-                        </div>
-                        <div class="input-float">
-                            <input type="tel" id="phone" placeholder=" ">
-                            <label for="phone" data-i18n="form_phone">Teléfono / WhatsApp</label>
-                        </div>
-                        <!-- Modern Custom Dropdown Selector -->
-                        <div class="relative" id="custom-course-dropdown">
-                            <input type="hidden" id="course-select" name="course" value="">
-                            <button type="button" id="course-dropdown-btn"
-                                class="custom-dropdown-btn w-full p-4 rounded-xl text-left flex items-center justify-between text-slate-300 focus:outline-none cursor-pointer">
-                                <span id="course-selected-text" class="text-slate-400 select-none" data-i18n="opt_select">
-                                    Selecciona tu nivel/curso
-                                </span>
-                                <svg id="course-arrow-icon" class="w-5 h-5 text-primary transition-transform duration-300 shrink-0 ml-2"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-
-                            <!-- Dropdown Menu -->
-                            <div id="course-dropdown-menu"
-                                class="custom-dropdown-menu absolute left-0 right-0 top-[calc(100%+8px)] z-30 rounded-2xl overflow-hidden py-2 hidden opacity-0 scale-95 transition-all">
-                                <div class="px-3 py-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase" data-i18n="opt_select">
-                                    Selecciona tu nivel/curso
-                                </div>
-                                <div class="h-px bg-white/10 mx-2 my-1"></div>
-                                <div class="custom-dropdown-option px-4 py-3 cursor-pointer text-slate-200 flex items-center justify-between text-sm"
-                                    data-value="ninos" onclick="selectCourseOption('ninos')">
-                                    <span data-i18n="opt_ninos">Clases para niños</span>
-                                    <span class="w-2 h-2 rounded-full bg-pink-400/80 shadow-[0_0_8px_rgba(244,114,182,0.6)]"></span>
-                                </div>
-                                <div class="custom-dropdown-option px-4 py-3 cursor-pointer text-slate-200 flex items-center justify-between text-sm"
-                                    data-value="inicial" onclick="selectCourseOption('inicial')">
-                                    <span data-i18n="opt_inicial">Nivel inicial</span>
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span>
-                                </div>
-                                <div class="custom-dropdown-option px-4 py-3 cursor-pointer text-slate-200 flex items-center justify-between text-sm"
-                                    data-value="intermedio" onclick="selectCourseOption('intermedio')">
-                                    <span data-i18n="opt_intermedio">Nivel intermedio</span>
-                                    <span class="w-2 h-2 rounded-full bg-sky-400/80 shadow-[0_0_8px_rgba(56,189,248,0.6)]"></span>
-                                </div>
-                                <div class="custom-dropdown-option px-4 py-3 cursor-pointer text-slate-200 flex items-center justify-between text-sm"
-                                    data-value="avanzado" onclick="selectCourseOption('avanzado')">
-                                    <span data-i18n="opt_avanzado">Nivel avanzado</span>
-                                    <span class="w-2 h-2 rounded-full bg-indigo-400/80 shadow-[0_0_8px_rgba(129,140,248,0.6)]"></span>
-                                </div>
-                                <div class="custom-dropdown-option px-4 py-3 cursor-pointer text-slate-200 flex items-center justify-between text-sm"
-                                    data-value="lagoa" onclick="selectCourseOption('lagoa')">
-                                    <span data-i18n="opt_lagoa">Reservar sesión en la lagoa</span>
-                                    <span class="w-2 h-2 rounded-full bg-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="input-float">
-                            <textarea id="message" rows="4" placeholder=" " required></textarea>
-                            <label for="message" data-i18n="form_message">Mensaje (Fechas deseadas, dudas, etc.)</label>
-                        </div>
-
-                        <div class="flex items-start gap-3 mt-4 mb-6">
-                            <input type="checkbox" id="privacy"
-                                class="mt-1 w-4 h-4 bg-[#1e293b] border-slate-600 rounded text-primary focus:ring-primary focus:ring-offset-[#0b1121]"
-                                required>
-                            <label for="privacy" class="text-sm text-slate-400" data-i18n="form_privacy">He leído y
-                                acepto la política de
-                                privacidad. Acepto ser contactado respecto a mi reserva.</label>
-                        </div>
-
-                        <button type="submit" data-i18n="form_submit"
-                            class="w-full bg-primary hover:bg-secondary text-white font-bold py-4 rounded-xl transition-colors shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)] text-lg">
-                            Enviar Solicitud
-                        </button>
-                    </form>
+                    <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-5" data-i18n="contact_title">Reservá tu clase en la app</h2>
+                    <p class="text-slate-400 text-lg mb-8 max-w-xl" data-i18n="contact_desc">Pedí tu clase desde la app: elegís el día y cuántas horas, y te escribimos por WhatsApp para coordinar el horario y el precio. Ahí también ves tus clases y tu progreso.</p>
+                    <ol class="space-y-4 mb-9 max-w-xl">
+                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">1</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s1">Abrí la app y creá tu cuenta (es gratis).</span></li>
+                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">2</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s2">Tocá “Pedir clase” y elegí el día y las horas.</span></li>
+                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">3</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s3">Te escribimos por WhatsApp y confirmamos tu clase.</span></li>
+                    </ol>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="https://app.truevento.com" target="_blank" rel="noopener"
+                            class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(14,165,233,0.4)] hover:shadow-[0_0_35px_rgba(14,165,233,0.7)] transition-all">
+                            <span data-i18n="contact_app_btn">Pedir mi clase en la app</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        <a href="https://app.truevento.com/instalar" target="_blank" rel="noopener"
+                            class="border border-slate-600/70 hover:border-primary text-white px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all" data-i18n="contact_install_btn">Cómo instalarla</a>
+                    </div>
                 </div>
 
                 <!-- Info & Map -->
@@ -748,7 +679,7 @@
             <h3 class="text-2xl font-display font-bold text-white mb-6">Política de Privacidad</h3>
             <div class="space-y-4 text-sm md:text-base leading-relaxed">
                 <p><strong class="text-white">Responsable:</strong> True Vento Kiteschool. Dirección: Ilha do Guajirú, Cruz, Ceará, Brasil.</p>
-                <p><strong class="text-white">Datos que recopilamos:</strong> Solo información proporcionada voluntariamente en el formulario de contacto (Nombre, Email, WhatsApp, Fechas de viaje) y datos técnicos de navegación (Cookies).</p>
+                <p><strong class="text-white">Datos que recopilamos:</strong> Esta página no pide datos personales: solo usa cookies técnicas para funcionar y recordar tu idioma. Las reservas se hacen en la app de alumnos (app.truevento.com), que tiene su propia política de privacidad.</p>
                 <p><strong class="text-white">Uso de los datos:</strong> Exclusivamente para gestionar consultas y coordinar clases. No compartimos ni vendemos datos a terceros.</p>
                 <p><strong class="text-white">Tus derechos:</strong> Puedes solicitar la eliminación o revisión de tus datos en cualquier momento escribiendo a nuestro email de contacto.</p>
             </div>
@@ -770,59 +701,6 @@
     </div>
 
     <!-- Booking Success Confirmation Modal -->
-    <div id="successModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onclick="closeModal('successModal')"></div>
-        <div class="relative bg-gradient-to-b from-[#1e293b] to-[#0f172a] text-slate-200 w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 border border-primary/30 transform scale-95 opacity-0 transition-all duration-300">
-            <button onclick="closeModal('successModal')" class="absolute top-5 right-5 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
-                ✕
-            </button>
-
-            <!-- Success Icon -->
-            <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-[0_0_20px_rgba(52,211,153,0.3)]">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-
-            <div class="text-center mb-6">
-                <h3 class="text-2xl sm:text-3xl font-display font-black text-white mb-2" id="modal-success-title">
-                    ¡Gracias por elegirnos!
-                </h3>
-                <p class="text-slate-300 text-sm sm:text-base leading-relaxed" id="modal-success-desc">
-                    En Truevento agradecemos tu solicitud de reserva. Trabajamos con el mayor profesionalismo para garantizarte una experiencia cómoda e inolvidable. Nos pondremos en contacto a la brevedad.
-                </p>
-            </div>
-
-            <!-- Summary Card -->
-            <div class="bg-black/30 rounded-2xl p-4 mb-6 border border-white/5 space-y-2 text-xs sm:text-sm text-left">
-                <div class="flex justify-between text-slate-400">
-                    <span>Nombre:</span>
-                    <strong class="text-white font-medium" id="summary-name">-</strong>
-                </div>
-                <div class="flex justify-between text-slate-400">
-                    <span>Email:</span>
-                    <strong class="text-white font-medium" id="summary-email">-</strong>
-                </div>
-                <div class="flex justify-between text-slate-400">
-                    <span>Tel / WhatsApp:</span>
-                    <strong class="text-white font-medium" id="summary-phone">-</strong>
-                </div>
-                <div class="flex justify-between text-slate-400">
-                    <span>Nivel / Interés:</span>
-                    <strong class="text-primary font-semibold" id="summary-course">-</strong>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="space-y-3">
-                <button onclick="closeModal('successModal')"
-                    class="w-full flex items-center justify-center gap-3 bg-primary hover:bg-secondary text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(14,165,233,0.35)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] transform hover:-translate-y-0.5">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Cookie Consent Banner -->
     <div id="cookieBanner" class="fixed bottom-0 left-0 w-full bg-[#1e293b] border-t border-slate-700/60 shadow-lg z-[90] p-4 transform translate-y-full transition-transform duration-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-slate-300 text-sm text-center sm:text-left flex-1">

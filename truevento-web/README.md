@@ -9,3 +9,4 @@ Esta carpeta es la versión publicada (bajada de truevento.com el 26/11/2026) m�
 - La sección de la app reemplaza al bloque de las 4 características (intercomunicadores, viento, agua plana, multilingüe), debajo de la portada.
 
 Publicar esta sección junto con la app de alumnos: hasta que app.truevento.com funcione, los dos enlaces no abren nada.
+- Sin formulario de reserva: la sección Contacto invita a reservar en la app (pasos y botones), y los botones "Reservar" del menú y de cada curso abren la app. Quedan la ubicación, el WhatsApp, el email y el mapa.
