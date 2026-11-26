@@ -353,3 +353,9 @@ body.menu-open #cookieBanner, body.menu-open a[aria-label="Contactar por WhatsAp
     a[aria-label="Contactar por WhatsApp"] { animation: none !important }
 }
 
+.tm-ready{grid-column:1/-1;margin:0 0 2px;font:800 clamp(1.4rem,3vw,1.9rem)/1.2 'Outfit',sans-serif;color:#fff}
+.tm-applink.main{padding:18px 20px}
+.tm-applink.main strong{font-size:18px}
+.tm-applink.main small b{font-weight:700;opacity:1}
+.tm-applink-go{margin-left:auto;width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);font-weight:700;font-size:18px}
+@media(max-width:767px){.tm-links{margin-top:0}}

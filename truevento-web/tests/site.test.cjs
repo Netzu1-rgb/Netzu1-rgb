@@ -229,7 +229,7 @@ async function behaviourChecks(browser, base) {
       const st = await page.evaluate(() => ({ html: document.documentElement.lang, title: document.querySelector('[data-i18n=app_title]').textContent, guide: document.querySelector('#instalar [data-tm=title]').textContent, step: document.querySelector('#instalar .tm-card h3').textContent }))
       check(st.html === lang, `idioma ${lang}: <html lang> no cambia`)
       check(st.guide && st.step, `idioma ${lang}: la guía queda vacía`)
-      if (lang !== 'es') check(st.title !== 'Todo tu kite en una app', `idioma ${lang}: el título sigue en español`)
+      check(st.title === 'Truevento App', `idioma ${lang}: el título de la app cambió`)
     }
     await page.reload(); await page.waitForTimeout(500)
     check(await page.evaluate(() => document.documentElement.lang) === 'en', 'el idioma elegido no se recuerda al volver')

@@ -4,9 +4,9 @@
   const APP = 'app.truevento.com'
   const IMG = { icon: 'assets/app-icon.png', shot: { es: 'assets/tut-es.jpg', pt: 'assets/tut-pt.jpg', en: 'assets/tut-en.jpg' } }
   const UI = {
-    es: { tag: 'Instalá la app', title: 'Tené Truevento en tu pantalla de inicio', desc: 'Seguí los pasos: deslizá hacia abajo y el celular te muestra dónde tocar. Es un minuto y no hace falta ninguna tienda de apps.', step: 'Paso', of: 'de', open: 'Abrir la app', openSub: 'Creá tu cuenta y pedí tu clase', guide: 'Tutorial para compartir', guideSub: 'Mandáselo a quien quieras' },
-    pt: { tag: 'Instale o app', title: 'Tenha a Truevento na sua tela inicial', desc: 'Siga os passos: role para baixo e o celular mostra onde tocar. Leva um minuto e não precisa de loja de apps.', step: 'Passo', of: 'de', open: 'Abrir o app', openSub: 'Crie sua conta e peça sua aula', guide: 'Tutorial para compartilhar', guideSub: 'Envie para quem quiser' },
-    en: { tag: 'Install the app', title: 'Put Truevento on your home screen', desc: 'Follow the steps: scroll down and the phone shows you where to tap. It takes a minute and no app store is needed.', step: 'Step', of: 'of', open: 'Open the app', openSub: 'Create your account and book', guide: 'Shareable guide', guideSub: 'Send it to anyone' },
+    es: { tag: 'Instalá la app', title: 'Tené Truevento en tu pantalla de inicio', desc: 'Seguí los pasos: deslizá hacia abajo y el celular te muestra dónde tocar. Es un minuto y no hace falta ninguna tienda de apps.', step: 'Paso', of: 'de', ready: '¿Listo? Descargá la app', open: 'Descargar Truevento App', openSub: 'Gratis, desde', guide: 'Tutorial para compartir', guideSub: 'Mandáselo a quien quieras' },
+    pt: { tag: 'Instale o app', title: 'Tenha a Truevento na sua tela inicial', desc: 'Siga os passos: role para baixo e o celular mostra onde tocar. Leva um minuto e não precisa de loja de apps.', step: 'Passo', of: 'de', ready: 'Pronto? Baixe o app', open: 'Baixar Truevento App', openSub: 'Grátis, em', guide: 'Tutorial para compartilhar', guideSub: 'Envie para quem quiser' },
+    en: { tag: 'Install the app', title: 'Put Truevento on your home screen', desc: 'Follow the steps: scroll down and the phone shows you where to tap. It takes a minute and no app store is needed.', step: 'Step', of: 'of', ready: 'Ready? Download the app', open: 'Download Truevento App', openSub: 'Free, at', guide: 'Shareable guide', guideSub: 'Send it to anyone' },
   }
 const TT = {
     es: {
@@ -177,7 +177,8 @@ const TT = {
       ${steps.map((_, i) => `<div class="tm-layer${i === active ? ' on' : ''}" data-i="${i}">${screen(i)}</div>`).join('')}</div></div>`
     const links = root.querySelector('[data-tm="links"]')
     if (links) links.innerHTML = `
-      <a class="tm-applink main" href="https://${APP}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${u.open}</strong><small>${u.openSub} · ${APP}</small></span></a>
+      <h3 class="tm-ready">${u.ready}</h3>
+      <a class="tm-applink main" href="https://${APP}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${u.open}</strong><small>${u.openSub} <b>${APP}</b></small></span><span class="tm-applink-go" aria-hidden="true">↓</span></a>
       <a class="tm-applink" href="https://${APP}/instalar" target="_blank" rel="noopener"><span class="tm-applink-ico">↗</span><span><strong>${u.guide}</strong><small>${u.guideSub}</small></span></a>`
     document.querySelectorAll('[data-tm="dots"]').forEach((d) => { d.innerHTML = steps.map((_, i) => `<span class="${i === active ? 'on' : ''}"></span>`).join('') })
     fit()
