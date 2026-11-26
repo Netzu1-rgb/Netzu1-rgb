@@ -105,6 +105,21 @@ El número de la escuela es el de la página (+54 9 221 545-1174); se cambia con
 
 Si al cargar una clase se escribe como "Otro instructor" un nombre que ya existe (sin importar mayúsculas, acentos o espacios), la app usa ese mismo instructor y avisa "ya está cargado: esta clase se suma a sus horas". La migración `20261126000000_merge_instructors.sql` une los instructores externos que ya estaban repetidos: pasa todas sus clases, liquidaciones, alumnos y accesos a uno solo, sin cambiar ningún importe (prueba: `supabase/tests/merge.sql`).
 
+## Administración de la app de alumnos (cuenta `truevento7`)
+
+La cuenta de usuario `truevento7` está creada en producción desde el 26/11/2026 (la contraseña la tiene la escuela; conviene cambiarla después del primer ingreso). Está marcada como **solo alumnos** (`app_metadata.only_app = 'alumnos'`), así que la app de gestión no la deja entrar (`src/App.tsx`); las demás cuentas no cambian.
+
+Al publicar la app de alumnos (después de aplicar las migraciones) se le da el rol de administrador:
+
+```sql
+insert into public.profiles (id, role, full_name, username, active)
+select id, 'admin', 'Administración Truevento', 'truevento7', true from auth.users
+ where email = 'truevento7@truevento.com'
+on conflict (id) do update set role = 'admin', active = true;
+```
+
+Ojo: el bloqueo de gestión es de la app (pantalla "sin acceso"); la base de datos es la misma para las dos apps, y un administrador tiene permisos sobre todos los datos.
+
 ## Funcionamiento sin conexión
 
 - El service worker guarda la app completa: abre sin internet.

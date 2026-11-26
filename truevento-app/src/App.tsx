@@ -74,6 +74,8 @@ function Screens() {
 
   if (!session) return setupCompleted === false ? <FirstAdmin /> : <Login />
   if (setupCompleted === false) return <Setup />
+  // accounts made only for the students app (e.g. its admin) do not enter here
+  if (session.user.app_metadata?.only_app === 'alumnos') return <NoAccess />
   if (!profile?.role || !profile.active) return <NoAccess />
 
   return (
