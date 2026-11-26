@@ -7,6 +7,7 @@ import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals
 import { friendlyError } from '../lib/errors'
 import { EXPERIENCE_LABEL, type ClassRequest, type Instructor, type PricelessStudent } from '../lib/types'
 import { NotificationsCard } from '../components/NotificationsCard'
+import { UpcomingSection } from '../components/Upcoming'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
 import { STUDENTS_APP_URL } from '../components/InviteButton'
 import { requestsChanged } from '../lib/requestCount'
@@ -64,6 +65,7 @@ export default function Requests() {
           {list.map((r) => <RequestCard key={r.id} request={r} instructors={active} onDone={reloadAll} />)}
         </div>
       )}
+      <UpcomingSection />
     </div>
   )
 }
@@ -181,7 +183,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       {/* 1. agree on the price with the student; 2. write it below and confirm */}
       {agreeLink ? (
         <a href={agreeLink} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, agreeLink)}
-          className="btn mt-4 w-full bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110">
+          className="btn mt-4 w-full bg-[#11803f] text-white shadow-[0_8px_20px_-8px_rgba(17,128,63,0.55)] hover:brightness-110">
           <Icon name="whatsapp" /> Coordinar horario y precio por WhatsApp
         </a>
       ) : (

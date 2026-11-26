@@ -75,6 +75,10 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Cambiar la fecha de una clase (solo administración)
+
+Si llueve o el viento no acompaña, en **Solicitudes → Próximas clases → Cambiar fecha** se elige el motivo (lluvia, sin viento, viento muy fuerte u otro), el nuevo día y el horario (los ocupados aparecen bloqueados). El alumno recibe la notificación con el motivo en su idioma y queda el botón **Avisar por WhatsApp** con el mensaje armado. Los instructores no pueden mover clases: confirman los pedidos en el día que pidió el alumno y pueden cancelar. En la app de alumnos, "Cambiar fecha" aparece solo para administradores. Migración: `20261130000000_admin_reschedule.sql` (prueba: `supabase/tests/reschedule.sql`).
+
 ## Horario y precio por WhatsApp
 
 El alumno pide solo **el día y cuántas horas**; el **horario y el precio** se coordinan por WhatsApp. En **Solicitudes** se elige el *Horario acordado* (los horarios ocupados de ese día aparecen bloqueados), la duración, el precio y el instructor, y se confirma. Un pedido sin horario no ocupa lugar en el calendario; una clase confirmada siempre tiene horario. Migración: `20261129000000_time_by_whatsapp.sql` (prueba: `supabase/tests/time_whatsapp.sql`).

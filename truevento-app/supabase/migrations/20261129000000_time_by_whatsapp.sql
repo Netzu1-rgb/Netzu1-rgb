@@ -100,6 +100,9 @@ declare
   at_es   text := coalesce(' a las ' || to_char(new.start_time, 'HH24:MI'), ' (horario a coordinar)');
   at_pt   text := coalesce(' às ' || to_char(new.start_time, 'HH24:MI'), ' (horário a combinar)');
   at_en   text := coalesce(' at ' || to_char(new.start_time, 'HH24:MI'), ' (time to be agreed)');
+  -- the school's reason when it moves a class (rain, no wind...)
+  why     text := case when tg_op = 'UPDATE' and new.staff_note is distinct from old.staff_note
+                        then coalesce(' · ' || new.staff_note, '') else '' end;
   dur     text := floor(new.hours)::int
                   || coalesce(nullif(':' || lpad(round((new.hours - floor(new.hours)) * 60)::int::text, 2, '0'), ':00'), '') || ' h';
   admins  uuid[];
@@ -131,9 +134,9 @@ begin
         and (old.lesson_date, old.start_time, old.hours) is distinct from (new.lesson_date, new.start_time, new.hours) then
     perform private.notify(owners, 'alumnos', jsonb_build_object(
       'url', '/agenda', 'tag', 'lesson-' || new.id,
-      'es', jsonb_build_object('title', 'Tu clase cambió de horario', 'body', 'Ahora: ' || day || ' a las ' || hhmm),
-      'pt', jsonb_build_object('title', 'Sua aula mudou de horário', 'body', 'Agora: ' || day || ' às ' || hhmm),
-      'en', jsonb_build_object('title', 'Your lesson was moved', 'body', 'Now: ' || day || ' at ' || hhmm)));
+      'es', jsonb_build_object('title', 'Cambiamos tu clase', 'body', 'Ahora: ' || day || ' a las ' || hhmm || why),
+      'pt', jsonb_build_object('title', 'Mudamos sua aula', 'body', 'Agora: ' || day || ' às ' || hhmm || why),
+      'en', jsonb_build_object('title', 'Your lesson was moved', 'body', 'Now: ' || day || ' at ' || hhmm || why)));
 
   elsif tg_op = 'UPDATE' and new.status = 'cancelled' and old.status in ('requested', 'confirmed') then
     if by_student then

@@ -46,3 +46,40 @@ export function requestMessage(o: {
     (o.price ? ` El precio es de ${o.price} por hora.` : ' También acordamos el precio por hora.') +
     (both ? ' ¿Estás de acuerdo? Una vez que nos confirmes, reservamos tu clase.' : '')
 }
+
+/** Why a class is moved, in the student's language (shown in their app and notification). */
+export const RESCHEDULE_REASONS = {
+  rain: { label: 'Lluvia', es: 'Pronóstico de lluvia', pt: 'Previsão de chuva', en: 'Rain forecast' },
+  noWind: { label: 'Sin viento', es: 'Sin viento suficiente', pt: 'Sem vento suficiente', en: 'Not enough wind' },
+  strongWind: { label: 'Viento muy fuerte', es: 'Viento demasiado fuerte', pt: 'Vento forte demais', en: 'Wind too strong' },
+  other: { label: 'Otro motivo', es: '', pt: '', en: '' },
+} as const
+export type RescheduleReason = keyof typeof RESCHEDULE_REASONS
+
+export function studentLang(lang?: string | null, phone?: string | null): Lang {
+  return lang === 'es' || lang === 'pt' || lang === 'en' ? lang : langFromPhone(phone)
+}
+
+const WHY: Record<Exclude<RescheduleReason, 'other'>, Record<Lang, string>> = {
+  rain: { es: 'Por el pronóstico de lluvia', pt: 'Por causa da previsão de chuva', en: 'Because of the rain forecast' },
+  noWind: { es: 'Por falta de viento', pt: 'Por falta de vento', en: 'Because there is not enough wind' },
+  strongWind: { es: 'Por el viento demasiado fuerte', pt: 'Por causa do vento forte demais', en: 'Because the wind is too strong' },
+}
+
+/** WhatsApp message telling the student their class was moved (and why). */
+export function rescheduleMessage(o: {
+  studentName: string; lang?: string | null; phone?: string | null; date: string; time: string; reason: RescheduleReason
+}): string {
+  const lang = studentLang(o.lang, o.phone)
+  const first = o.studentName.trim().split(/\s+/)[0]
+  const [y, m, d] = o.date.split('-').map(Number)
+  const day = `${DAYS[lang][new Date(y, m - 1, d).getDay()]} ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`
+  const why = o.reason === 'other' ? null : WHY[o.reason][lang]
+  if (lang === 'pt') {
+    return `Olá, ${first}! Aqui é a Truevento Kiteschool. ${why ? `${why}, mudamos` : 'Precisamos mudar'} sua aula para ${day} às ${o.time}. Fica bom para você?`
+  }
+  if (lang === 'en') {
+    return `Hello ${first}! This is Truevento Kiteschool. ${why ? `${why}, we moved` : 'We had to move'} your lesson to ${day} at ${o.time}. Does that work for you?`
+  }
+  return `¡Hola, ${first}! Te escribimos de Truevento Kiteschool. ${why ? `${why}, pasamos` : 'Tuvimos que pasar'} tu clase al ${day} a las ${o.time}. ¿Te queda bien?`
+}

@@ -121,6 +121,17 @@ export interface ClassRequest {
   student: Student
 }
 
+/** A confirmed class from today on (scheduled in the students app or confirmed from a request). */
+export interface UpcomingLesson {
+  id: string
+  lesson_date: string
+  start_time: string
+  hours: number
+  staff_note: string | null
+  instructor_name: string | null
+  student: Student
+}
+
 /** A student with confirmed classes and no price per hour yet: those classes stay pending. */
 export interface PricelessStudent {
   student: Student

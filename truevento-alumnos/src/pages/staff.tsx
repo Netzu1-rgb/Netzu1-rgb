@@ -58,7 +58,8 @@ function useLessonActions() {
           ? <span className="flex min-h-10 items-center text-sm text-ink-mute">{t('staff.needPrice')}</span>
           : <button type="button" className={`btn-primary ${small}`} onClick={() => setClosing(l)}><Icon name="check" className="h-4 w-4" /> {t('staff.given')}</button>
         )}
-        <button type="button" className={`btn-ghost ${small}`} onClick={() => setEditing(l)}>{t('staff.change')}</button>
+        {/* moving a class to another day or time is for the school's admins */}
+        {me.isAdmin && <button type="button" className={`btn-ghost ${small}`} onClick={() => setEditing(l)}>{t('staff.change')}</button>}
         <button type="button" className={`btn-ghost ${small}`} onClick={() => void cancel(l)}>{t('staff.cancel')}</button>
       </>
     }

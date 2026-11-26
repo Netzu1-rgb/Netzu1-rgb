@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { requestMessage } from './requestMessage'
+import { requestMessage, rescheduleMessage } from './requestMessage'
 
 const base = { studentName: 'Julia Paz', date: '2026-11-28', hours: 1.5 }
 
@@ -17,5 +17,18 @@ describe('WhatsApp message to the student', () => {
   it('guesses the language from the number when unknown', () => {
     expect(requestMessage({ ...base, phone: '+55 88 99999-1111' })).toMatch(/^Olá, Julia!/)
     expect(requestMessage({ ...base, phone: '+54 9 11 5555-2222' })).toMatch(/^¡Hola, Julia!/)
+  })
+})
+
+describe('message when the school moves a class', () => {
+  const b = { studentName: 'Julia Paz', date: '2026-11-29', time: '15:00' }
+  it('says why, in the student language', () => {
+    expect(rescheduleMessage({ ...b, lang: 'es', reason: 'rain' })).toBe(
+      '¡Hola, Julia! Te escribimos de Truevento Kiteschool. Por el pronóstico de lluvia, pasamos tu clase al domingo 29/11 a las 15:00. ¿Te queda bien?')
+    expect(rescheduleMessage({ ...b, lang: 'pt', reason: 'noWind' })).toBe(
+      'Olá, Julia! Aqui é a Truevento Kiteschool. Por falta de vento, mudamos sua aula para domingo 29/11 às 15:00. Fica bom para você?')
+    expect(rescheduleMessage({ ...b, lang: 'en', reason: 'strongWind' })).toBe(
+      'Hello Julia! This is Truevento Kiteschool. Because the wind is too strong, we moved your lesson to Sunday 29/11 at 15:00. Does that work for you?')
+    expect(rescheduleMessage({ ...b, lang: 'es', reason: 'other' })).toContain('Tuvimos que pasar tu clase al domingo 29/11 a las 15:00.')
   })
 })

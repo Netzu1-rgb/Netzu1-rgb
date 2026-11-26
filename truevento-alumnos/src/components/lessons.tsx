@@ -175,7 +175,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
       <Modal open={open} title={t('ask.title')} onClose={onClose}
         footer={<button type="button" className="btn-ghost w-full" onClick={onClose}>{t('ask.done')}</button>}>
         <div className="page-enter space-y-4 text-center">
-          <span className="pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#1fa855] text-white"><Icon name="check" className="h-8 w-8" /></span>
+          <span className="pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#11803f] text-white"><Icon name="check" className="h-8 w-8" /></span>
           <h3 className="text-xl font-bold text-heading">{t('ask.sentTitle')}</h3>
           <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {formatHours(slot.hours)}</p>
           <p className="text-ink-soft">{t('ask.sentText')}</p>
@@ -280,7 +280,7 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
     setStudent(lesson?.student_id ?? '')
     setInstructor(lesson?.instructor_id ?? (isAdmin ? '' : myInstructorId ?? ''))
     setSlot(lesson
-      ? { date: lesson.lesson_date < today() ? today() : lesson.lesson_date, time: shortTime(lesson.start_time), hours: lesson.hours }
+      ? { date: lesson.lesson_date < today() && isAdmin ? today() : lesson.lesson_date, time: shortTime(lesson.start_time), hours: lesson.hours }
       : { date: today(), time: '', hours: 1.5 })
     setNote('')
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
@@ -328,7 +328,13 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
             </select>
           )}
         </Field>
-        {open && <SlotPicker value={slot} onChange={setSlot} excludeId={lesson?.id ?? null} refreshKey={conflicts} allowPast />}
+        {open && (lesson && !isAdmin
+          // instructors confirm on the day the student asked for: only the time is chosen
+          ? <>
+              <p className="rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-heading">{longDay(slot.date, true)}</p>
+              <SlotPicker part="time" value={slot} onChange={setSlot} excludeId={lesson.id} refreshKey={conflicts} allowPast />
+            </>
+          : <SlotPicker value={slot} onChange={setSlot} excludeId={lesson?.id ?? null} refreshKey={conflicts} allowPast />)}
         <Field label={t('schedule.message')}>
           {(id) => <textarea id={id} className="input min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)}
             placeholder={t('schedule.messagePh')} />}

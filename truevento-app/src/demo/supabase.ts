@@ -308,6 +308,14 @@ async function rpc(name: string, a: any = {}) {
       save()
       return { data: null, error: null }
     }
+    case 'reschedule_lesson': {
+      if (!isAdmin()) return fail('Solo la administración puede cambiar la fecha u horario de una clase.', '42501')
+      const l = db.lessons.find((x) => x.id === a.p_lesson)
+      if (!l || l.status !== 'confirmed') return fail('Solo se pueden cambiar clases confirmadas.')
+      Object.assign(l, { lesson_date: a.p_date, start_time: a.p_time, staff_note: a.p_reason || l.staff_note })
+      save()
+      return { data: null, error: null }
+    }
     case 'busy_slots':
       return { data: db.lessons.filter((x) => x.lesson_date >= a.p_from && x.lesson_date <= a.p_to && x.start_time && x.id !== a.p_exclude
         && (x.status === 'requested' || x.status === 'confirmed')).map((x) => ({ lesson_date: x.lesson_date, start_time: x.start_time, hours: x.hours })), error: null }

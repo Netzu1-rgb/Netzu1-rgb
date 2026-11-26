@@ -17,7 +17,7 @@ export function WhatsAppPreview() {
       footer={<button type="button" className="btn-ghost w-full" onClick={() => setMsg(null)}>{'Cerrar'}</button>}>
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-heading">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#1fa855] text-white"><Icon name="whatsapp" className="h-4 w-4" /></span>
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#11803f] text-white"><Icon name="whatsapp" className="h-4 w-4" /></span>
           {'Para: +' + msg.phone}
         </div>
         {msg.text && (

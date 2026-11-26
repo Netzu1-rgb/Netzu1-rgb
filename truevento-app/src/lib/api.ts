@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { enqueue } from './offline'
 import { isNetworkError } from './errors'
 import type {
-  ClassRequest, ClassRow, PricelessStudent, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
+  ClassRequest, ClassRow, PricelessStudent, UpcomingLesson, Instructor, NewClassInput, NewInstructorInput, NewStudentInput, Profile, SchoolSettings, Settlement, Student,
 } from './types'
 
 // All reads and writes go through here. Every function throws on error so callers
@@ -290,6 +290,23 @@ export async function fetchPriceless(): Promise<PricelessStudent[]> {
 /** Sets the student's price per hour, the agreed time (and hours) and confirms the class. */
 export async function confirmRequest(lessonId: string, rate: number, instructorId: string, time: string, hours: number) {
   check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId, p_time: time, p_hours: hours }))
+}
+
+/** Confirmed classes from today on, for the agenda (admins can move them). */
+export async function fetchUpcoming(): Promise<UpcomingLesson[]> {
+  const t = new Date()
+  const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  const rows = check(await supabase.from('lessons')
+    .select('id, lesson_date, start_time, hours, staff_note, instructor:instructors(full_name), student:students(*)')
+    .eq('status', 'confirmed').gte('lesson_date', today)
+    .order('lesson_date').order('start_time').limit(60)) as unknown as
+    (Omit<UpcomingLesson, 'instructor_name'> & { instructor: { full_name: string } | null })[]
+  return rows.map(({ instructor, ...r }) => ({ ...r, start_time: r.start_time.slice(0, 5), hours: Number(r.hours), instructor_name: instructor?.full_name ?? null, student: normalizeStudent(r.student) }))
+}
+
+/** Admins move a confirmed class to another day and time (rain, no wind...). */
+export async function rescheduleLesson(id: string, date: string, time: string, reason: string | null) {
+  check(await supabase.rpc('reschedule_lesson', { p_lesson: id, p_date: date, p_time: time, p_reason: reason }))
 }
 
 /** Times already taken on a day (confirmed classes and requests with a time). */

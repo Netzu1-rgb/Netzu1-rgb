@@ -19,7 +19,7 @@ export function AgreePriceButton({ me, date, hours, label = 'wa.agree', classNam
   if (!href) return null
   return (
     <a href={href} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, href)}
-      className={`btn bg-[#1fa855] text-white shadow-[0_8px_20px_-8px_rgba(31,168,85,0.6)] hover:brightness-110 ${className}`}>
+      className={`btn bg-[#11803f] text-white shadow-[0_8px_20px_-8px_rgba(17,128,63,0.55)] hover:brightness-110 ${className}`}>
       <Icon name="whatsapp" /> {t(label)}
     </a>
   )
