@@ -113,9 +113,26 @@ export async function currentUserId() { return db.session }
 export function onAuthChange(fn: (id: string | null) => void) { listeners.add(fn); return () => { listeners.delete(fn) } }
 function setSession(id: string | null) { db.session = id; save(); listeners.forEach((f) => f(id)) }
 
+// The school's admin account (same username as in production). Only a hash of its
+// password is kept here, so the real password is not in this file.
+const ADMIN_LOGIN = 'truevento7'
+const ADMIN_HASH = '5c43e5a676ca1e3a25a454a0545d9debce535eb64480e7d0e34f894ea6865929'
+async function sha256(text: string) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 export async function signIn(login: string, password: string) {
   await wait()
-  const u = db.users.find((x) => x.username === normalizeUsername(login) && x.password === password)
+  if (normalizeUsername(login) === ADMIN_LOGIN && (await sha256(password)) === ADMIN_HASH) {
+    let admin = db.users.find((x) => x.username === ADMIN_LOGIN)
+    if (!admin) {
+      admin = { id: uid(), username: ADMIN_LOGIN, password: '', role: 'admin', student_id: null, instructor_id: null, full_name: 'Administración Truevento' }
+      db.users.push(admin)
+    }
+    return setSession(admin.id)
+  }
+  const u = db.users.find((x) => x.username === normalizeUsername(login) && x.password === password && x.password !== '')
   if (!u) throw new Error('Invalid login credentials')
   setSession(u.id)
 }
