@@ -10,7 +10,7 @@ import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
 import { getLang, LANGS, skillText, t, type Lang } from '../i18n'
 import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
-import { AgreePriceButton } from './contact'
+import { AgreePriceButton, WriteToStudentButton } from './contact'
 import { SchoolRulesModal } from './SchoolRules'
 import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
@@ -88,7 +88,14 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
       {simple && lesson.status === 'requested' && (
         <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} hours={lesson.hours} lang={lesson.class_lang} className="mt-3 w-full" />
       )}
-      {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
+      {(actions || (!simple && lesson.student_phone)) && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {actions}
+          {!simple && show !== 'instructor' && (
+            <WriteToStudentButton name={lesson.student_name} phone={lesson.student_phone} lang={lesson.student_lang} date={lesson.lesson_date} />
+          )}
+        </div>
+      )}
     </div>
   )
 }

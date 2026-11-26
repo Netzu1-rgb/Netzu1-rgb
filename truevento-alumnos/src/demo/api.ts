@@ -106,7 +106,11 @@ const listeners = new Set<(id: string | null) => void>()
 const me = () => db.users.find((u) => u.id === db.session) ?? null
 const staff = () => { const u = me(); return u?.role === 'admin' || u?.role === 'instructor' }
 const nameOf = (id: string | null, list: Person[]) => list.find((p) => p.id === id)?.full_name ?? null
-const view = (l: Row): Lesson => ({ ...l, student_name: nameOf(l.student_id, db.students) ?? '', instructor_name: nameOf(l.instructor_id, db.instructors) })
+const view = (l: Row): Lesson => {
+  const st = db.students.find((s) => s.id === l.student_id)
+  return { ...l, student_name: st?.full_name ?? '', instructor_name: nameOf(l.instructor_id, db.instructors),
+    student_phone: staff() ? st?.phone ?? null : null, student_lang: staff() ? 'es' : null }
+}
 const quarter = (h: number) => { if (!(h > 0 && h <= 8 && Number.isInteger(h * 4))) fail('Duración inválida: usá cuartos de hora.') }
 
 export async function currentUserId() { return db.session }

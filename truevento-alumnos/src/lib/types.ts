@@ -30,6 +30,9 @@ export interface Lesson {
   price_pending?: boolean
   /** the language the class is taught in */
   class_lang?: 'es' | 'pt' | 'en'
+  /** school staff only: the student's WhatsApp and language, to write to them */
+  student_phone?: string | null
+  student_lang?: 'es' | 'pt' | 'en' | null
 }
 
 export interface BusySlot {

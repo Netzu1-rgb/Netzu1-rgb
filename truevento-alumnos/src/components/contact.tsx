@@ -25,3 +25,28 @@ export function AgreePriceButton({ me, date, hours, lang, label = 'wa.agree', cl
     </a>
   )
 }
+
+// what the school writes to a student, in the student's language
+const TO_STUDENT = {
+  es: 'Hola {name}, te escribimos de TRUEVENTO Kiteschool por tu clase del {day}.',
+  pt: 'Olá {name}, aqui é da TRUEVENTO Kiteschool, sobre a sua aula do dia {day}.',
+  en: 'Hi {name}, this is TRUEVENTO Kiteschool about your lesson on {day}.',
+}
+
+/** For the school: WhatsApp to the number the student saved in their profile. */
+export function WriteToStudentButton({ name, phone, lang, date, className = '' }: {
+  name: string; phone: string | null | undefined; lang?: string | null; date: string; className?: string
+}) {
+  const [, m, d] = date.split('-')
+  const text = TO_STUDENT[lang === 'pt' || lang === 'en' ? lang : 'es']
+    .replace('{name}', name.trim().split(/\s+/)[0] || name).replace('{day}', `${d}/${m}`)
+  const href = waLink(phone, text)
+  if (!href) return null
+  return (
+    <a href={href} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, href)}
+      className={`btn bg-[#11803f] text-white shadow-[0_8px_20px_-8px_rgba(17,128,63,0.55)] hover:brightness-110 ${className}`}
+      aria-label={t('wa.toStudentAria', { name })}>
+      <Icon name="whatsapp" /> {t('wa.toStudent')}
+    </a>
+  )
+}
