@@ -59,7 +59,7 @@ tailwind.config = {
                 course_btn_reserve: "Reservar Curso",
                 c2_popular: "Popular",
                 c2_badge: "INTERMEDIO",
-                c2_title: "Nivel inicial/intermedio/ avanzado",
+                c2_title: "Nivel inicial / intermedio / avanzado",
                 c2_desc: "Mejora tu postura, aprende a navegar contra el viento (ceñir) y realiza tus primeras transiciones.",
                 c2_hours: "6 Horas",
                 c2_b1: "Postura correcta y eficiencia",
@@ -114,6 +114,9 @@ tailwind.config = {
                 app_f1: "Pedí tu clase: día y horas",
                 app_f2: "Tu progreso, paso a paso",
                 app_f3: "El viento de cada día",
+                                cookie_text: "Utilizamos cookies esenciales para asegurar el correcto funcionamiento de la web. Al continuar, aceptas nuestra",
+                cookie_reject: "Rechazar",
+                cookie_accept: "Aceptar",
                 footer_terms: "Términos"
             },
             pt: {
@@ -150,7 +153,7 @@ tailwind.config = {
                 courses_desc: "Desde os primeiros passos na areia até manobras avançadas e downwinds inesquecíveis pelo litoral brasileiro.",
                 c1_badge: "INICIAÇÃO",
                 c1_title: "Aulas para crianças",
-                c1_desc: "O curso ideal para iniciantes absolutos. Aprenda a pilotar a pipa e deslizar na prancha.",
+                c1_desc: "O curso ideal para iniciantes absolutos. Aprenda a pilotar o kite e deslizar na prancha.",
                 c1_hours: "9 Horas",
                 c1_b1: "Teoria de voo e segurança",
                 c1_b2: "Body drag na água",
@@ -158,7 +161,7 @@ tailwind.config = {
                 course_btn_reserve: "Reservar Curso",
                 c2_popular: "Popular",
                 c2_badge: "INTERMEDIÁRIO",
-                c2_title: "Nível inicial/intermediário/avançado",
+                c2_title: "Nível inicial / intermediário / avançado",
                 c2_desc: "Aprimore sua postura, aprenda a orçar (contra o vento) e faça suas primeiras transições perfeitas.",
                 c2_hours: "6 Horas",
                 c2_b1: "Postura correta e eficiência",
@@ -213,6 +216,9 @@ tailwind.config = {
                 app_f1: "Peça sua aula: dia e horas",
                 app_f2: "Seu progresso, passo a passo",
                 app_f3: "O vento de cada dia",
+                                cookie_text: "Usamos cookies essenciais para garantir o bom funcionamento do site. Ao continuar, você aceita nossa",
+                cookie_reject: "Recusar",
+                cookie_accept: "Aceitar",
                 footer_terms: "Termos"
             },
             en: {
@@ -312,6 +318,9 @@ tailwind.config = {
                 app_f1: "Book your lesson: day and hours",
                 app_f2: "Your progress, step by step",
                 app_f3: "The wind, every day",
+                                cookie_text: "We use essential cookies to make the website work properly. By continuing, you accept our",
+                cookie_reject: "Decline",
+                cookie_accept: "Accept",
                 footer_terms: "Terms"
             }
         };

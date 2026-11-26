@@ -28,13 +28,16 @@ body {
         }
 
         .hero-bg {
-            background-image: url('assets/hero-ilha-hq.jpg');
+            background-image: url('../assets/hero-poster.jpg');
+            background-color: #0f172a;
             background-size: cover;
             background-position: center;
         }
 
         .hero-gradient {
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.02) 65%, #0f172a 100%);
+            /* darker behind the text so it reads over the palm trees */
+            background: radial-gradient(ellipse 75% 55% at 50% 50%, rgba(8, 12, 28, 0.45) 0%, rgba(8, 12, 28, 0) 70%),
+                linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.2) 55%, #0f172a 100%);
         }
 
         .card-hover {
@@ -194,3 +197,5 @@ body {
         ::-webkit-scrollbar-thumb:hover {
             background: #475569;
         }
+        /* menu links land with the title visible below the fixed bar */
+        section[id] { scroll-margin-top: 88px; }

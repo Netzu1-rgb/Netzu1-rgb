@@ -143,10 +143,11 @@
 
     <!-- Hero Section -->
     <header
-        class="relative min-h-screen flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
+        class="hero-bg relative min-h-screen flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
         <!-- Video Background -->
-        <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover pointer-events-none brightness-110 contrast-[1.05]">
-            <source src="assets/video_truevento.mp4" type="video/mp4">
+        <video autoplay loop muted playsinline preload="auto" poster="assets/hero-poster.jpg" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+            <source src="assets/video-720.mp4" type="video/mp4" media="(max-width: 900px)">
+            <source src="assets/video-1080.mp4" type="video/mp4">
         </video>
 
         <!-- Overlay Gradient -->
@@ -203,61 +204,57 @@
     </header>
 
     <!-- Trust Badges -->
-    <section
-        class="py-12 bg-[#1e293b] relative -mt-6 z-20 mx-4 md:mx-12 rounded-2xl shadow-2xl border border-slate-700/60">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-700/50">
-                <div class="text-center px-4">
-                    <div
-                        class="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4 border border-primary/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 2a9 9 0 00-9 9v4a3 3 0 003 3h2v-8H5a7 7 0 1114 0h-3v8h2a3 3 0 003-3v-4a9 9 0 00-9-9z">
-                            </path>
-                        </svg>
+    <section id="app" class="py-16 md:py-24 bg-[#0f172a] relative">
+        <div class="max-w-7xl mx-auto px-6 relative">
+            <div class="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-center">
+                <div class="reveal min-w-0">
+                    <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block" data-i18n="app_tag">App de alumnos</span>
+                    <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-4" data-i18n="app_title">Tu escuela en el celular</h2>
+                    <p class="text-slate-400 text-lg max-w-2xl mb-8" data-i18n="app_desc">Pedí tus clases, seguí tu progreso paso a paso y mirá el viento de cada día. Se instala en un minuto, sin App Store ni Play Store.</p>
+
+                    <div class="grid sm:grid-cols-2 gap-4 max-w-3xl">
+                        <a href="https://app.truevento.com" target="_blank" rel="noopener"
+                            class="group block rounded-2xl p-6 bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 hover:border-primary transition-all">
+                            <span class="w-12 h-12 rounded-xl bg-primary/20 text-primary grid place-items-center mb-4" aria-hidden="true">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+                            </span>
+                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_open_title">Abrí la app</h3>
+                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_open_desc">Creá tu cuenta o ingresá con tu usuario.</p>
+                            <span class="font-mono text-primary text-sm block mb-4 select-all">app.truevento.com</span>
+                            <span class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-[0_0_20px_rgba(14,165,233,0.35)] group-hover:shadow-[0_0_25px_rgba(14,165,233,0.6)] transition-all">
+                                <span data-i18n="app_open_btn">Ir a la app</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </span>
+                        </a>
+                        <a href="https://app.truevento.com/instalar" target="_blank" rel="noopener"
+                            class="group block rounded-2xl p-6 bg-[#111a2e] border border-slate-700/70 hover:border-primary transition-all">
+                            <span class="w-12 h-12 rounded-xl bg-white/5 text-white grid place-items-center mb-4" aria-hidden="true">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                            </span>
+                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_install_title">Instalala en tu celular</h3>
+                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_install_desc">Tutorial paso a paso con imágenes para iPhone y Android.</p>
+                            <span class="font-mono text-slate-300 text-sm block mb-4 select-all">app.truevento.com/instalar</span>
+                            <span class="inline-flex items-center gap-2 border border-white/30 text-white px-5 py-2.5 rounded-full font-bold text-sm group-hover:bg-white/10 transition-all">
+                                <span data-i18n="app_install_btn">Ver el tutorial</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </span>
+                        </a>
                     </div>
-                    <h3 class="font-bold text-white text-lg mb-1" data-i18n="badge_aak_title">Intercomunicadores</h3>
-                    <p class="text-sm text-slate-400" data-i18n="badge_aak_desc">Comunicación directa con el instructor durante tu clase.</p>
+
+                    <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-300">
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span data-i18n="app_f1">Pedí tu clase: día y horas</span></li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span><span data-i18n="app_f2">Tu progreso, paso a paso</span></li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-400"></span><span data-i18n="app_f3">El viento de cada día</span></li>
+                    </ul>
                 </div>
-                <div class="text-center px-4">
-                    <div
-                        class="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4 border border-primary/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
+
+                <div class="reveal hidden sm:block justify-self-center" aria-hidden="true">
+                    <div class="w-[250px] rounded-[42px] bg-[#05070d] p-[10px] shadow-[0_30px_60px_-20px_rgba(14,165,233,0.45)] ring-2 ring-slate-700/60 rotate-[3deg]">
+                        <img src="assets/app-truevento.jpg" alt="" class="w-full rounded-[32px] block" loading="lazy">
                     </div>
-                    <h3 class="font-bold text-white text-lg mb-1" data-i18n="badge_wind_title">Viento Constante</h3>
-                    <p class="text-sm text-slate-400" data-i18n="badge_wind_desc">Temporada de julio a enero asegurada.
-                    </p>
-                </div>
-                <div class="text-center px-4">
-                    <div
-                        class="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4 border border-primary/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold text-white text-lg mb-1" data-i18n="badge_flat_title">Agua Plana</h3>
-                    <p class="text-sm text-slate-400" data-i18n="badge_flat_desc">Laguna gigante ideal para
-                        principiantes y avanzados.</p>
-                </div>
-                <div class="text-center px-4">
-                    <div
-                        class="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4 border border-primary/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="font-bold text-white text-lg mb-1" data-i18n="badge_lang_title">Multilingüe</h3>
-                    <p class="text-sm text-slate-400" data-i18n="badge_lang_desc">Clases en Español, Inglés y Portugués.
-                    </p>
                 </div>
             </div>
+        </div>
     </section>
 
     <!-- About Section -->
@@ -270,15 +267,15 @@
 <!-- Carousel Container -->
 <div class="relative rounded-3xl shadow-2xl w-full h-[300px] md:h-[500px] overflow-hidden border border-[#1e293b] group">
     <div id="about-carousel" class="flex w-full h-full transition-transform duration-700 ease-in-out">
-        <img src="assets/escuela.jpeg" alt="Nuestra Escuela 1" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/foto nos1.jpeg" alt="Nuestra Escuela 2" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/foto nos2.jpeg" alt="Nuestra Escuela 3" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/foto nos3.jpeg" alt="Nuestra Escuela 4" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/fotos nos 4.jpeg" alt="Nuestra Escuela 5" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/fotos nos5.jpeg" alt="Nuestra Escuela 6" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/fotos ns6.jpeg" alt="Nuestra Escuela 7" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/fotos nos7.jpeg" alt="Nuestra Escuela 8" class="w-full h-full shrink-0 object-cover object-center">
-        <img src="assets/fotos nos8.jpeg" alt="Nuestra Escuela 9" class="w-full h-full shrink-0 object-cover object-top">
+        <img loading="lazy" decoding="async" src="assets/escuela.jpeg" alt="Nuestra Escuela 1" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/foto nos1.jpeg" alt="Nuestra Escuela 2" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/foto nos2.jpeg" alt="Nuestra Escuela 3" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/foto nos3.jpeg" alt="Nuestra Escuela 4" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/fotos nos 4.jpeg" alt="Nuestra Escuela 5" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/fotos nos5.jpeg" alt="Nuestra Escuela 6" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/fotos ns6.jpeg" alt="Nuestra Escuela 7" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/fotos nos7.jpeg" alt="Nuestra Escuela 8" class="w-full h-full shrink-0 object-cover object-center">
+        <img loading="lazy" decoding="async" src="assets/fotos nos8.jpeg" alt="Nuestra Escuela 9" class="w-full h-full shrink-0 object-cover object-top">
     </div>
     
     <!-- Navigation Arrows -->
@@ -382,7 +379,7 @@
                 <div
                     class="bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-700/60 card-hover reveal flex flex-col h-full">
                     <div class="h-56 relative overflow-hidden bg-slate-900">
-                        <img src="assets/clase niños.jpeg"
+                        <img loading="lazy" decoding="async" src="assets/clase niños.jpeg"
                             class="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                             alt="Clases para niños">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-[#1e293b]/20 to-transparent">
@@ -412,7 +409,7 @@
                 <div class="bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-700/60 card-hover reveal flex flex-col h-full"
                     style="transition-delay: 100ms;">
                     <div class="h-56 relative overflow-hidden bg-slate-900">
-                        <img src="assets/clases niveles.jpeg"
+                        <img loading="lazy" decoding="async" src="assets/clases niveles.jpeg"
                             class="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                             alt="Nivel inicial/intermedio/avanzado">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-[#1e293b]/20 to-transparent">
@@ -444,7 +441,7 @@
                 <div class="bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-700/60 card-hover reveal flex flex-col h-full"
                     style="transition-delay: 200ms;">
                     <div class="h-56 relative overflow-hidden bg-slate-900">
-                        <img src="assets/lagoa patos.jpeg"
+                        <img loading="lazy" decoding="async" src="assets/lagoa patos.jpeg"
                             class="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                             alt="Full day en la lagoa">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-[#1e293b]/20 to-transparent">
@@ -476,61 +473,6 @@
     </section>
 
     <!-- Instructors -->
-    <!-- Students app: link to the app and to the install tutorial -->
-    <section id="app" class="py-16 md:py-24 bg-[#0b1121] relative overflow-hidden">
-        <div class="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
-        <div class="max-w-7xl mx-auto px-6 relative">
-            <div class="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-center">
-                <div class="reveal min-w-0">
-                    <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block" data-i18n="app_tag">App de alumnos</span>
-                    <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-4" data-i18n="app_title">Tu escuela en el celular</h2>
-                    <p class="text-slate-400 text-lg max-w-2xl mb-8" data-i18n="app_desc">Pedí tus clases, seguí tu progreso paso a paso y mirá el viento de cada día. Se instala en un minuto, sin App Store ni Play Store.</p>
-
-                    <div class="grid sm:grid-cols-2 gap-4 max-w-3xl">
-                        <a href="https://app.truevento.com" target="_blank" rel="noopener"
-                            class="group block rounded-2xl p-6 bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 hover:border-primary transition-all">
-                            <span class="w-12 h-12 rounded-xl bg-primary/20 text-primary grid place-items-center mb-4" aria-hidden="true">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
-                            </span>
-                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_open_title">Abrí la app</h3>
-                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_open_desc">Creá tu cuenta o ingresá con tu usuario.</p>
-                            <span class="font-mono text-primary text-sm block mb-4 select-all">app.truevento.com</span>
-                            <span class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-[0_0_20px_rgba(14,165,233,0.35)] group-hover:shadow-[0_0_25px_rgba(14,165,233,0.6)] transition-all">
-                                <span data-i18n="app_open_btn">Ir a la app</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                            </span>
-                        </a>
-                        <a href="https://app.truevento.com/instalar" target="_blank" rel="noopener"
-                            class="group block rounded-2xl p-6 bg-[#111a2e] border border-slate-700/70 hover:border-primary transition-all">
-                            <span class="w-12 h-12 rounded-xl bg-white/5 text-white grid place-items-center mb-4" aria-hidden="true">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-                            </span>
-                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_install_title">Instalala en tu celular</h3>
-                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_install_desc">Tutorial paso a paso con imágenes para iPhone y Android.</p>
-                            <span class="font-mono text-slate-300 text-sm block mb-4 select-all">app.truevento.com/instalar</span>
-                            <span class="inline-flex items-center gap-2 border border-white/30 text-white px-5 py-2.5 rounded-full font-bold text-sm group-hover:bg-white/10 transition-all">
-                                <span data-i18n="app_install_btn">Ver el tutorial</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                            </span>
-                        </a>
-                    </div>
-
-                    <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span data-i18n="app_f1">Pedí tu clase: día y horas</span></li>
-                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span><span data-i18n="app_f2">Tu progreso, paso a paso</span></li>
-                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-400"></span><span data-i18n="app_f3">El viento de cada día</span></li>
-                    </ul>
-                </div>
-
-                <div class="reveal hidden sm:block justify-self-center" aria-hidden="true">
-                    <div class="w-[250px] rounded-[42px] bg-[#05070d] p-[10px] shadow-[0_30px_60px_-20px_rgba(14,165,233,0.45)] ring-2 ring-slate-700/60 rotate-[3deg]">
-                        <img src="assets/app-truevento.jpg" alt="" class="w-full rounded-[32px] block" loading="lazy">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="instructors" class="py-16 md:py-24 bg-[#0f172a] text-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center max-w-2xl mx-auto mb-16 reveal">
@@ -548,7 +490,7 @@
                 <div class="text-center reveal">
                     <div
                         class="w-40 h-40 mx-auto rounded-full overflow-hidden mb-6 border-4 border-[#1e293b] shadow-[0_0_20px_rgba(14,165,233,0.1)]">
-                        <img src="assets/victoria.jpg" class="w-full h-full object-cover" alt="Victoria Linde"
+                        <img loading="lazy" decoding="async" src="assets/victoria.jpg" class="w-full h-full object-cover" alt="Victoria Linde"
                             onerror="this.src='https://ui-avatars.com/api/?name=Victoria+L&background=0ea5e9&color=fff'">
                     </div>
                     <h3 class="text-2xl font-display font-bold mb-1">Victoria Linde</h3>
@@ -562,7 +504,7 @@
                 <div class="text-center reveal" style="transition-delay: 100ms;">
                     <div
                         class="w-40 h-40 mx-auto rounded-full overflow-hidden mb-6 border-4 border-[#1e293b] shadow-[0_0_20px_rgba(14,165,233,0.1)]">
-                        <img src="assets/sebastian.jpg" class="w-full h-full object-cover" alt="Sebastian Comasco"
+                        <img loading="lazy" decoding="async" src="assets/sebastian.jpg" class="w-full h-full object-cover" alt="Sebastian Comasco"
                             onerror="this.src='https://ui-avatars.com/api/?name=Sebastian+C&background=0ea5e9&color=fff'">
                     </div>
                     <h3 class="text-2xl font-display font-bold mb-1">Sebastian Comasco</h3>
@@ -575,7 +517,7 @@
                 <div class="text-center reveal" style="transition-delay: 200ms;">
                     <div
                         class="w-40 h-40 mx-auto rounded-full overflow-hidden mb-6 border-4 border-[#1e293b] shadow-[0_0_20px_rgba(14,165,233,0.1)]">
-                        <img src="assets/mika.jpg" class="w-full h-full object-cover" alt="Mika Musarra"
+                        <img loading="lazy" decoding="async" src="assets/mika.jpg" class="w-full h-full object-cover" alt="Mika Musarra"
                             onerror="this.src='https://ui-avatars.com/api/?name=Mika+M&background=0ea5e9&color=fff'">
                     </div>
                     <h3 class="text-2xl font-display font-bold mb-1">Mika Musarra</h3>
@@ -883,13 +825,13 @@
     <!-- Cookie Consent Banner -->
     <div id="cookieBanner" class="fixed bottom-0 left-0 w-full bg-[#1e293b] border-t border-slate-700/60 shadow-lg z-[90] p-4 transform translate-y-full transition-transform duration-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-slate-300 text-sm text-center sm:text-left flex-1">
-            Utilizamos cookies esenciales para asegurar el correcto funcionamiento de la web. Al continuar, aceptas nuestra <a href="#" onclick="openModal('privacyModal', event)" class="text-primary hover:underline font-medium">Política de Privacidad</a>.
+            <span data-i18n="cookie_text">Utilizamos cookies esenciales para asegurar el correcto funcionamiento de la web. Al continuar, aceptas nuestra</span> <a href="#" onclick="openModal('privacyModal', event)" class="text-primary hover:underline font-medium" data-i18n="footer_privacy">Política de Privacidad</a>.
         </p>
         <div class="flex gap-3">
-            <button onclick="rejectCookies()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors whitespace-nowrap shadow-md border border-slate-600">
+            <button onclick="rejectCookies()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors whitespace-nowrap shadow-md border border-slate-600" data-i18n="cookie_reject">
                 Rechazar
             </button>
-            <button onclick="acceptCookies()" class="bg-primary hover:bg-secondary text-white font-semibold py-2 px-6 rounded-lg transition-colors whitespace-nowrap shadow-md">
+            <button onclick="acceptCookies()" class="bg-primary hover:bg-secondary text-white font-semibold py-2 px-6 rounded-lg transition-colors whitespace-nowrap shadow-md" data-i18n="cookie_accept">
                 Aceptar
             </button>
         </div>
