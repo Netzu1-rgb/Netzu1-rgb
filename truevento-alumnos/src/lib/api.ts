@@ -187,3 +187,29 @@ export async function createAnnouncement(title: string, body: string, studentId:
 export async function deleteAnnouncement(id: string) {
   check(await supabase.from('announcements').delete().eq('id', id))
 }
+
+// ------------------------------------------------------------------ wind calibration
+
+export interface WindObservation { id: string; observed_at: string; measured_kn: number; forecast_kn: number }
+
+/** The school's correction for the forecast (factor 1 until there are 3 measurements). */
+export async function windCalibration(): Promise<{ factor: number; count: number }> {
+  const rows = check(await supabase.rpc('wind_calibration')) as { factor: number; count: number }[]
+  const r = rows?.[0]
+  return { factor: Number(r?.factor ?? 1), count: Number(r?.count ?? 0) }
+}
+
+/** Staff: the wind measured on the beach now, next to what the app forecast for this hour. */
+export async function addWindObservation(measured: number, forecast: number): Promise<void> {
+  check(await supabase.rpc('add_wind_observation', { p_measured: measured, p_forecast: forecast }))
+}
+
+export async function listWindObservations(): Promise<WindObservation[]> {
+  const rows = check(await supabase.from('wind_observations').select('id, observed_at, measured_kn, forecast_kn')
+    .order('observed_at', { ascending: false }).limit(10)) as WindObservation[]
+  return rows.map((r) => ({ ...r, measured_kn: Number(r.measured_kn), forecast_kn: Number(r.forecast_kn) }))
+}
+
+export async function deleteWindObservation(id: string): Promise<void> {
+  check(await supabase.rpc('delete_wind_observation', { p_id: id }))
+}

@@ -2,10 +2,13 @@ import { t } from '../i18n'
 
 // Wind forecast for the school's spot.
 //
-// Main source: Open-Meteo (free, no key), the sea grid cell nearest to the school,
-// in knots and in Ceará local time. If it does not answer, MET Norway (the Norwegian
-// Meteorological Institute) is used instead. The last good forecast is kept on the
-// device and shown, with its time, when neither can be reached.
+// Main source: the consensus of the world's main weather models through Open-Meteo (free,
+// no key), for the sea grid cell nearest to the school, in knots and in Ceará local time.
+// Each hour combines the models, leaving out the ones far from the rest, and keeps how much
+// they disagree (to say how reliable the forecast is). If that request fails, Open-Meteo's
+// own single forecast; if Open-Meteo does not answer, MET Norway. The school can also
+// calibrate the forecast with the wind it measures on the beach (applyCalibration).
+// The last good forecast is kept on the device and shown, with its time, when no source answers.
 
 export const SPOT = {
   name: 'Ilha do Guajirú',
@@ -25,13 +28,17 @@ export const LAST_HOUR = 18
 const CORE_FROM = 9
 const CORE_TO = 17
 
-export type WindSource = 'open-meteo' | 'met-norway'
+export type WindSource = 'consensus' | 'open-meteo' | 'met-norway'
 
 export interface WindHour {
   time: string // YYYY-MM-DDTHH:MM, school local time
   speed: number // knots, 1 decimal
   gust: number | null // knots, null when the source has no gust
   direction: number // degrees the wind comes from
+  /** how much the weather models disagree at this hour (knots, standard deviation) */
+  spread?: number
+  /** how many models agreed at this hour */
+  models?: number
 }
 
 export interface WindDay {
@@ -45,7 +52,11 @@ export interface WindDay {
   gusty: boolean
   /** longest run of hours good for lessons, e.g. { from: '10:00', to: '16:00' } */
   best: { from: string; to: string } | null
+  /** how much the models agree over lesson hours (null with a single source) */
+  agreement: Agreement | null
 }
+
+export type Agreement = 'high' | 'medium' | 'low'
 
 export interface WindForecastData {
   days: WindDay[]
@@ -53,7 +64,14 @@ export interface WindForecastData {
   source: WindSource
   /** true when the data comes from the device because no source answered */
   stale?: boolean
+  /** how many weather models the consensus combined */
+  models?: number
+  /** the school's correction from its own measurements, when it has enough of them */
+  calibration?: Calibration
 }
+
+/** Measured wind ÷ forecast wind on the beach, from the school's measurements. */
+export interface Calibration { factor: number; count: number }
 
 // ------------------------------------------------------------------ helpers
 
@@ -151,9 +169,18 @@ export function buildDays(hours: WindHour[]): WindDay[] {
       level: windLevel(avgRaw, gustMax),
       gusty: core.some((x) => isGusty(x.speed, x.gust)),
       best: bestWindow(list),
+      agreement: agreementOf(core),
     })
   }
   return days
+}
+
+/** Models that differ by up to 2.5 kn agree well; by more than 4.5 kn, little. */
+export function agreementOf(hours: WindHour[]): Agreement | null {
+  const spreads = hours.map((h) => h.spread).filter(isNum)
+  if (spreads.length < hours.length / 2 || !spreads.length) return null
+  const mean = spreads.reduce((a, b) => a + b, 0) / spreads.length
+  return mean <= 2.5 ? 'high' : mean <= 4.5 ? 'medium' : 'low'
 }
 
 /** The longest run of consecutive hourly values good for lessons (at least two in a row). */
@@ -211,6 +238,90 @@ export function parseOpenMeteo(h: OpenMeteoHourly): WindHour[] {
   return out
 }
 
+/**
+ * The weather models combined, with their weight: ECMWF (the European centre) usually does
+ * best in the tropics, and its AI model and the UK Met Office are close behind.
+ */
+export const MODELS: [string, number][] = [
+  ['ecmwf_ifs025', 2],
+  ['ecmwf_aifs025_single', 1.5],
+  ['ukmo_seamless', 1.5],
+  ['icon_seamless', 1],
+  ['gfs_seamless', 1],
+  ['meteofrance_seamless', 1],
+  ['gem_seamless', 0.75],
+  ['jma_seamless', 0.75],
+]
+
+export function openMeteoModelsUrl(): string {
+  const url = new URL(openMeteoUrl())
+  url.searchParams.set('models', MODELS.map(([m]) => m).join(','))
+  return url.toString()
+}
+
+const weightedMedian = (vals: { v: number; w: number }[]) => {
+  const sorted = [...vals].sort((a, b) => a.v - b.v)
+  const half = sorted.reduce((s, x) => s + x.w, 0) / 2
+  let acc = 0
+  for (const x of sorted) { acc += x.w; if (acc >= half) return x.v }
+  return sorted[sorted.length - 1].v
+}
+
+/**
+ * One value per hour from every model: the weighted mean of the models that agree (a model
+ * more than 4 kn, or 35 %, away from the weighted median is left out that hour), with the
+ * spread between them. Hours with fewer than 2 models are skipped.
+ */
+export function parseOpenMeteoModels(h: Record<string, (number | string | null)[]>): WindHour[] {
+  if (!h || !Array.isArray(h.time)) throw new Error('bad forecast')
+  const out: WindHour[] = []
+  ;(h.time as string[]).forEach((time, i) => {
+    const vals: { v: number; w: number; g: number | null; d: number }[] = []
+    for (const [m, w] of MODELS) {
+      const v = h[`wind_speed_10m_${m}`]?.[i]
+      const d = h[`wind_direction_10m_${m}`]?.[i]
+      const g = h[`wind_gusts_10m_${m}`]?.[i]
+      if (isNum(v) && isNum(d) && v >= 0) vals.push({ v, w, d, g: isNum(g) ? g : null })
+    }
+    if (vals.length < 2) return
+    const med = weightedMedian(vals)
+    const kept = vals.filter((x) => Math.abs(x.v - med) <= Math.max(4, 0.35 * med))
+    const W = kept.reduce((s, x) => s + x.w, 0)
+    const speed = kept.reduce((s, x) => s + x.w * x.v, 0) / W
+    const spread = Math.sqrt(kept.reduce((s, x) => s + x.w * (x.v - speed) ** 2, 0) / W)
+    const withGust = kept.filter((x) => x.g !== null)
+    const gW = withGust.reduce((s, x) => s + x.w, 0)
+    const gust = withGust.length ? Math.max(speed, withGust.reduce((s, x) => s + x.w * (x.g as number), 0) / gW) : null
+    out.push({
+      time: time.slice(0, 16), speed: round1(speed), gust: gust === null ? null : round1(gust),
+      direction: meanDirection(kept.map((x) => x.d), kept.map((x) => x.w * Math.max(x.v, 0.1))),
+      spread: round1(spread), models: kept.length,
+    })
+  })
+  return out
+}
+
+/**
+ * The school's correction: every speed and gust times the factor (how the measured wind on
+ * the beach compares with the forecast), then the days are worked out again.
+ */
+export function applyCalibration(data: WindForecastData, cal: Calibration | null): WindForecastData {
+  if (!cal || !(cal.factor > 0) || Math.abs(cal.factor - 1) < 0.01) return data
+  const hours = data.days.flatMap((d) => d.hours).map((h) => ({
+    ...h, speed: round1(h.speed * cal.factor), gust: h.gust === null ? null : round1(h.gust * cal.factor),
+    spread: h.spread === undefined ? undefined : round1(h.spread * cal.factor),
+  }))
+  return { ...data, days: buildDays(hours), calibration: cal }
+}
+
+/** The forecast for the current hour in Ceará, without the school's correction (to compare with a measurement). */
+export function forecastNow(data: WindForecastData, now: Date = new Date()): WindHour | null {
+  const hour = schoolHour(now)
+  const factor = data.calibration?.factor ?? 1
+  const h = data.days.flatMap((d) => d.hours).find((x) => x.time === hour)
+  return h ? { ...h, speed: round1(h.speed / factor), gust: h.gust === null ? null : round1(h.gust / factor) } : null
+}
+
 export const metNorwayUrl = () =>
   `https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${SPOT.lat.toFixed(4)}&lon=${SPOT.lon.toFixed(4)}`
 
@@ -241,7 +352,7 @@ export function parseMetNorway(json: MetNorwayResponse): WindHour[] {
 
 // ------------------------------------------------------------------ fetching
 
-const CACHE_KEY = 'truevento-wind-v2' // v2: new spot and format
+const CACHE_KEY = 'truevento-wind-v3' // v3: consensus of models
 const MAX_AGE = 60 * 60 * 1000 // ask again after an hour
 const STALE_LIMIT = 24 * 60 * 60 * 1000 // show an old forecast for up to a day
 
@@ -280,7 +391,13 @@ async function loadWind(fetcher: Fetcher, now: number): Promise<WindForecastData
   const cached = readCache()
   if (cached && now - cached.fetchedAt < MAX_AGE) return cached
 
+  let models = 0
   const attempts: [WindSource, () => Promise<WindHour[]>][] = [
+    ['consensus', async () => {
+      const hours = parseOpenMeteoModels((await getJson(fetcher, openMeteoModelsUrl())).hourly)
+      models = Math.max(0, ...hours.map((h) => h.models ?? 0))
+      return hours
+    }],
     ['open-meteo', async () => parseOpenMeteo((await getJson(fetcher, openMeteoUrl())).hourly)],
     ['met-norway', async () => parseMetNorway(await getJson(fetcher, metNorwayUrl()))],
   ]
@@ -288,7 +405,7 @@ async function loadWind(fetcher: Fetcher, now: number): Promise<WindForecastData
     try {
       const days = buildDays(await load())
       if (!days.length) throw new Error('empty forecast')
-      const result: WindForecastData = { days, fetchedAt: now, source }
+      const result: WindForecastData = { days, fetchedAt: now, source, ...(source === 'consensus' ? { models } : {}) }
       try { localStorage.setItem(CACHE_KEY, JSON.stringify(result)) } catch { /* full storage */ }
       return result
     } catch { /* try the next source */ }

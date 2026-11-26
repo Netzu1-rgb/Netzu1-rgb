@@ -5,7 +5,7 @@ import { friendlyError } from '../lib/errors'
 import type { PersonalData } from '../lib/types'
 import { experienceLabel } from '../lib/types'
 import { PersonalFields, personalError } from './Welcome'
-import { WindForecast } from '../components/wind'
+import { WindCalibrationCard, WindForecast } from '../components/wind'
 import { useMe, useSession } from '../context/Session'
 import { useTheme, type ThemeChoice } from '../lib/theme'
 import * as api from '../lib/api'
@@ -17,10 +17,12 @@ import { NotificationsCard } from '../components/Notifications'
 
 
 export function WindPage() {
+  const me = useMe()
   return (
     <div>
       <PageHeader title={t('wind.title')} />
       <WindForecast />
+      {me.isStaff && <WindCalibrationCard />}
     </div>
   )
 }

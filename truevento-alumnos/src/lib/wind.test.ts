@@ -3,8 +3,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setLanguage } from '../i18n'
 import {
-  bestWindow, buildDays, compass, fetchWind, isGusty, meanDirection, metNorwayUrl, MS_TO_KN, openMeteoUrl,
-  parseMetNorway, parseOpenMeteo, schoolHour, schoolToday, SPOT, utcToSchool, windLevel, type WindHour,
+  agreementOf, applyCalibration, bestWindow, buildDays, compass, fetchWind, forecastNow, isGusty, meanDirection, metNorwayUrl, MODELS, MS_TO_KN,
+  openMeteoModelsUrl, openMeteoUrl, parseMetNorway, parseOpenMeteo, parseOpenMeteoModels, schoolHour, schoolToday, SPOT, utcToSchool, windLevel, type WindHour,
 } from './wind'
 
 setLanguage('es')
@@ -256,18 +256,27 @@ describe('getting the forecast', () => {
   const ok = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }))
   const fail = (status = 429) => Promise.resolve(new Response('{"error":true}', { status }))
 
-  it('uses Open-Meteo and keeps the answer for an hour', async () => {
-    const fetcher = vi.fn(() => ok(openMeteoJson()))
+  it('uses the consensus of the models and keeps the answer for an hour', async () => {
+    const fetcher = vi.fn(() => ok(modelsJson()))
     const now = Date.parse('2026-11-25T15:00:00Z')
     const a = await fetchWind(fetcher as never, now)
-    expect(a.source).toBe('open-meteo')
-    expect(a.days[0].avg).toBe(20)
-    expect(compass(a.days[0].direction)).toBe('E')
+    expect(a.source).toBe('consensus')
+    expect(a.models).toBe(3)
+    expect(a.days[0].agreement).toBe('high')
     const b = await fetchWind(fetcher as never, now + 30 * 60_000)
     expect(fetcher).toHaveBeenCalledTimes(1) // from the device
     expect(b.fetchedAt).toBe(now)
     await fetchWind(fetcher as never, now + 61 * 60_000)
     expect(fetcher).toHaveBeenCalledTimes(2) // asked again after an hour
+  })
+
+  it("falls back to Open-Meteo's single forecast when the models request fails", async () => {
+    const fetcher = vi.fn((url: string) => (url.includes('models=') ? fail(400) : ok(openMeteoJson())))
+    const a = await fetchWind(fetcher as never, Date.parse('2026-11-25T15:00:00Z'))
+    expect(a.source).toBe('open-meteo')
+    expect(a.days[0].avg).toBe(20)
+    expect(compass(a.days[0].direction)).toBe('E')
+    expect(a.days[0].agreement).toBeNull()
   })
 
   it('falls back to MET Norway when Open-Meteo fails', async () => {
@@ -302,5 +311,90 @@ describe('getting the forecast', () => {
       ? ok({ hourly: { time: [], wind_speed_10m: [], wind_gusts_10m: [], wind_direction_10m: [] } })
       : ok({ nonsense: true })))
     await expect(fetchWind(fetcher as never)).rejects.toThrow()
+  })
+})
+
+// ------------------------------------------------------------------ models and calibration
+
+/** Hourly answer of the models request: each model at its own constant wind. */
+function modelsJson(per: Record<string, { s: number; g?: number | null; d?: number }> = {
+  ecmwf_ifs025: { s: 20, g: 26 }, icon_seamless: { s: 19, g: 25 }, gfs_seamless: { s: 21, g: 27 },
+}) {
+  const time = Array.from({ length: 24 }, (_, h) => `${schoolToday(new Date('2026-11-25T15:00:00Z'))}T${String(h).padStart(2, '0')}:00`)
+  const hourly: Record<string, unknown[]> = { time }
+  for (const [m, v] of Object.entries(per)) {
+    hourly[`wind_speed_10m_${m}`] = time.map(() => v.s)
+    hourly[`wind_gusts_10m_${m}`] = time.map(() => (v.g === undefined ? v.s + 5 : v.g))
+    hourly[`wind_direction_10m_${m}`] = time.map(() => v.d ?? 90)
+  }
+  return { hourly }
+}
+
+describe('consensus of the weather models', () => {
+  it('asks Open-Meteo for every model, at the sea cell, in knots', () => {
+    const url = new URL(openMeteoModelsUrl())
+    expect(url.searchParams.get('models')!.split(',')).toEqual(MODELS.map(([m]) => m))
+    expect(url.searchParams.get('cell_selection')).toBe('sea')
+    expect(url.searchParams.get('wind_speed_unit')).toBe('kn')
+  })
+
+  it('weights the models: ECMWF counts double', () => {
+    const h = parseOpenMeteoModels(modelsJson({ ecmwf_ifs025: { s: 22 }, gfs_seamless: { s: 19 } }).hourly as never)
+    expect(h[12].speed).toBe(21) // (22·2 + 19·1) / 3
+    expect(h[12].models).toBe(2)
+  })
+
+  it('leaves out a model far from the rest, and reports the spread', () => {
+    const h = parseOpenMeteoModels(modelsJson({
+      ecmwf_ifs025: { s: 20 }, icon_seamless: { s: 21 }, gfs_seamless: { s: 19 }, jma_seamless: { s: 8 },
+    }).hourly as never)
+    expect(h[12].models).toBe(3)
+    expect(h[12].speed).toBe(20)
+    expect(h[12].spread).toBeLessThan(1)
+  })
+
+  it('skips hours with fewer than two models, never treats a gap as calm', () => {
+    const j = modelsJson({ ecmwf_ifs025: { s: 20 }, gfs_seamless: { s: 20 } })
+    ;(j.hourly['wind_speed_10m_gfs_seamless'] as unknown[])[10] = null
+    const h = parseOpenMeteoModels(j.hourly as never)
+    expect(h.find((x) => x.time.endsWith('10:00'))).toBeUndefined()
+    expect(h).toHaveLength(23)
+  })
+
+  it('a model without gusts does not pull the gust down; gust never below the wind', () => {
+    const h = parseOpenMeteoModels(modelsJson({ ecmwf_ifs025: { s: 20, g: 28 }, ukmo_seamless: { s: 20, g: null } }).hourly as never)
+    expect(h[12].gust).toBe(28)
+  })
+
+  it('says how much the models agree over the day', () => {
+    const hrs = (spread: number) => Array.from({ length: 6 }, (_, i) => ({ time: `x${i}`, speed: 18, gust: 22, direction: 90, spread }))
+    expect(agreementOf(hrs(1.5))).toBe('high')
+    expect(agreementOf(hrs(3.5))).toBe('medium')
+    expect(agreementOf(hrs(6))).toBe('low')
+    expect(agreementOf(hrs(1).map(({ spread: _s, ...x }) => x))).toBeNull()
+  })
+})
+
+describe("calibration with the school's measurements", () => {
+  const base = () => ({ days: buildDays(day('2026-11-25', 15, { gust: 20 })), fetchedAt: 0, source: 'consensus' as const })
+
+  it('multiplies every speed and gust, and works out the days again', () => {
+    const r = applyCalibration(base(), { factor: 1.25, count: 4 })
+    expect(r.days[0].avg).toBe(19) // 15 × 1.25 = 18.75
+    expect(r.days[0].hours[0].gust).toBe(25)
+    expect(r.days[0].level).toBe('good')
+    expect(r.calibration).toEqual({ factor: 1.25, count: 4 })
+  })
+
+  it('changes nothing without a correction', () => {
+    const d = base()
+    expect(applyCalibration(d, null)).toBe(d)
+    expect(applyCalibration(d, { factor: 1, count: 5 })).toBe(d)
+  })
+
+  it('the forecast for this hour is given without the correction, to compare with a measurement', () => {
+    const r = applyCalibration(base(), { factor: 1.2, count: 3 })
+    const h = forecastNow(r, new Date('2026-11-25T15:00:00Z')) // 12 h in Ceará
+    expect(h?.speed).toBe(15)
   })
 })
