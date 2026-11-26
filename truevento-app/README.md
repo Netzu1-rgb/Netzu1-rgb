@@ -127,6 +127,11 @@ Ojo: el bloqueo de gestión es de la app (pantalla "sin acceso"); la base de dat
 - Una clase (o un alumno nuevo) guardada sin conexión queda en una cola del dispositivo y se envía sola al volver internet. Cada registro lleva un identificador generado en el teléfono, así que aunque se envíe dos veces se guarda una sola vez.
 - Si el servidor rechaza un registro pendiente (por ejemplo, el instructor fue desactivado), aparece en Configuración con el motivo y se puede descartar.
 
+## Estado de producción
+
+- **26/11/2026:** aplicadas en producción las 9 migraciones (de `20261124000000_students_app.sql` a `20261202000000_school_rules.sql`), con una copia de seguridad tomada justo antes (fuera de git, en `backups/`). Comprobado después: las 42 clases quedaron idénticas (mismos montos, horas y alumnos) y los 9 registros de "Fran" quedaron en uno solo con sus 9 clases. Publicada la app de gestión nueva en Vercel (proyecto `truevento-app`).
+- Falta: publicar la app de alumnos (app.truevento.com), las notificaciones al celular (claves VAPID y `private.push_config`), el código de administración y el rol de administrador de la cuenta `truevento7`.
+
 ## Puesta en marcha
 
 ### 1. Supabase
