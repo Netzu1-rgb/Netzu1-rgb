@@ -144,8 +144,9 @@ export async function myStudentSummary(): Promise<StudentSummary | null> {
 }
 
 /** School staff only: active students' names. */
+/** Students who use the app (the management app keeps every student, with or without an account). */
 export async function listStudents(): Promise<Person[]> {
-  return check(await supabase.from('students').select('id, full_name').eq('active', true).order('full_name')) as Person[]
+  return check(await supabase.rpc('app_students')) as Person[]
 }
 
 export async function listSkills(): Promise<Skill[]> {
