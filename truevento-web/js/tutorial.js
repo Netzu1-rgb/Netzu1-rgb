@@ -129,8 +129,7 @@ const TT = {
   let active = 0
 
   // ---- phone screens (drawn with the real app on screen)
-  const frame = (inner, light) => `<div class="tm-phone ${os === 'android' ? 'tm-android' : ''}"><div class="tm-screen"${light ? ` style="background:${os === 'android' ? '#f1f3f4' : '#f2f2f7'}"` : ''}>
-    <div class="tm-notch"></div><div class="tm-sb ${light ? 'tm-dark' : ''}"><span>9:41</span><span>●●● ▮</span></div>${inner}</div></div>`
+  const frame = (inner, light) => `<div class="tm-face"${light ? ` style="background:${os === 'android' ? '#f1f3f4' : '#f2f2f7'}"` : ''}><div class="tm-sb ${light ? 'tm-dark' : ''}"><span>9:41</span><span>●●● ▮</span></div>${inner}</div>`
   const safari = (hl) => `<div class="tm-safari"><div class="tm-url">${ICONS.lock}${APP}</div><div class="tm-tools"><span>${ICONS.back}</span><span>${ICONS.fwd}</span><span class="${hl ? 'tm-tap' : ''}">${ICONS.share}</span><span>${ICONS.book}</span><span>${ICONS.tabs}</span></div></div>`
   const chrome = (hl) => `<div class="tm-chrome"><div class="tm-url">${ICONS.lock}&nbsp;${APP}</div><span class="tm-dots ${hl ? 'tm-tap' : ''}">${ICONS.dots}</span></div>`
   const home = () => `<div class="tm-home"></div><div class="tm-grid">${'<div class="tm-app"><i></i></div>'.repeat(11)}<div class="tm-app tm-tap"><img src="${IMG.icon}" alt=""><span>Truevento</span></div></div><div class="tm-dock"></div>`
@@ -166,57 +165,93 @@ const TT = {
     root.querySelector('[data-tm="title"]').textContent = u.title
     root.querySelector('[data-tm="desc"]').textContent = u.desc
     root.querySelectorAll('[data-tm-os]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tmOs === os)))
-    root.querySelector('[data-tm="steps"]').innerHTML = steps.map(([title, body, tip], i) => `
-      <li class="tm-step${i === active ? ' is-active' : ''}" data-i="${i}">
-        <div class="tm-card"><span class="tm-num">${u.step} ${i + 1} ${u.of} ${steps.length}</span>
-          <h3>${esc(title)}</h3><p>${fill(body)}</p>${tip ? `<p class="tm-tip">${fill(tip)}</p>` : ''}</div>
-      </li>`).join('')
+    const card = ([title, body, tip], i) => `<span class="tm-num">${u.step} ${i + 1} ${u.of} ${steps.length}</span>
+          <h3>${esc(title)}</h3><p>${fill(body)}</p>${tip ? `<p class="tm-tip">${fill(tip)}</p>` : ''}`
+    // the steps that scroll (on a computer you read them; on a phone they only set the pace)
+    root.querySelector('[data-tm="steps"]').innerHTML = steps.map((s, i) => `
+      <li class="tm-step${i === active ? ' is-active' : ''}" data-i="${i}"><div class="tm-card">${card(s, i)}</div></li>`).join('')
+    // on a phone the text of the step is shown under the phone, all steps stacked in one place
+    root.querySelector('[data-tm="caption"]').innerHTML = steps.map((s, i) => `<div class="tm-cap${i === active ? ' on' : ''}" data-i="${i}">${card(s, i)}</div>`).join('')
+    // one phone; its 5 screens are stacked inside and fade into each other
+    root.querySelector('[data-tm="phone"]').innerHTML = `<div class="tm-phone ${os === 'android' ? 'tm-android' : ''}"><div class="tm-screen"><div class="tm-notch"></div>
+      ${steps.map((_, i) => `<div class="tm-layer${i === active ? ' on' : ''}" data-i="${i}">${screen(i)}</div>`).join('')}</div></div>`
     const links = root.querySelector('[data-tm="links"]')
     if (links) links.innerHTML = `
       <a class="tm-applink main" href="https://${APP}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${u.open}</strong><small>${u.openSub} · ${APP}</small></span></a>
       <a class="tm-applink" href="https://${APP}/instalar" target="_blank" rel="noopener"><span class="tm-applink-ico">↗</span><span><strong>${u.guide}</strong><small>${u.guideSub}</small></span></a>`
     document.querySelectorAll('[data-tm="dots"]').forEach((d) => { d.innerHTML = steps.map((_, i) => `<span class="${i === active ? 'on' : ''}"></span>`).join('') })
-    show(active, true)
-    watch()
+    fit()
+    pick()
   }
 
-  function show(i, now) {
+  // the new screen fades in over the old one, which stays until it is covered (no dark flash)
+  let settle = null
+  function show(i) {
+    if (i === active) return
+    const root = document.getElementById('instalar')
+    const prev = root.querySelector(`.tm-layer[data-i="${active}"]`)
     active = i
-    const stage = document.querySelector('#instalar [data-tm="phone"]')
-    if (!stage) return
-    const html = screen(i)
-    if (now) { stage.innerHTML = html; return }
-    stage.classList.add('tm-fade')
-    setTimeout(() => { stage.innerHTML = html; stage.classList.remove('tm-fade') }, 160)
-    document.querySelectorAll('#instalar .tm-step').forEach((s) => s.classList.toggle('is-active', +s.dataset.i === i))
-    document.querySelectorAll('[data-tm="dots"] span').forEach((d, k) => d.classList.toggle('on', k === i))
+    root.querySelectorAll('.tm-layer.was').forEach((l) => l.classList.remove('was'))
+    if (prev) prev.classList.add('was')
+    root.querySelectorAll('.tm-layer').forEach((l) => l.classList.toggle('on', +l.dataset.i === i))
+    clearTimeout(settle)
+    settle = setTimeout(() => root.querySelectorAll('.tm-layer.was').forEach((l) => l.classList.remove('was')), 700)
+    root.querySelectorAll('.tm-cap').forEach((c) => c.classList.toggle('on', +c.dataset.i === i))
+    root.querySelectorAll('.tm-step').forEach((s) => s.classList.toggle('is-active', +s.dataset.i === i))
+    root.querySelectorAll('[data-tm="dots"] span').forEach((d, k) => d.classList.toggle('on', k === i))
   }
 
-  // the step in the middle of the screen is the one the phone shows
-  // the step being read is the one in the middle of the free space: the middle of the screen
-  // on a computer; on a phone, the middle of what is left under the phone (fixed at the top)
-  let ticking = false
-  function focusLine() {
-    const wrap = document.querySelector("#instalar .tm-stage-wrap")
-    if (!wrap || !matchMedia("(max-width: 767px)").matches) return innerHeight / 2
-    return (wrap.getBoundingClientRect().bottom + innerHeight) / 2
+  // the phone takes all the room there is: on a computer, the height of the window; on a
+  // phone, what is left on screen once the text of the step has its place
+  const isPhone = () => matchMedia('(max-width: 767px)').matches
+  function fit() {
+    const root = document.getElementById('instalar')
+    const wrap = root && root.querySelector('.tm-stage-wrap')
+    const stage = root && root.querySelector('[data-tm="phone"]')
+    if (!stage) return
+    const nav = document.getElementById('navbar')
+    const navH = nav ? Math.round(nav.getBoundingClientRect().height) : 64
+    wrap.style.setProperty('--tm-top', `${isPhone() ? navH : navH + 24}px`)
+    let s
+    if (isPhone()) {
+      const cs = getComputedStyle(wrap)
+      const room = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2 * parseFloat(cs.rowGap || 12)
+        - root.querySelector('[data-tm="caption"]').offsetHeight - root.querySelector('[data-tm="dots"]').offsetHeight
+      s = Math.min(room / 520, (wrap.clientWidth - 8) / 250, 1.1)
+    } else {
+      s = Math.min((innerHeight - navH - 24 - 64) / 520, 1.3)
+    }
+    stage.style.zoom = Math.max(s, 0.4).toFixed(3)
   }
+
+  // the step being read: on a computer, the text in the middle of the window; on a phone,
+  // how far you have scrolled through the steps (their text is shown under the phone)
+  let ticking = false
   function pick() {
     ticking = false
-    const steps = document.querySelectorAll("#instalar .tm-step")
+    const steps = document.querySelectorAll('#instalar .tm-step')
     if (!steps.length) return
-    const line = focusLine()
+    if (isPhone()) {
+      // how far through the part where the phone stays fixed on screen
+      const box = document.querySelector("#instalar .tm-scrolly").getBoundingClientRect()
+      const wrap = document.querySelector("#instalar .tm-stage-wrap")
+      const run = box.height - wrap.offsetHeight
+      const top = parseFloat(getComputedStyle(wrap).top) || 0
+      const p = Math.min(Math.max((top - box.top) / run, 0), 0.999)
+      return show(Math.floor(p * steps.length))
+    }
+    const line = innerHeight / 2
     let best = 0, dist = Infinity
     steps.forEach((s, i) => {
-      const r = s.querySelector(".tm-card").getBoundingClientRect()
+      const r = s.querySelector('.tm-card').getBoundingClientRect()
       const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0
       if (d < dist) { dist = d; best = i }
     })
-    if (best !== active) show(best)
+    show(best)
   }
-  function watch() { pick() }
-  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(pick) } }, { passive: true })
-  addEventListener("resize", pick, { passive: true })
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(pick) } }, { passive: true })
+  let resizing = null
+  addEventListener('resize', () => { clearTimeout(resizing); resizing = setTimeout(() => { fit(); pick() }, 120) }, { passive: true })
 
   // buttons: choose the phone (here and in the app section) and scroll to the guide
   document.addEventListener('click', (e) => {

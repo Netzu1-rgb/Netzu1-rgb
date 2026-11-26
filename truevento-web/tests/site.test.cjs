@@ -169,21 +169,45 @@ async function sizeChecks(browser, base) {
       check(st.sel === os && st.top >= 0 && st.top < 140, `${name}: el botón ${os} no lleva a la guía (${JSON.stringify(st)})`)
     }
 
-    // the guide: each step, when it is the one being read, shows its phone screen
-    const total = await page.$$eval('#instalar .tm-step', (s) => s.length)
-    const shown = []
+    // the guide: each step, when it is the one being read, shows its phone screen and its text,
+    // the phone uses the room there is and the new screen fades in (no swap of the whole phone)
+    const total = await page.$$eval("#instalar .tm-step", (s) => s.length)
     for (let i = 0; i < total; i++) {
-      await page.evaluate(({ i, mobile }) => { const c = document.querySelectorAll('#instalar .tm-card')[i].getBoundingClientRect(); const w = document.querySelector('#instalar .tm-stage-wrap').getBoundingClientRect(); scrollBy(0, c.top + c.height / 2 - (mobile ? (w.bottom + innerHeight) / 2 : innerHeight / 2)) }, { i, mobile: (opts.viewport?.width ?? 1000) < 768 })
-      await page.waitForTimeout(500)
-      const st = await page.evaluate((i) => {
-        const card = document.querySelectorAll('#instalar .tm-card')[i].getBoundingClientRect()
-        const stage = document.querySelector('#instalar .tm-stage-wrap').getBoundingClientRect()
-        const active = document.querySelector('#instalar .tm-step.is-active')
-        return { active: active && +active.dataset.i, covered: card.top < stage.bottom - 4 && card.bottom > stage.top && Math.abs(card.left - stage.left) < 40, inView: card.top >= 0 && card.bottom <= innerHeight + 2 }
-      }, i)
-      shown.push(st.active)
-      check(st.active === i, `${name}: al leer el paso ${i + 1} el teléfono muestra el paso ${st.active + 1}`)
-      check(!st.covered, `${name}: el teléfono tapa el texto del paso ${i + 1}`)
+      await page.evaluate(({ i, total, phone }) => {
+        if (phone) { // the phone stays fixed: move through the part where it is fixed
+          const box = document.querySelector("#instalar .tm-scrolly").getBoundingClientRect()
+          const wrap = document.querySelector("#instalar .tm-stage-wrap")
+          const top = parseFloat(getComputedStyle(wrap).top)
+          scrollBy(0, box.top - top + (box.height - wrap.offsetHeight) * (i + 0.5) / total)
+        } else {
+          const c = document.querySelectorAll("#instalar .tm-card")[i].getBoundingClientRect()
+          scrollBy(0, c.top + c.height / 2 - innerHeight / 2)
+        }
+      }, { i, total, phone: (opts.viewport?.width ?? 1000) < 768 })
+      await page.waitForTimeout(900)
+      const st = await page.evaluate(() => {
+        const phoneBox = document.querySelector("#instalar .tm-phone").getBoundingClientRect()
+        const layer = document.querySelector("#instalar .tm-layer.on")
+        const cap = document.querySelector("#instalar .tm-cap.on")
+        const capBox = cap && cap.getBoundingClientRect()
+        const text = capBox && capBox.height ? capBox : document.querySelector("#instalar .tm-step.is-active .tm-card").getBoundingClientRect()
+        return {
+          layer: layer && +layer.dataset.i,
+          step: +document.querySelector("#instalar .tm-step.is-active").dataset.i,
+          caption: capBox && capBox.height ? +cap.dataset.i : null,
+          layers: document.querySelectorAll("#instalar .tm-layer").length,
+          phoneH: Math.round(phoneBox.height),
+          phoneIn: phoneBox.top >= 40 && phoneBox.bottom <= innerHeight + 1,
+          textIn: text.top >= 0 && text.bottom <= innerHeight + 1,
+          overlap: capBox && capBox.height ? capBox.top < phoneBox.bottom : false,
+        }
+      })
+      check(st.layer === i && st.step === i && (st.caption === null || st.caption === i), `${name}: en el paso ${i + 1} se ve el paso ${st.layer + 1}`)
+      check(st.layers === total, `${name}: las pantallas del teléfono no están todas cargadas (cambio brusco)`)
+      check(st.phoneIn && st.textIn, `${name}: en el paso ${i + 1} el teléfono o el texto quedan fuera de la pantalla`)
+      check(!st.overlap, `${name}: el teléfono tapa el texto del paso ${i + 1}`)
+      const vh = await page.evaluate(() => innerHeight)
+      check(st.phoneH >= Math.min(0.45 * vh, 500) || (opts.viewport?.width ?? 1000) < 360, `${name}: el teléfono es chico (${st.phoneH}px de ${vh}px)`)
       if (i === 1) await page.screenshot({ path: path.join(OUT, `${name}-guia.png`) })
     }
 
