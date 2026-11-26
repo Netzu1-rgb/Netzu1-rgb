@@ -6,6 +6,7 @@ import App from './App'
 import { applyTheme } from './lib/theme'
 import { AuthProvider } from './context/AuthContext'
 import { ConfirmProvider, ToastProvider } from './components/ui'
+import { WhatsAppPreview } from './components/WhatsAppPreview'
 
 // the demo runs inside a sandboxed page without its own URL, so it keeps routes in memory
 const Router = import.meta.env.VITE_DEMO === '1' ? MemoryRouter : BrowserRouter
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
       <ToastProvider>
+        <WhatsAppPreview />
         <ConfirmProvider>
           <AuthProvider>
             <App />

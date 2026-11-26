@@ -7,7 +7,7 @@ import { Icon } from './ui'
 /** WhatsApp to the school with a message about this class, in the student's language. */
 export function schoolMessageLink(o: { me: string; date: string; hours: number }): string | null {
   return waLink(SCHOOL_WHATSAPP, t('wa.msg', {
-    me: o.me, day: longDay(o.date, true), hours: formatHours(o.hours),
+    me: o.me, day: longDay(o.date), hours: formatHours(o.hours),
   }))
 }
 

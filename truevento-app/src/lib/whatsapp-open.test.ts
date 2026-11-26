@@ -1,43 +1,34 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { openWhatsApp } from './whatsapp'
+import { describe, expect, it } from 'vitest'
+import { platform, whatsAppTargets } from './whatsapp'
 
-function env(ua: string, visibleAfter = true) {
-  const loc = { href: '' }
-  const open = vi.fn()
-  const listeners: Record<string, () => void> = {}
-  vi.stubGlobal('navigator', { userAgent: ua, platform: 'iPhone', maxTouchPoints: 5 })
-  vi.stubGlobal('window', { location: loc, open })
-  vi.stubGlobal('document', {
-    visibilityState: 'visible',
-    addEventListener: (k: string, f: () => void) => { listeners[k] = f },
-    removeEventListener: vi.fn(),
-  })
-  return { loc, open, leave: () => { if (!visibleAfter) listeners.visibilitychange?.() } }
-}
-const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15'
 const href = 'https://wa.me/5492215451174?text=Hola%2C%20soy%20Ana'
+const IPHONE = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15', platform: 'iPhone', maxTouchPoints: 5 }
+const IPAD = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15', platform: 'MacIntel', maxTouchPoints: 5 }
+const ANDROID = { userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130 Mobile', platform: 'Linux armv8l', maxTouchPoints: 5 }
+const PC = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130', platform: 'Win32', maxTouchPoints: 0 }
 
-describe('opening WhatsApp', () => {
-  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
-
-  it('on iPhone opens the WhatsApp app directly, no web page', () => {
-    vi.useFakeTimers()
-    const e = env(IPHONE, false); const ev = { preventDefault: vi.fn() }
-    openWhatsApp(ev, href); e.leave(); vi.advanceTimersByTime(1500)
-    expect(ev.preventDefault).toHaveBeenCalled()
-    expect(e.loc.href).toBe('whatsapp://send?phone=5492215451174&text=Hola%2C%20soy%20Ana')
-    expect(e.open).not.toHaveBeenCalled()
+describe('opening WhatsApp without long links', () => {
+  it('knows the device', () => {
+    expect(platform(IPHONE)).toBe('ios')
+    expect(platform(IPAD)).toBe('ios')
+    expect(platform(ANDROID)).toBe('android')
+    expect(platform(PC)).toBe('desktop')
   })
-  it('on iPhone without WhatsApp falls back to the wa.me page', () => {
-    vi.useFakeTimers()
-    const e = env(IPHONE, true)
-    openWhatsApp({ preventDefault: vi.fn() }, href); vi.advanceTimersByTime(1500)
-    expect(e.open).toHaveBeenCalledWith(href, '_blank', 'noopener')
+  it('iPhone: opens the WhatsApp app with the message', () => {
+    expect(whatsAppTargets(href, 'ios')).toEqual({ app: 'whatsapp://send?phone=5492215451174&text=Hola%2C%20soy%20Ana', web: href })
   })
-  it('elsewhere the link opens as usual', () => {
-    env('Mozilla/5.0 (Linux; Android 14) Chrome/130'); const ev = { preventDefault: vi.fn() }
-    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Linux; Android 14) Chrome/130', platform: 'Linux', maxTouchPoints: 5 })
-    openWhatsApp(ev, href)
-    expect(ev.preventDefault).not.toHaveBeenCalled()
+  it('Android: opens the WhatsApp app, with the regular page only if it is not installed', () => {
+    const t = whatsAppTargets(href, 'android')!
+    expect(t.app).toBe(`intent://send?phone=5492215451174&text=Hola%2C%20soy%20Ana#Intent;scheme=whatsapp;S.browser_fallback_url=${encodeURIComponent(href)};end`)
+  })
+  it('computer: opens WhatsApp Web directly on the chat', () => {
+    expect(whatsAppTargets(href, 'desktop')).toEqual({ app: null, web: 'https://web.whatsapp.com/send?phone=5492215451174&text=Hola%2C%20soy%20Ana' })
+  })
+  it('without a number, WhatsApp asks whom to send it to', () => {
+    expect(whatsAppTargets('https://wa.me/?text=Hola', 'ios')!.app).toBe('whatsapp://send?text=Hola')
+    expect(whatsAppTargets('https://wa.me/5492215451174', 'desktop')!.web).toBe('https://web.whatsapp.com/send?phone=5492215451174')
+  })
+  it('other links are left alone', () => {
+    expect(whatsAppTargets('https://truevento.com', 'ios')).toBeNull()
   })
 })

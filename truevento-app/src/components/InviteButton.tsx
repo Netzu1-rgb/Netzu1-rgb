@@ -1,3 +1,4 @@
+import { openWhatsApp } from '../lib/whatsapp'
 import { useState } from 'react'
 import { createInvite } from '../lib/api'
 import { friendlyError } from '../lib/errors'
@@ -51,7 +52,7 @@ export default function InviteButton({ kind, targetId, name, phone, className = 
               toast('No se pudo copiar: mandalo por WhatsApp', 'error')
             }
           }}>Copiar</button>
-          <a className="btn-primary flex-[2]" href={wa} target="_blank" rel="noreferrer">Enviar por WhatsApp</a>
+          <a className="btn-primary flex-[2]" href={wa} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, wa)}>Enviar por WhatsApp</a>
         </>}>
         <div className="space-y-4">
           <p className="text-ink-soft">

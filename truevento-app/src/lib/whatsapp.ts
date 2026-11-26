@@ -27,22 +27,62 @@ export function langFromPhone(phone: string | null | undefined): 'es' | 'pt' | '
   return 'en'
 }
 
+/** What the demo shows instead of leaving the page (see WhatsAppPreview). */
+export const WA_PREVIEW_EVENT = 'tv-whatsapp-preview'
+
+type Platform = 'ios' | 'android' | 'desktop'
+export function platform(nav: { userAgent: string; platform?: string; maxTouchPoints?: number } = navigator): Platform {
+  if (/iphone|ipad|ipod/i.test(nav.userAgent) || (nav.platform === 'MacIntel' && (nav.maxTouchPoints ?? 0) > 1)) return 'ios'
+  if (/android/i.test(nav.userAgent)) return 'android'
+  return 'desktop'
+}
+
+/** Where each device goes: the WhatsApp app on phones, WhatsApp Web on computers. */
+export function whatsAppTargets(href: string, where: Platform): { app: string | null; web: string } | null {
+  const m = /^https:\/\/wa\.me\/(\d*)(?:\?text=(.*))?$/.exec(href)
+  if (!m) return null
+  const [, phone, text] = m
+  // without a number, WhatsApp asks whom to send it to
+  const q = [phone && `phone=${phone}`, text && `text=${text}`].filter(Boolean).join('&')
+  if (where === 'ios') return { app: `whatsapp://send?${q}`, web: href }
+  if (where === 'android') {
+    // the WhatsApp app (or WhatsApp Business); if none is installed, Chrome opens the fallback
+    return { app: `intent://send?${q}#Intent;scheme=whatsapp;S.browser_fallback_url=${encodeURIComponent(href)};end`, web: href }
+  }
+  return { app: null, web: `https://web.whatsapp.com/send?${q}` }
+}
+
 /**
- * Opens the chat. On iPhone the WhatsApp app opens straight away (whatsapp://), with
- * no web page in between; if it is not installed, the normal wa.me page opens instead.
+ * Opens the chat with the message ready and never shows a long link: on iPhone and
+ * Android the WhatsApp app opens straight away; on a computer, WhatsApp Web opens on
+ * the chat. In the demo, a preview of the message is shown instead.
  */
 export function openWhatsApp(e: { preventDefault: () => void }, href: string) {
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  const m = /^https:\/\/wa\.me\/(\d+)(?:\?text=(.*))?$/.exec(href)
-  if (!ios || !m) return // the link opens as usual
+  const where = platform()
+  const t = whatsAppTargets(href, where)
+  if (!t) return // not a WhatsApp link: open it as usual
   e.preventDefault()
-  const app = `whatsapp://send?phone=${m[1]}${m[2] ? `&text=${m[2]}` : ''}`
+  if (import.meta.env.VITE_DEMO === '1') {
+    const m = /^https:\/\/wa\.me\/(\d*)(?:\?text=(.*))?$/.exec(href)!
+    window.dispatchEvent(new CustomEvent(WA_PREVIEW_EVENT, { detail: { phone: m[1], text: m[2] ? decodeURIComponent(m[2]) : '' } }))
+    return
+  }
+  if (!t.app) {
+    window.open(t.web, '_blank', 'noopener')
+    return
+  }
+  // WhatsApp opening (or the phone asking "Open in WhatsApp?") hides or blurs the page
   let left = false
-  const onHide = () => { left = true }
-  document.addEventListener('visibilitychange', onHide, { once: true })
-  window.location.href = app
+  const onLeave = () => { left = true }
+  document.addEventListener('visibilitychange', onLeave, { once: true })
+  window.addEventListener('blur', onLeave, { once: true })
+  window.addEventListener('pagehide', onLeave, { once: true })
+  window.location.href = t.app
+  // nothing happened: WhatsApp is not on this iPhone, open the regular chat page
   setTimeout(() => {
-    document.removeEventListener('visibilitychange', onHide)
-    if (!left && document.visibilityState === 'visible') window.open(href, '_blank', 'noopener')
-  }, 1200)
+    document.removeEventListener('visibilitychange', onLeave)
+    window.removeEventListener('blur', onLeave)
+    window.removeEventListener('pagehide', onLeave)
+    if (!left && document.visibilityState === 'visible' && where === 'ios') window.open(t.web, '_blank', 'noopener')
+  }, 2500)
 }

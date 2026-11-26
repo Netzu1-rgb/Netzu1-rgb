@@ -1,3 +1,4 @@
+import { openWhatsApp } from '../lib/whatsapp'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { PrivacyModal, schoolWhatsAppLink } from '../components/Privacy'
 import { ErrorBox, Field, Icon, Spinner } from '../components/ui'
@@ -246,7 +247,7 @@ export default function Welcome() {
             {forgot && (
               <div className="mt-3 rounded-xl bg-surface-2 px-4 py-3 text-left text-ink-soft">
                 <p>{t('welcome.forgotText')}</p>
-                <a href={schoolWhatsAppLink()} target="_blank" rel="noreferrer" className="btn-dark mt-3 w-full">
+                <a href={schoolWhatsAppLink()} target="_blank" rel="noreferrer" onClick={(e) => openWhatsApp(e, schoolWhatsAppLink())} className="btn-dark mt-3 w-full">
                   <Icon name="phone" /> WhatsApp
                 </a>
               </div>
