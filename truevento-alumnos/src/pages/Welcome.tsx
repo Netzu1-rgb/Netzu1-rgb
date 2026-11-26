@@ -1,3 +1,4 @@
+import { isStandalone } from '../lib/pwa'
 import { openWhatsApp } from '../lib/whatsapp'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { PrivacyModal, schoolWhatsAppLink } from '../components/Privacy'
@@ -255,6 +256,12 @@ export default function Welcome() {
           </div>
         )}
       </form>
+      {/* first visit from a browser: how to keep the app on the home screen */}
+      {import.meta.env.VITE_DEMO !== '1' && !isStandalone() && (
+        <a href="/instalar.html" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm font-semibold text-brand-deep">
+          <Icon name="install" className="h-4 w-4" /> {t('welcome.install')}
+        </a>
+      )}
     </Shell>
   )
 }

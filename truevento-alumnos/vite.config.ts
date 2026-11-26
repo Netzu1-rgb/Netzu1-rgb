@@ -63,7 +63,11 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
+          // the install tutorial is read before installing: not kept offline
+          globIgnores: ['**/instalar.html'],
           navigateFallback: '/index.html',
+          // the install tutorial is its own page (app.truevento.com/instalar)
+          navigateFallbackDenylist: [/^\/instalar/],
           cleanupOutdatedCaches: true,
           // notifications on the phone (public/push-sw.js)
           importScripts: ['push-sw.js'],

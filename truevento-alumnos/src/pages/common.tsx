@@ -83,6 +83,11 @@ export function SettingsPage() {
               {t(install.ios ? 'settings.installIos' : 'settings.installOther')}
             </p>
           )}
+          {import.meta.env.VITE_DEMO !== '1' && (
+            <a href="/instalar.html" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep underline underline-offset-2">
+              <Icon name="install" className="h-4 w-4" /> {t('install.guide')}
+            </a>
+          )}
         </section>
       )}
 
