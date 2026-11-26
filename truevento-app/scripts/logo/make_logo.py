@@ -1,11 +1,18 @@
 # Builds the TRUEVENTO logo as a vector SVG (text converted to paths from the Outfit font).
+#
+# Usage (needs Python 3 and fontTools: pip install fonttools brotli):
+#   python3 scripts/logo/make_logo.py public/logo-truevento.svg
+#
+# Python because fontTools can set the weight of the Outfit variable font; the Node font
+# libraries cannot do it with this .woff2 file.
 import sys
+from pathlib import Path
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
-FONT = '/home/user/Netzu1-rgb/truevento-alumnos/public/fonts/outfit-latin.woff2'
+FONT = Path(__file__).resolve().parents[3] / 'truevento-alumnos/public/fonts/outfit-latin.woff2'
 
 def text_path(text, weight, size, x, baseline, spacing, skew=0.0, center=None):
     f = instantiateVariableFont(TTFont(FONT), {'wght': weight})

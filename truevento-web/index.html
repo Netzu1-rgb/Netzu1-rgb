@@ -57,7 +57,7 @@
                 </div>
             </a>
 
-            <div class="hidden md:flex items-center gap-6 lg:gap-8">
+            <div class="hidden lg:flex items-center gap-6 xl:gap-8">
                 <a href="#about" data-i18n="nav_about"
                     class="nav-link text-white/90 hover:text-primary font-medium text-sm lg:text-base transition-colors uppercase tracking-wider">La
                     Escuela</a>
@@ -84,19 +84,19 @@
             </div>
 
             <!-- Mobile Right: Clean Lang Buttons + Hamburger -->
-            <div class="flex md:hidden items-center gap-2.5">
+            <div class="flex lg:hidden items-center gap-2.5">
                 <div
-                    class="inline-flex items-center bg-white/10 p-0.5 rounded-full text-[11px] font-semibold backdrop-blur-sm">
+                    class="inline-flex items-center bg-white/10 p-0.5 rounded-full text-xs font-semibold backdrop-blur-sm">
                     <button type="button" onclick="setLanguage('es')" data-lang-btn="es"
-                        class="px-2 py-0.5 rounded-full text-white bg-primary transition-all">ES</button>
+                        class="px-2 min-[360px]:px-2.5 py-1.5 rounded-full text-white bg-primary transition-all">ES</button>
                     <button type="button" onclick="setLanguage('pt')" data-lang-btn="pt"
-                        class="px-2 py-0.5 rounded-full text-white/60 hover:text-white transition-all">PT</button>
+                        class="px-2 min-[360px]:px-2.5 py-1.5 rounded-full text-white/60 hover:text-white transition-all">PT</button>
                     <button type="button" onclick="setLanguage('en')" data-lang-btn="en"
-                        class="px-2 py-0.5 rounded-full text-white/60 hover:text-white transition-all">EN</button>
+                        class="px-2 min-[360px]:px-2.5 py-1.5 rounded-full text-white/60 hover:text-white transition-all">EN</button>
                 </div>
                 <button id="menu-btn"
                     class="flex flex-col gap-1.5 p-2.5 z-50 rounded-xl bg-[#1e293b]/5 border border-white/10"
-                    aria-label="Abrir menú">
+                    aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
                     <span class="w-6 h-0.5 bg-[#1e293b] transition-all duration-300"></span>
                     <span class="w-6 h-0.5 bg-[#1e293b] transition-all duration-300"></span>
                     <span class="w-6 h-0.5 bg-[#1e293b] transition-all duration-300"></span>
@@ -213,32 +213,16 @@
                     <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-4" data-i18n="app_title">Tu escuela en el celular</h2>
                     <p class="text-slate-400 text-lg max-w-2xl mb-8" data-i18n="app_desc">Pedí tus clases, seguí tu progreso paso a paso y mirá el viento de cada día. Se instala en un minuto, sin App Store ni Play Store.</p>
 
-                    <div class="grid sm:grid-cols-2 gap-4 max-w-3xl">
-                        <a href="https://app.truevento.com" target="_blank" rel="noopener"
-                            class="group block rounded-2xl p-6 bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 hover:border-primary transition-all">
-                            <span class="w-12 h-12 rounded-xl bg-primary/20 text-primary grid place-items-center mb-4" aria-hidden="true">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
-                            </span>
-                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_open_title">Abrí la app</h3>
-                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_open_desc">Creá tu cuenta o ingresá con tu usuario.</p>
-                            <span class="font-mono text-primary text-sm block mb-4 select-all">app.truevento.com</span>
-                            <span class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-[0_0_20px_rgba(14,165,233,0.35)] group-hover:shadow-[0_0_25px_rgba(14,165,233,0.6)] transition-all">
-                                <span data-i18n="app_open_btn">Ir a la app</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                            </span>
+                    <div class="grid sm:grid-cols-2 gap-4 max-w-2xl">
+                        <a href="#instalar" data-tm-os="ios" data-tm-jump class="os-btn ios">
+                            <span class="os-ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.5-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-4zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg></span>
+                            <span><small data-i18n="app_btn_small">Cómo instalarla</small><strong>iPhone</strong></span>
+                            <span class="os-go"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
                         </a>
-                        <a href="https://app.truevento.com/instalar" target="_blank" rel="noopener"
-                            class="group block rounded-2xl p-6 bg-[#111a2e] border border-slate-700/70 hover:border-primary transition-all">
-                            <span class="w-12 h-12 rounded-xl bg-white/5 text-white grid place-items-center mb-4" aria-hidden="true">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-                            </span>
-                            <h3 class="text-xl font-display font-bold text-white mb-1" data-i18n="app_install_title">Instalala en tu celular</h3>
-                            <p class="text-slate-400 text-sm mb-4" data-i18n="app_install_desc">Tutorial paso a paso con imágenes para iPhone y Android.</p>
-                            <span class="font-mono text-slate-300 text-sm block mb-4 select-all">app.truevento.com/instalar</span>
-                            <span class="inline-flex items-center gap-2 border border-white/30 text-white px-5 py-2.5 rounded-full font-bold text-sm group-hover:bg-white/10 transition-all">
-                                <span data-i18n="app_install_btn">Ver el tutorial</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                            </span>
+                        <a href="#instalar" data-tm-os="android" data-tm-jump class="os-btn and">
+                            <span class="os-ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 18a1 1 0 0 0 1 1h1v3a1.5 1.5 0 0 0 3 0v-3h2v3a1.5 1.5 0 0 0 3 0v-3h1a1 1 0 0 0 1-1V8H6v10zM3.5 8A1.5 1.5 0 0 0 2 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 3.5 8zm17 0A1.5 1.5 0 0 0 19 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 20.5 8zm-4.97-5.84 1.3-1.3a.5.5 0 0 0-.7-.71l-1.48 1.48A5.9 5.9 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15a.5.5 0 1 0-.7.7l1.31 1.32A5.97 5.97 0 0 0 6 7h12a5.97 5.97 0 0 0-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg></span>
+                            <span><small data-i18n="app_btn_small">Cómo instalarla</small><strong>Android</strong></span>
+                            <span class="os-go"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
                         </a>
                     </div>
 
@@ -302,7 +286,7 @@
 </div>
 
                         <div
-                            class="absolute -bottom-8 -right-8 bg-[#1e293b] p-6 rounded-2xl shadow-2xl hidden md:block border border-slate-700/60">
+                            class="absolute -bottom-8 -right-4 lg:-right-8 bg-[#1e293b] p-6 rounded-2xl shadow-2xl hidden md:block border border-slate-700/60">
                             <p class="text-5xl font-display font-black text-primary mb-1">+20</p>
                             <p class="text-slate-400 font-semibold uppercase tracking-wider text-xs"
                                 data-i18n="about_exp">Años de experiencia
@@ -533,35 +517,33 @@
     </section>
 
     <!-- Contact & Map -->
+    <!-- Installation guide: the phone changes as you scroll (js/tutorial.js) -->
+    <section id="instalar" class="py-16 md:py-24 bg-[#0b1121]">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="max-w-2xl">
+                <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block" data-tm="tag">Instalá la app</span>
+                <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-4" data-tm="title">Tené Truevento en tu pantalla de inicio</h2>
+                <p class="text-slate-400 text-lg mb-7" data-tm="desc"></p>
+                <div class="tm-tabs" role="tablist">
+                    <button type="button" role="tab" data-tm-os="ios"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.5-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-4zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg><span>iPhone</span></button>
+                    <button type="button" role="tab" data-tm-os="android"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 18a1 1 0 0 0 1 1h1v3a1.5 1.5 0 0 0 3 0v-3h2v3a1.5 1.5 0 0 0 3 0v-3h1a1 1 0 0 0 1-1V8H6v10zM3.5 8A1.5 1.5 0 0 0 2 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 3.5 8zm17 0A1.5 1.5 0 0 0 19 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 20.5 8zm-4.97-5.84 1.3-1.3a.5.5 0 0 0-.7-.71l-1.48 1.48A5.9 5.9 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15a.5.5 0 1 0-.7.7l1.31 1.32A5.97 5.97 0 0 0 6 7h12a5.97 5.97 0 0 0-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg><span>Android</span></button>
+                </div>
+            </div>
+            <div class="tm-scrolly">
+                <div class="tm-stage-wrap"><div class="tm-stage" data-tm="phone" aria-hidden="true"></div><div class="tm-dotsbar" data-tm="dots"></div></div>
+                <ol class="tm-steps" data-tm="steps"></ol>
+            </div>
+            <div class="tm-links" data-tm="links"></div>
+        </div>
+    </section>
+
     <section id="contact" class="py-16 md:py-24 bg-[#0b1121] relative">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
-                <!-- Book in the app (no form on the website) -->
-                <div class="reveal flex flex-col justify-center">
-                    <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block"
-                        data-i18n="contact_tag">Contacto</span>
-                    <h2 class="text-3xl md:text-5xl font-display font-bold text-white mb-5" data-i18n="contact_title">Reservá tu clase en la app</h2>
-                    <p class="text-slate-400 text-lg mb-8 max-w-xl" data-i18n="contact_desc">Pedí tu clase desde la app: elegís el día y cuántas horas, y te escribimos por WhatsApp para coordinar el horario y el precio. Ahí también ves tus clases y tu progreso.</p>
-                    <ol class="space-y-4 mb-9 max-w-xl">
-                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">1</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s1">Abrí la app y creá tu cuenta (es gratis).</span></li>
-                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">2</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s2">Tocá “Pedir clase” y elegí el día y las horas.</span></li>
-                        <li class="flex items-start gap-4"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold grid place-items-center shrink-0">3</span><span class="text-slate-300 pt-1.5" data-i18n="contact_s3">Te escribimos por WhatsApp y confirmamos tu clase.</span></li>
-                    </ol>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="https://app.truevento.com" target="_blank" rel="noopener"
-                            class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(14,165,233,0.4)] hover:shadow-[0_0_35px_rgba(14,165,233,0.7)] transition-all">
-                            <span data-i18n="contact_app_btn">Pedir mi clase en la app</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                        </a>
-                        <a href="https://app.truevento.com/instalar" target="_blank" rel="noopener"
-                            class="border border-slate-600/70 hover:border-primary text-white px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all" data-i18n="contact_install_btn">Cómo instalarla</a>
-                    </div>
-                </div>
-
                 <!-- Info & Map -->
-                <div class="reveal" style="transition-delay: 200ms;">
-                    <div class="bg-[#1e293b] rounded-3xl p-8 mb-8 border border-slate-700/60 shadow-xl">
+                <div class="contents">
+                    <div class="reveal bg-[#1e293b] rounded-3xl p-8 border border-slate-700/60 shadow-xl">
                         <h3 class="text-2xl font-display font-bold text-white mb-6" data-i18n="info_title">Información
                             Directa</h3>
 
@@ -581,8 +563,8 @@
                                     <h4 class="font-bold text-white mb-1" data-i18n="info_location_title">Ubicación</h4>
                                     <p class="text-slate-400 text-sm mb-1">Truevento Kiteschool<br>Ilha do Guajirú,
                                         Itarema</p>
-                                    <a href="https://maps.app.goo.gl/W8Vw49GqE7EYu743A" target="_blank"
-                                        class="text-primary hover:text-accent text-sm font-semibold transition-colors flex items-center gap-1"><span
+                                    <a href="https://maps.app.goo.gl/W8Vw49GqE7EYu743A" target="_blank" rel="noopener"
+                                        class="text-primary hover:text-accent text-sm font-semibold transition-colors inline-flex items-center gap-1 py-1.5"><span
                                             data-i18n="info_maps_link">Abrir en Google Maps</span> <svg class="w-4 h-4"
                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -604,8 +586,8 @@
                                 <div>
                                     <h4 class="font-bold text-white mb-1" data-i18n="info_wa_title">WhatsApp (Respuesta
                                         Rápida)</h4>
-                                    <a href="https://wa.me/5492215451174"
-                                        class="text-slate-400 text-sm hover:text-primary transition-colors">+54 9 221
+                                    <a href="https://wa.me/5492215451174" target="_blank" rel="noopener"
+                                        class="inline-block py-1.5 text-slate-400 text-sm hover:text-primary transition-colors">+54 9 221
                                         545-1174</a>
                                 </div>
                             </div>
@@ -622,14 +604,14 @@
                                 <div>
                                     <h4 class="font-bold text-white mb-1">Email</h4>
                                     <a href="mailto:Truevento7@gmail.com"
-                                        class="text-slate-400 text-sm hover:text-primary transition-colors">Truevento7@gmail.com</a>
+                                        class="inline-block py-1.5 text-slate-400 text-sm hover:text-primary transition-colors">Truevento7@gmail.com</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Map -->
-                    <div class="rounded-3xl overflow-hidden shadow-lg border border-slate-700/60 h-64 relative">
+                    <div class="reveal rounded-3xl overflow-hidden shadow-lg border border-slate-700/60 h-72 lg:h-auto min-h-[18rem] relative">
                         <div class="absolute inset-0 bg-primary/10 mix-blend-color pointer-events-none z-10"></div>
                         <!-- Slight color tint to map to blend better -->
                         <iframe
@@ -662,8 +644,8 @@
                 <p class="text-sm text-slate-400" data-i18n="footer_rights">© 2026 Truevento Kiteschool. Todos los derechos reservados.
                 </p>
                 <div class="flex gap-4">
-                    <a href="#" onclick="openModal('privacyModal', event)" class="hover:text-white transition-colors text-sm" data-i18n="footer_privacy">Política de Privacidad</a>
-                    <a href="#" onclick="openModal('termsModal', event)" class="hover:text-white transition-colors text-sm" data-i18n="footer_terms">Términos de Uso</a>
+                    <a href="#" onclick="openModal('privacyModal', event)" class="inline-block py-2 hover:text-white transition-colors text-sm" data-i18n="footer_privacy">Política de Privacidad</a>
+                    <a href="#" onclick="openModal('termsModal', event)" class="inline-block py-2 hover:text-white transition-colors text-sm" data-i18n="footer_terms">Términos de Uso</a>
                 </div>
             </div>
         </div>
@@ -700,7 +682,6 @@
         </div>
     </div>
 
-    <!-- Booking Success Confirmation Modal -->
     <!-- Cookie Consent Banner -->
     <div id="cookieBanner" class="fixed bottom-0 left-0 w-full bg-[#1e293b] border-t border-slate-700/60 shadow-lg z-[90] p-4 transform translate-y-full transition-transform duration-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-slate-300 text-sm text-center sm:text-left flex-1">
@@ -731,6 +712,7 @@
     <!-- Carousel Script -->
     
     <script src="js/main.js"></script>
+    <script src="js/tutorial.js"></script>
 </body>
 
 </html>

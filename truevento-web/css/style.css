@@ -199,3 +199,145 @@ body {
         }
         /* menu links land with the title visible below the fixed bar */
         section[id] { scroll-margin-top: 88px; }
+
+        /* ---------- installation guide (js/tutorial.js): sticky phone + steps ---------- */
+        .tm-tabs { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 18px; background: #111a2e; border: 1px solid rgba(148, 163, 184, .18) }
+        .tm-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 13px; font: 700 15px 'Outfit', sans-serif; color: #94a3b8; transition: all .25s }
+        .tm-tabs button svg { width: 18px; height: 18px }
+        .tm-tabs button[aria-selected="true"] { color: #fff; background: linear-gradient(100deg, #0ea5e9, #6366f1); box-shadow: 0 6px 20px -8px rgba(14, 165, 233, .7) }
+        .tm-scrolly { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 72px; align-items: start; margin-top: 40px }
+        .tm-stage-wrap { grid-column: 2; grid-row: 1; position: sticky; top: 112px; display: grid; justify-items: center; gap: 18px }
+        .tm-stage { width: 250px; height: 520px; transition: opacity .16s, transform .16s }
+        .tm-stage.tm-fade { opacity: 0; transform: translateY(6px) }
+        .tm-dotsbar { display: flex; gap: 8px }
+        .tm-dotsbar span { width: 8px; height: 8px; border-radius: 99px; background: #334155; transition: all .3s }
+        .tm-dotsbar span.on { width: 26px; background: #0ea5e9 }
+        .tm-steps { grid-column: 1; grid-row: 1; list-style: none; margin: 0; padding: 0 }
+        .tm-step { min-height: 64vh; display: flex; align-items: center }
+        .tm-step:first-child { min-height: 52vh; align-items: flex-start; padding-top: 40px }
+        .tm-step:last-child { min-height: 58vh }
+        .tm-card { max-width: 520px; opacity: .32; transform: translateX(-6px); transition: opacity .4s, transform .4s }
+        .tm-step.is-active .tm-card { opacity: 1; transform: none }
+        .tm-num { display: inline-block; font: 700 12px 'Inter', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #0ea5e9; margin-bottom: 10px }
+        .tm-card h3 { font: 800 clamp(1.6rem, 3vw, 2.3rem)/1.15 'Outfit', sans-serif; color: #fff; margin: 0 0 12px }
+        .tm-card p { color: #cbd5e1; font-size: 1.08rem; line-height: 1.65; margin: 0 }
+        .tm-card b { color: #fff }
+        .tm-card .tm-tip { margin-top: 14px; font-size: .95rem; color: #94a3b8; background: rgba(148, 163, 184, .08); border: 1px solid rgba(148, 163, 184, .14); border-radius: 14px; padding: 12px 14px }
+        .tm-kbd { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; color: #fff; background: rgba(14, 165, 233, .18); border: 1px solid rgba(14, 165, 233, .35); border-radius: 8px; padding: 0 8px; white-space: nowrap }
+        .tm-kbd svg { width: 15px; height: 15px }
+        .tm-link { color: #38bdf8; font-weight: 700; text-decoration: underline; text-underline-offset: 3px }
+        @media (max-width: 767px) {
+            .tm-scrolly { grid-template-columns: 1fr; gap: 0; margin-top: 28px }
+            .tm-stage-wrap { grid-column: 1; grid-row: 1; top: 56px; z-index: 5; padding: 18px 0 22px; gap: 8px;
+                background: linear-gradient(180deg, #0b1121 82%, rgba(11, 17, 33, 0)) }
+            .tm-stage { transform: scale(.44); transform-origin: top center; height: 229px }
+            .tm-card h3 { font-size: 19px } .tm-card p { font-size: 15px } .tm-card .tm-tip { font-size: 13.5px; padding: 10px 12px }
+            .tm-steps { grid-row: 2 }
+            .tm-step, .tm-step:first-child, .tm-step:last-child { min-height: 62vh; align-items: flex-end; padding: 0 0 6vh }
+            .tm-card { opacity: .5; transform: none; background: #111a2e; border: 1px solid rgba(148, 163, 184, .16); border-radius: 20px; padding: 20px }
+        }
+        @media (prefers-reduced-motion: reduce) { .tm-stage, .tm-card { transition: none } }
+
+        /* phone drawing */
+        .tm-phone { width: 250px; height: 520px; border-radius: 40px; background: #121018; padding: 9px; box-shadow: 0 30px 60px -22px rgba(14, 165, 233, .45), inset 0 0 0 2px #2d2a3a }
+        .tm-screen { position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #000; font-family: -apple-system, 'Inter', Roboto, sans-serif }
+        .tm-android.tm-phone { border-radius: 30px } .tm-android .tm-screen { border-radius: 23px }
+        .tm-sb { position: absolute; inset: 0 0 auto; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 11px; font-weight: 600; color: #fff; z-index: 3 }
+        .tm-sb.tm-dark { color: #111 }
+        .tm-notch { position: absolute; top: 8px; left: 50%; width: 76px; height: 21px; border-radius: 12px; background: #000; transform: translateX(-50%); z-index: 4 }
+        .tm-android .tm-notch { width: 10px; height: 10px; border-radius: 50%; top: 9px }
+        .tm-shot { position: absolute; left: 0; right: 0; top: 30px; width: 100%; display: block }
+        .tm-shot.tm-low { top: 74px }
+        .tm-veil { position: absolute; inset: 0; background: rgba(0, 0, 0, .4); z-index: 4 }
+        .tm-safari { position: absolute; inset: auto 0 0; z-index: 3; background: rgba(246, 246, 248, .97); padding: 8px 10px 16px; border-top: 1px solid #d8d8de }
+        .tm-url { background: #e4e4ea; border-radius: 11px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 11.5px; color: #111; gap: 5px }
+        .tm-url svg { width: 10px; height: 10px }
+        .tm-tools { display: flex; justify-content: space-around; align-items: center; margin-top: 9px; color: #0a84ff }
+        .tm-tools span { width: 26px; height: 26px; display: grid; place-items: center; position: relative }
+        .tm-tools svg { width: 20px; height: 20px }
+        .tm-chrome { position: absolute; inset: 30px 0 auto; z-index: 3; background: #f1f3f4; padding: 7px 8px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #dadce0 }
+        .tm-chrome .tm-url { flex: 1; background: #e3e5e8; border-radius: 16px; justify-content: flex-start; padding-left: 10px }
+        .tm-dots { width: 26px; height: 26px; display: grid; place-items: center; color: #3c4043; position: relative }
+        .tm-dots svg { width: 18px; height: 18px }
+        .tm-sheet { position: absolute; inset: auto 0 0; z-index: 5; background: #f2f2f7; border-radius: 16px 16px 0 0; padding: 10px 10px 18px; color: #111 }
+        .tm-grab { width: 34px; height: 4px; border-radius: 3px; background: #c4c4c9; margin: 0 auto 10px }
+        .tm-site { display: flex; gap: 8px; align-items: center; background: #fff; border-radius: 11px; padding: 7px 9px; font-size: 11px }
+        .tm-site img { width: 28px; height: 28px; border-radius: 7px }
+        .tm-site b { display: block; font-size: 11.5px }
+        .tm-apps { display: flex; gap: 10px; padding: 10px 2px }
+        .tm-apps i { width: 36px; height: 36px; border-radius: 10px; display: block; flex: none }
+        .tm-rows { background: #fff; border-radius: 11px; overflow: hidden }
+        .tm-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 11px; font-size: 11.5px; border-top: 1px solid #ececf1; position: relative }
+        .tm-row:first-child { border-top: 0 }
+        .tm-row svg { width: 15px; height: 15px }
+        .tm-hl { background: #fff0f5; font-weight: 700 }
+        .tm-dialog { position: absolute; z-index: 5; inset: 30px 0 0; background: #f2f2f7; color: #111 }
+        .tm-dbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 12px 8px; font-size: 12px }
+        .tm-blue { color: #0a84ff; font-weight: 600; position: relative }
+        .tm-dcard { margin: 6px 10px; background: #fff; border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: center; font-size: 12px }
+        .tm-dcard img { width: 46px; height: 46px; border-radius: 11px }
+        .tm-name { font-weight: 600; border-bottom: 1px solid #e3e3e8; padding-bottom: 5px; margin-bottom: 5px }
+        .tm-addr { color: #8e8e93; font-size: 10.5px }
+        .tm-toggle { margin: 8px 10px; background: #fff; border-radius: 12px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px }
+        .tm-toggle i { width: 34px; height: 20px; border-radius: 10px; background: #34c759; position: relative }
+        .tm-toggle i::after { content: ""; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff }
+        .tm-menu { position: absolute; z-index: 5; top: 66px; right: 6px; width: 72%; background: #fff; border-radius: 6px; box-shadow: 0 6px 20px rgba(0, 0, 0, .28); padding: 4px 0; color: #202124 }
+        .tm-mi { padding: 7px 12px; font-size: 11.5px; position: relative; display: flex; align-items: center; gap: 9px }
+        .tm-mi svg { width: 15px; height: 15px; color: #5f6368 }
+        .tm-adlg { position: absolute; z-index: 5; left: 14px; right: 14px; top: 40%; background: #fff; border-radius: 20px; padding: 16px; color: #202124; font-size: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35) }
+        .tm-adlg h4 { margin: 0 0 10px; font: 600 15px 'Inter', sans-serif }
+        .tm-who { display: flex; gap: 10px; align-items: center }
+        .tm-who img { width: 36px; height: 36px; border-radius: 50% }
+        .tm-btns { display: flex; justify-content: flex-end; gap: 16px; margin-top: 14px; font-weight: 600; color: #1a73e8 }
+        .tm-btns span { position: relative; padding: 4px 6px }
+        .tm-home { position: absolute; inset: 0; background: linear-gradient(160deg, #0e7490 0%, #4f46e5 52%, #db2777 100%) }
+        .tm-grid { position: absolute; top: 48px; left: 14px; right: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 10px }
+        .tm-app { display: grid; justify-items: center; gap: 4px; font-size: 9.5px; color: #fff; text-align: center; position: relative }
+        .tm-app i { width: 44px; height: 44px; border-radius: 12px; display: block; background: rgba(255, 255, 255, .28) }
+        .tm-app img { width: 44px; height: 44px; border-radius: 12px; display: block }
+        .tm-android .tm-app i, .tm-android .tm-app img { border-radius: 50% }
+        .tm-dock { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 62px; border-radius: 22px; background: rgba(255, 255, 255, .22) }
+        .tm-tap::before { content: ""; position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 3px solid #ff3d71; box-shadow: 0 0 0 4px rgba(255, 61, 113, .25); z-index: 6; animation: tm-ping 1.6s ease-out infinite; pointer-events: none }
+        .tm-row.tm-tap::before, .tm-mi.tm-tap::before { left: auto; right: 4px; margin: -20px 0 0 0 }
+        @keyframes tm-ping { 0% { transform: scale(.7); opacity: 1 } 80%, 100% { transform: scale(1.35); opacity: 0 } }
+        @media (prefers-reduced-motion: reduce) { .tm-tap::before { animation: none } }
+
+        /* two buttons under the cover: iPhone / Android */
+        .os-btn { position: relative; display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 22px; text-align: left; transition: transform .25s, box-shadow .25s, border-color .25s; border: 1px solid rgba(148, 163, 184, .2); background: linear-gradient(150deg, rgba(30, 41, 59, .9), rgba(15, 23, 42, .9)) }
+        .os-btn:hover { transform: translateY(-3px); border-color: rgba(14, 165, 233, .7); box-shadow: 0 18px 40px -18px rgba(14, 165, 233, .6) }
+        .os-btn .os-ico { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; flex: none; color: #fff }
+        .os-btn .os-ico svg { width: 28px; height: 28px }
+        .os-btn.ios .os-ico { background: linear-gradient(135deg, #0ea5e9, #6366f1) }
+        .os-btn.and .os-ico { background: linear-gradient(135deg, #10b981, #0ea5e9) }
+        .os-btn small { display: block; font: 600 12px 'Inter', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #94a3b8 }
+        .os-btn strong { display: block; font: 800 22px 'Outfit', sans-serif; color: #fff; line-height: 1.2 }
+        .os-btn .os-go { margin-left: auto; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .08); color: #fff; transition: background .25s }
+        .os-btn:hover .os-go { background: #0ea5e9 }
+
+/* app links under the guide */
+.tm-links{display:grid;gap:14px;margin-top:40px;grid-template-columns:1fr}
+@media(min-width:768px){.tm-links{grid-template-columns:1fr 1fr}}
+.tm-applink{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:18px;background:#111a2e;border:1px solid rgba(148,163,184,.18);color:#e2e8f0;transition:transform .2s,border-color .2s,background .2s}
+.tm-applink:hover{transform:translateY(-2px);border-color:rgba(14,165,233,.55)}
+.tm-applink.main{background:linear-gradient(135deg,#0ea5e9,#0284c7);border-color:transparent;color:#fff;box-shadow:0 14px 30px -14px rgba(14,165,233,.7)}
+.tm-applink img{width:44px;height:44px;border-radius:12px;flex:none}
+.tm-applink-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(14,165,233,.14);color:#38bdf8;font-size:20px;flex:none}
+.tm-applink strong{display:block;font-size:16px}
+.tm-applink small{display:block;font-size:13px;opacity:.8;overflow-wrap:anywhere}
+
+/* with the mobile menu open, nothing floats over it */
+body.menu-open #cookieBanner, body.menu-open a[aria-label="Contactar por WhatsApp"] { visibility: hidden }
+
+/* people who turned off animations on their phone or computer */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto !important }
+    .reveal { transition: none !important; opacity: 1 !important; transform: none !important }
+    #about-carousel { transition: none !important }
+    a[aria-label="Contactar por WhatsApp"] { animation: none !important }
+}
+
+/* very small phones (320 px wide): a smaller guide phone so every step's text fits under it */
+@media (max-width: 359px) {
+    .tm-stage { transform: scale(.36); height: 187px }
+    .tm-card { padding: 16px }
+}
