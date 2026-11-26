@@ -1,0 +1,196 @@
+body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .glass-nav.scrolled {
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-nav.scrolled .nav-link {
+            color: #e2e8f0;
+        }
+
+        .glass-nav.scrolled .logo-text {
+            color: #f8fafc;
+        }
+
+        .glass-nav.scrolled #menu-btn span {
+            background: #f8fafc;
+        }
+
+        .hero-bg {
+            background-image: url('assets/hero-ilha-hq.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.02) 65%, #0f172a 100%);
+        }
+
+        .card-hover {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(14, 165, 233, 0.2);
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-text-shadow {
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Floating Whatsapp */
+        @keyframes pulse-wa {
+            0% {
+                box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.6);
+            }
+
+            70% {
+                box-shadow: 0 0 0 24px rgba(14, 165, 233, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+            }
+        }
+
+        .btn-whatsapp {
+            animation: pulse-wa 2s infinite;
+        }
+
+        /* Form Inputs */
+        .input-float {
+            position: relative;
+        }
+
+        .input-float input,
+        .input-float textarea,
+        .input-float select {
+            width: 100%;
+            padding: 1.25rem 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border-radius: 0.75rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-float input:hover,
+        .input-float textarea:hover,
+        .input-float select:hover,
+        .input-float input:focus,
+        .input-float textarea:focus,
+        .input-float select:focus {
+            border-color: #0ea5e9;
+            background: rgba(14, 165, 233, 0.06);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+        }
+
+        .input-float label {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            font-size: 0.95rem;
+        }
+
+        .input-float textarea~label {
+            top: 1.2rem;
+            transform: none;
+        }
+
+        .input-float input:focus~label,
+        .input-float input:not(:placeholder-shown)~label,
+        .input-float textarea:focus~label,
+        .input-float textarea:not(:placeholder-shown)~label {
+            top: 0.4rem;
+            font-size: 0.75rem;
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+
+        /* Custom Dropdown Styling */
+        .custom-dropdown-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-dropdown-btn:hover,
+        .custom-dropdown-btn.active {
+            border-color: #0ea5e9;
+            background: rgba(14, 165, 233, 0.06);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+        }
+
+        .custom-dropdown-menu {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(14, 165, 233, 0.15);
+            transform-origin: top;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-dropdown-option {
+            transition: all 0.2s ease;
+        }
+
+        .custom-dropdown-option:hover {
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.18) 0%, rgba(14, 165, 233, 0.04) 100%);
+            color: #ffffff;
+            padding-left: 1.5rem;
+        }
+
+        .custom-dropdown-option.selected {
+            background: rgba(14, 165, 233, 0.15);
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
