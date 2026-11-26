@@ -1,5 +1,4 @@
-// Every call to the database goes through here. The demo build swaps this file
-// for src/demo/api.ts, which keeps the same functions in the browser.
+// Every call to the database goes through here.
 import { supabase } from './supabase'
 import { loginToEmail, normalizeUsername, USERNAME_PATTERN } from './username'
 import type {

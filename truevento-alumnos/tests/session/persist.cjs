@@ -1,6 +1,6 @@
 // The account stays signed in: reopening the app (even days later, with an expired
 // access token, or offline) goes straight in. Usage: node tests/session/persist.cjs [url]
-// (default http://127.0.0.1:5174 with the e2e user ana.silva; a file:// demo URL tests the demo)
+// (default http://127.0.0.1:5174 with the e2e user ana.silva)
 const { chromium } = require('playwright')
 const BASE = process.argv[2] || 'http://127.0.0.1:5174'
 const real = BASE.startsWith('http://127')

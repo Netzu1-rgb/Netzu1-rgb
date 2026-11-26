@@ -7,7 +7,6 @@ import { experienceLabel } from '../lib/types'
 import { PersonalFields, personalError } from './Welcome'
 import { WindForecast } from '../components/wind'
 import { useMe, useSession } from '../context/Session'
-import { useInstall } from '../lib/pwa'
 import { useTheme, type ThemeChoice } from '../lib/theme'
 import * as api from '../lib/api'
 import { LanguagePicker, t } from '../i18n'
@@ -16,7 +15,6 @@ import { PrivacyModal } from '../components/Privacy'
 import { SchoolRulesModal } from '../components/SchoolRules'
 import { NotificationsCard } from '../components/Notifications'
 
-const demoApi = api as unknown as { resetDemo?: () => void }
 
 export function WindPage() {
   return (
@@ -37,7 +35,6 @@ export function SettingsPage() {
   const me = useMe()
   const { signOut } = useSession()
   const { choice, setChoice } = useTheme()
-  const install = useInstall()
   const confirm = useConfirm()
   const navigate = useNavigate()
   const [privacy, setPrivacy] = useState(false)
@@ -73,23 +70,6 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {!install.installed && (
-        <section className="card p-4">
-          <h2 className="font-semibold text-heading">{t('settings.install')}</h2>
-          {install.canPrompt ? (
-            <button type="button" className="btn-dark mt-3 w-full" onClick={() => void install.prompt()}><Icon name="install" /> {t('settings.installBtn')}</button>
-          ) : (
-            <p className="mt-1 text-sm text-ink-soft">
-              {t(install.ios ? 'settings.installIos' : 'settings.installOther')}
-            </p>
-          )}
-          {import.meta.env.VITE_DEMO !== '1' && (
-            <a href="/instalar.html" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-deep underline underline-offset-2">
-              <Icon name="install" className="h-4 w-4" /> {t('install.guide')}
-            </a>
-          )}
-        </section>
-      )}
 
       <button type="button" className="btn-ghost w-full" onClick={async () => {
         if (!(await confirm({ title: t('settings.logout'), message: t('settings.logoutMsg'), confirmLabel: t('settings.logout') }))) return
@@ -108,13 +88,6 @@ export function SettingsPage() {
       </div>
       <PrivacyModal open={privacy} onClose={() => setPrivacy(false)} />
       <SchoolRulesModal open={rules} onClose={() => setRules(false)} />
-      {demoApi.resetDemo && (
-        <button type="button" className="btn-ghost w-full" onClick={async () => {
-          if (await confirm({ title: t('settings.resetDemo'), message: t('settings.resetDemoMsg'), confirmLabel: t('settings.reset'), danger: true })) demoApi.resetDemo!()
-        }}>
-          <Icon name="refresh" /> {t('settings.resetDemo')}
-        </button>
-      )}
       <p className="text-center text-xs text-ink-mute">{t('settings.version', { v: __APP_VERSION__ })}</p>
     </div>
   )

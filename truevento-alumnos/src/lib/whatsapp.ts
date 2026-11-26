@@ -27,9 +27,6 @@ export function langFromPhone(phone: string | null | undefined): 'es' | 'pt' | '
   return 'en'
 }
 
-/** What the demo shows instead of leaving the page (see WhatsAppPreview). */
-export const WA_PREVIEW_EVENT = 'tv-whatsapp-preview'
-
 type Platform = 'ios' | 'android' | 'desktop'
 export function platform(nav: { userAgent: string; platform?: string; maxTouchPoints?: number } = navigator): Platform {
   if (/iphone|ipad|ipod/i.test(nav.userAgent) || (nav.platform === 'MacIntel' && (nav.maxTouchPoints ?? 0) > 1)) return 'ios'
@@ -55,18 +52,13 @@ export function whatsAppTargets(href: string, where: Platform): { app: string | 
 /**
  * Opens the chat with the message ready and never shows a long link: on iPhone and
  * Android the WhatsApp app opens straight away; on a computer, WhatsApp Web opens on
- * the chat. In the demo, a preview of the message is shown instead.
+ * the chat.
  */
 export function openWhatsApp(e: { preventDefault: () => void }, href: string) {
   const where = platform()
   const t = whatsAppTargets(href, where)
   if (!t) return // not a WhatsApp link: open it as usual
   e.preventDefault()
-  if (import.meta.env.VITE_DEMO === '1') {
-    const m = /^https:\/\/wa\.me\/(\d*)(?:\?text=(.*))?$/.exec(href)!
-    window.dispatchEvent(new CustomEvent(WA_PREVIEW_EVENT, { detail: { phone: m[1], text: m[2] ? decodeURIComponent(m[2]) : '' } }))
-    return
-  }
   if (!t.app) {
     window.open(t.web, '_blank', 'noopener')
     return

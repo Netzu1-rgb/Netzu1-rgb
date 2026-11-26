@@ -10,6 +10,4 @@ interface ImportMetaEnv {
   readonly VITE_USERNAME_DOMAIN?: string
   readonly VITE_SPOT_LAT?: string
   readonly VITE_SPOT_LON?: string
-  /** '1' only in the self-contained demo build (npm run build:demo) */
-  readonly VITE_DEMO?: string
 }

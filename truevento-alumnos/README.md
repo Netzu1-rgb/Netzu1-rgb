@@ -92,6 +92,5 @@ npm run dev                  # http://localhost:5174
 |---|---|
 | `npm run build` | verifica tipos y compila la PWA en `dist/` |
 | `npm test` | pruebas de fechas, horas, códigos y viento |
-| `npm run build:demo` | `dist-demo/truevento-alumnos-demo.html`: la app en una sola página con datos de ejemplo en el navegador |
 
 Las reglas de la base se prueban desde la app de gestión con `npm run db:test` (incluye `supabase/tests/students_app.sql`).

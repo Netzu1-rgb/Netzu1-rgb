@@ -28,7 +28,7 @@ async function registration(): Promise<ServiceWorkerRegistration | null> {
 }
 
 export async function getPushState(): Promise<PushState> {
-  if (import.meta.env.VITE_DEMO === '1' || !KEY) return 'unsupported'
+  if (!KEY) return 'unsupported'
   // on iPhone, notifications only work in the app added to the home screen
   if (isIOS() && !isStandalone()) return 'install-ios'
   if (!supported()) return 'unsupported'

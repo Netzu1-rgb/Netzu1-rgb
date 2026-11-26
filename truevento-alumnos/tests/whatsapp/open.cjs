@@ -1,6 +1,6 @@
 // WhatsApp buttons never show a long link: iPhone and Android open the WhatsApp app,
-// a computer opens WhatsApp Web on the chat, the demo shows a preview. Needs the local
-// stack with the e2e data (ana.silva) and the demo build. Usage: node tests/whatsapp/open.cjs
+// a computer opens WhatsApp Web on the chat. Needs the local
+// stack with the e2e data (ana.silva). Usage: node tests/whatsapp/open.cjs
 const { chromium, devices } = require('playwright')
 const { execFileSync } = require('child_process')
 const sql = (q) => execFileSync('psql', ['-h', '127.0.0.1', '-p', '54322', '-U', 'postgres', '-d', 'postgres', '-XtAc', q], { env: { PGPASSWORD: 'postgres', PATH: process.env.PATH }, encoding: 'utf8' }).trim()
@@ -42,24 +42,6 @@ async function studentPending(ctx, base) {
     }
     await ctx.close()
   }
-  // the demo: a preview of the message, nothing leaves the page
-  const ctx = await b.newContext({ ...devices['iPhone 14'], locale: 'es-AR' })
-  const p = await ctx.newPage(); const popups = []; ctx.on('page', (pg) => popups.push(pg))
-  await p.goto('file:///home/user/Netzu1-rgb/truevento-alumnos/dist-demo/truevento-alumnos-demo.html'); await p.waitForTimeout(2000)
-  await p.getByRole('tab', { name: 'Crear cuenta' }).click()
-  await p.getByLabel('Nombre y apellido').fill('Ana Demo'); await p.getByLabel('WhatsApp').fill('+55 88 99999-1234')
-  await p.getByRole('button', { name: /Nunca/ }).first().click().catch(() => {})
-  await p.getByLabel('Elegí un usuario').fill('ana.demo'); await p.getByLabel('Elegí una contraseña').fill('Viento2026'); await p.locator('input[type=checkbox]').check()
-  await p.getByRole('button', { name: 'Crear mi cuenta' }).click(); await p.locator('main').waitFor(); await p.waitForTimeout(1500)
-  await p.getByRole('button', { name: 'Pedir clase' }).first().click(); await p.waitForTimeout(700)
-  const d = p.locator('dialog')
-  await d.getByRole('button', { name: 'Siguiente', exact: true }).click(); await p.waitForTimeout(600)
-  await d.getByRole('button', { name: 'Siguiente', exact: true }).click(); await p.waitForTimeout(600)
-  await d.getByRole('button', { name: 'Enviar pedido' }).click(); await p.waitForTimeout(1500)
-  await d.getByRole('link', { name: 'Escribirnos por WhatsApp' }).click(); await p.waitForTimeout(800)
-  const prev = p.locator('dialog').filter({ hasText: 'Vista previa de WhatsApp' })
-  check('demo: shows the message preview, no link', await prev.count() === 1 && popups.length === 0 && await prev.getByText('Hola, soy Ana Demo. Pedí una clase en la app').count() === 1)
-  await p.screenshot({ path: __dirname + '/wa-preview.png' })
   await b.close()
   console.log(res.map(([n, c, x]) => (c ? 'OK   ' : 'FAIL ') + n + (c ? '' : ' → ' + x)).join('\n'))
   console.log(res.every((r) => r[1]) ? 'WAOPEN OK' : 'WAOPEN FAIL')

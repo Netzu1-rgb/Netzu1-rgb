@@ -257,7 +257,7 @@ export default function Welcome() {
         )}
       </form>
       {/* first visit from a browser: how to keep the app on the home screen */}
-      {import.meta.env.VITE_DEMO !== '1' && !isStandalone() && (
+      {!isStandalone() && (
         <a href="/instalar.html" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm font-semibold text-brand-deep">
           <Icon name="install" className="h-4 w-4" /> {t('welcome.install')}
         </a>

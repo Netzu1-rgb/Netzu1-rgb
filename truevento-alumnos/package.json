@@ -8,8 +8,7 @@
     "build": "tsc -p . && vite build",
     "preview": "vite preview --port 4174",
     "test": "vitest run",
-    "typecheck": "tsc -p .",
-    "build:demo": "node scripts/build-demo.mjs"
+    "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

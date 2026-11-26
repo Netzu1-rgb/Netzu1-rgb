@@ -172,10 +172,6 @@
 .safe-top {
   padding-top: env(safe-area-inset-top);
 }
-/* inside a host that already pads the page for the status bar (the demo viewer) */
-.in-viewer .safe-top {
-  padding-top: 0;
-}
 .tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -212,9 +208,8 @@
   .tap, .tap:hover, .tap:active { transform: none; }
 }
 
-/* The page's own background, text color and font, outside any layer so they win over
-   styles a host page may inject (the demo viewer adds body{background:#fff;color:#000;
-   font:14px ...}). Without this the dark theme showed a white page with unreadable text. */
+/* The page's own background, text color and font, outside any layer so nothing else wins
+   over them (in the dark theme a white page with unreadable text could show otherwise). */
 html body {
   background-color: var(--color-mist);
   color: var(--color-ink);

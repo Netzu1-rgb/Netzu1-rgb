@@ -32,14 +32,14 @@ export default function App() {
 
   return (
     <>
-      {import.meta.env.VITE_DEMO !== '1' && <UpdateBanner />}
+      <UpdateBanner />
       <Screens status={status} role={me?.role ?? null} retry={refresh} />
     </>
   )
 }
 
 function Screens({ status, role, retry }: { status: string; role: string | null; retry: () => Promise<void> }) {
-  if (!isConfigured && import.meta.env.VITE_DEMO !== '1') {
+  if (!isConfigured) {
     return <div className="p-6"><ErrorBox message={t('app.noConfig')} /></div>
   }
   if (status === 'loading') return null

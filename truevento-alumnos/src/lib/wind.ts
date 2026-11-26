@@ -25,7 +25,7 @@ export const LAST_HOUR = 18
 const CORE_FROM = 9
 const CORE_TO = 17
 
-export type WindSource = 'open-meteo' | 'met-norway' | 'example'
+export type WindSource = 'open-meteo' | 'met-norway'
 
 export interface WindHour {
   time: string // YYYY-MM-DDTHH:MM, school local time
@@ -295,21 +295,6 @@ async function loadWind(fetcher: Fetcher, now: number): Promise<WindForecastData
   }
   // no source answered: the last forecast on this device, if it is recent enough
   if (cached && now - cached.fetchedAt < STALE_LIMIT) return { ...cached, stale: true }
-  if (import.meta.env.VITE_DEMO === '1') return { days: buildDays(exampleForecast()), fetchedAt: now, source: 'example' }
   throw new Error('No forecast')
 }
 
-/** Demo only: a plausible week of trade winds. */
-function exampleForecast(): WindHour[] {
-  const out: WindHour[] = []
-  const base = new Date()
-  for (let d = 0; d < 7; d++) {
-    const day = new Date(base.getFullYear(), base.getMonth(), base.getDate() + d)
-    const iso = `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
-    for (let h = 0; h < 24; h++) {
-      const v = Math.max(4, 9 + (d % 3) * 3 + 11 * Math.sin(((h - 7) / 12) * Math.PI))
-      out.push({ time: `${iso}T${pad(h)}:00`, speed: round1(v), gust: round1(v + 5), direction: 95 + (h % 5) })
-    }
-  }
-  return out
-}
