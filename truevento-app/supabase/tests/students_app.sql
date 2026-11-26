@@ -171,7 +171,7 @@ begin
   assert c.student_rate = 250 and c.instructor_rate = 60 and c.hours = 2, 'prices from the records';
   assert c.total_amount = 500 and c.instructor_pay = 120 and c.school_profit = 380, 'totals';
   assert (select status = 'done' and hours = 2 from public.lessons where id = (select v::uuid from tests.vars where k = 'req1'));
-  assert (select count(*) from public.student_skills where student_id = '00000000-0000-0000-0000-000000000d01' and status = 'done') = 5;
+  assert (select count(*) from public.student_skills where student_id = '00000000-0000-0000-0000-000000000d01' and status = 'done') = 7;
 end $$;
 select tests.fails($$select public.complete_lesson((select v::uuid from tests.vars where k = 'req1'), 1)$$) as "close twice";
 -- marking a learned skill as "learning" later never downgrades it
@@ -181,7 +181,7 @@ select public.set_student_skill('00000000-0000-0000-0000-000000000d01',
 \echo '8. the student sees their progress and the note, not the money'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
 do $$ begin
-  assert (select count(*) from public.student_skills) = 6;
+  assert (select count(*) from public.student_skills) = 8;
   assert (select body from public.lesson_notes) = 'Muy bien el body drag';
   assert (public.my_student_summary() ->> 'hours')::numeric = 2;
   assert (public.my_student_summary() ->> 'classes')::int = 1;

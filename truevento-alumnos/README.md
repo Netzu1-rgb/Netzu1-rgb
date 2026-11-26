@@ -61,6 +61,12 @@ Al crear la cuenta, el alumno acepta la política de privacidad (se puede leer e
 3. **Dominio `app.truevento.com`**: en Vercel, *Settings → Domains* del proyecto, agregá `app.truevento.com`. En Cloudflare (DNS de truevento.com) creá un registro **CNAME** `app` → `cname.vercel-dns.com` con el proxy desactivado (nube gris).
 4. En el proyecto de **gestión**, `VITE_STUDENTS_APP_URL=https://app.truevento.com` (es el valor por defecto) y volvé a publicar.
 
+## Camino de aprendizaje
+
+Es el paso a paso de la escuela: **25 pasos en 4 niveles** — 1 · En tierra (reconocimiento del spot, direcciones de viento, armado, conexiones, sistemas de seguridad y quick release, ventana de viento, control del kite), 2 · En el agua (body drag, curvas de tracción, recuperación de la tabla, body drag segunda etapa, relanzamiento en el agua, quick release en el agua, autorrescate), 3 · Con la tabla (board grab, steady pull, waterstart sin y con tabla) y 4 · Navegación y autonomía (navegar a la derecha y a la izquierda, orzar, transiciones, downwind, aterrizaje del kite, relanzamiento y aterrizaje por el alumno).
+
+Cada idioma usa los términos que usan los kiters de ese país: *body drag, waterstart, board grab, steady pull, downwind* y *quick release* quedan en inglés también en español y portugués; se dice *kite* (no "cometa" ni "pipa"), *orzar* en español y *orçar / velejar* en Brasil. Los pasos están en la migración `20261124000000_students_app.sql` (en español) y sus traducciones en `src/i18n/messages.ts` (`SKILLS`); `src/i18n/skills.test.ts` controla que no falte ninguna.
+
 ## Acceso de administración (código)
 
 Los administradores (la dueña y quien gestiona el sistema) entran con un código en vez de una invitación: **Crear cuenta → ¿La escuela te mandó un código? → el código**, su nombre y apellido, usuario y contraseña. Después entran con el login normal. Quien se registra con el nombre de una dueña (por ejemplo Victoria Linde) queda vinculada a sus clases.

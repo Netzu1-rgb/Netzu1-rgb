@@ -129,24 +129,33 @@ create trigger lessons_touch before update on public.lessons
   for each row execute function public.touch_updated_at();
 
 -- starting learning path; the school can rename, add or hide skills
+-- the school's 25-step path (Spanish in the database; the app translates it)
 insert into public.skills (level, position, name, description) values
-  (1, 1, 'Seguridad y viento', 'Ventana de viento, zonas de potencia y reglas de la playa'),
-  (1, 2, 'Armado del equipo', 'Inflar, conectar líneas y revisar el kite'),
-  (1, 3, 'Despegue y aterrizaje asistido', 'Con señas al compañero'),
-  (1, 4, 'Pilotaje del kite', 'Control en el borde de la ventana y en el cenit'),
-  (1, 5, 'Sistemas de seguridad', 'Quick release y safety leash'),
-  (2, 1, 'Body drag', 'Arrastre con el cuerpo, ida y vuelta'),
-  (2, 2, 'Body drag de rescate de tabla', 'Volver a la tabla contra el viento'),
-  (2, 3, 'Relanzar el kite desde el agua', null),
-  (2, 4, 'Autorrescate', 'Recuperar el equipo y volver a la orilla'),
-  (3, 1, 'Waterstart', 'Salir del agua parado en la tabla'),
-  (3, 2, 'Primeras navegadas', 'Mantener la dirección y frenar'),
-  (3, 3, 'Navegar hacia los dos lados', null),
-  (3, 4, 'Control de la velocidad', null),
-  (4, 1, 'Ceñida', 'Ganar barlovento'),
-  (4, 2, 'Cambio de dirección', 'Transición sin parar'),
-  (4, 3, 'Navegar en ola', null),
-  (4, 4, 'Primeros saltos', null);
+  (1, 1, 'Reconocimiento del spot', 'Zonas de la playa, obstáculos, corrientes y dónde está permitido navegar'),
+  (1, 2, 'Direcciones de viento navegables y no navegables', 'Onshore, side, side-on y offshore: cuándo se puede navegar y cuándo no'),
+  (1, 3, 'Presentación y armado del equipo', 'Kite, barra, líneas, arnés y tabla: inflar, armar y revisar'),
+  (1, 4, 'Conexiones', 'Conectar las líneas al kite y a la barra, y revisarlas antes de despegar'),
+  (1, 5, 'Sistemas de seguridad y quick release', 'Quick release, safety leash y cuándo usarlos'),
+  (1, 6, 'Ventana de viento', 'Zona de potencia, borde de la ventana y cenit'),
+  (1, 7, 'Control del kite', 'Pilotar el kite con suavidad y mantenerlo estable en el cenit'),
+  (2, 1, 'Body drag', 'Arrastrarse en el agua con el kite, sin tabla'),
+  (2, 2, 'Curvas de tracción (power strokes)', 'Generar potencia moviendo el kite por la ventana'),
+  (2, 3, 'Recuperación de la tabla', 'Volver hasta la tabla con body drag, contra el viento'),
+  (2, 4, 'Body drag (segunda etapa)', 'Body drag con una mano y ganando barlovento'),
+  (2, 5, 'Relanzamiento del kite en el agua', 'Volver a levantar el kite cuando cae al agua'),
+  (2, 6, 'Quick release en el agua', 'Activar el quick release y recuperar la barra en el agua'),
+  (2, 7, 'Autorrescate', 'Recoger el equipo en el agua y volver a la orilla de forma segura'),
+  (3, 1, 'Board grab', 'Agarrar y colocarse la tabla en el agua con el kite en el cenit'),
+  (3, 2, 'Steady pull hacia ambos lados', 'Tracción constante y controlada hacia la derecha y la izquierda'),
+  (3, 3, 'Waterstart sin tabla', 'Practicar el movimiento de salida sin la tabla'),
+  (3, 4, 'Waterstart con tabla', 'Salir del agua parado en la tabla'),
+  (4, 1, 'Navegar hacia la derecha', 'Mantener el rumbo y la velocidad hacia la derecha'),
+  (4, 2, 'Navegar hacia la izquierda', 'Mantener el rumbo y la velocidad hacia la izquierda'),
+  (4, 3, 'Orzar', 'Navegar contra el viento (upwind) para no perder terreno'),
+  (4, 4, 'Transiciones', 'Cambiar de dirección y seguir navegando'),
+  (4, 5, 'Downwind: teoría y práctica', 'Recorrer la costa a favor del viento de forma segura'),
+  (4, 6, 'Aterrizaje del kite', 'Bajar el kite en la playa con ayuda y con señas'),
+  (4, 7, 'Relanzamiento y aterrizaje por el alumno', 'Despegar y aterrizar el kite de forma autónoma');
 
 -- ---------------------------------------------------------------- invites
 
