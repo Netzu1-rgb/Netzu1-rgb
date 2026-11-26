@@ -7,7 +7,7 @@ import type {
 } from '../lib/types'
 
 interface User { id: string; username: string; password: string; role: Me['role']; student_id: string | null; instructor_id: string | null; full_name: string }
-interface Row { id: string; student_id: string; instructor_id: string | null; lesson_date: string; start_time: string | null; hours: number; status: Lesson['status']; student_note: string | null; staff_note: string | null; created_at: string }
+interface Row { id: string; student_id: string; instructor_id: string | null; lesson_date: string; start_time: string | null; hours: number; class_lang?: 'es' | 'pt' | 'en'; status: Lesson['status']; student_note: string | null; staff_note: string | null; created_at: string }
 interface Db {
   users: User[]
   session: string | null
@@ -133,6 +133,11 @@ export async function registerStudent(d: PersonalData) {
 
 export async function setMyLang(_lang: string) { void _lang }
 
+export async function setClassLang(id: string, lang: string) {
+  const l = db.lessons.find((x) => x.id === id)
+  if (l) { l.class_lang = lang as 'es' | 'pt' | 'en'; save() }
+}
+
 export async function updateMyDetails(d: Pick<PersonalData, 'phone' | 'weight_kg' | 'experience'>) {
   await wait()
   Object.assign(db.students.find((s) => s.id === me()?.student_id)!, d)
@@ -196,21 +201,23 @@ function assertFree(date: string, time: string, hours: number, exclude?: string)
 
 export async function instructorDirectory(): Promise<Person[]> { return db.instructors }
 
-export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string) {
+export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string, lang = 'es') {
   await wait()
   quarter(hours)
   if (date < today()) fail('Elegí una fecha de hoy en adelante.')
   if (time) assertFree(date, time, hours)
-  db.lessons.push({ id: uid(), student_id: me()!.student_id!, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'requested', student_note: note || null, staff_note: null, created_at: now() })
+  db.lessons.push({ id: uid(), student_id: me()!.student_id!, instructor_id: instructorId, lesson_date: date, start_time: time, hours, class_lang: lang as 'es' | 'pt' | 'en', status: 'requested', student_note: note || null, staff_note: null, created_at: now() })
   save()
 }
 
-export async function scheduleLesson(studentId: string, instructorId: string, date: string, time: string, hours: number, note: string) {
+export async function scheduleLesson(studentId: string, instructorId: string, date: string, time: string, hours: number, note: string): Promise<string> {
   await wait()
   quarter(hours)
   assertFree(date, time, hours)
-  db.lessons.push({ id: uid(), student_id: studentId, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'confirmed', student_note: null, staff_note: note || null, created_at: now() })
+  const id = uid()
+  db.lessons.push({ id, student_id: studentId, instructor_id: instructorId, lesson_date: date, start_time: time, hours, status: 'confirmed', student_note: null, staff_note: note || null, created_at: now() })
   save()
+  return id
 }
 
 export async function confirmLesson(id: string, instructorId: string, date: string, time: string, hours: number, note: string) {

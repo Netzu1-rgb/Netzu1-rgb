@@ -304,7 +304,7 @@ async function rpc(name: string, a: any = {}) {
       if (!l) return fail('Clase inexistente.')
       db.students.find((x) => x.id === l.student_id)!.hourly_rate = a.p_rate
       if (!a.p_time && !l.start_time) return fail('Elegí el horario acordado con el alumno.')
-      Object.assign(l, { status: 'confirmed', instructor_id: a.p_instructor, start_time: a.p_time ?? l.start_time, hours: a.p_hours ?? l.hours })
+      Object.assign(l, { status: 'confirmed', instructor_id: a.p_instructor, start_time: a.p_time ?? l.start_time, hours: a.p_hours ?? l.hours, class_lang: a.p_lang ?? l.class_lang ?? 'es' })
       save()
       return { data: null, error: null }
     }

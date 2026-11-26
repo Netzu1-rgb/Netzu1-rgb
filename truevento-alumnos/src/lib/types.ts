@@ -28,6 +28,8 @@ export interface Lesson {
   created_at: string
   /** staff only: the school has not set this student's price yet */
   price_pending?: boolean
+  /** the language the class is taught in */
+  class_lang?: 'es' | 'pt' | 'en'
 }
 
 export interface BusySlot {

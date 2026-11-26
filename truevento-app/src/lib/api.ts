@@ -262,7 +262,7 @@ export async function fetchRequests(): Promise<ClassRequest[]> {
   const t = new Date()
   const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
   const rows = check(await supabase.from('lessons')
-    .select('id, lesson_date, start_time, hours, student_note, instructor_id, created_at, student:students(*)')
+    .select('id, lesson_date, start_time, hours, class_lang, student_note, instructor_id, created_at, student:students(*)')
     .eq('status', 'requested').gte('lesson_date', today)
     .order('lesson_date').order('start_time')) as unknown as ClassRequest[]
   return rows.map((r) => ({ ...r, hours: Number(r.hours), start_time: r.start_time?.slice(0, 5) ?? null, student: normalizeStudent(r.student) }))
@@ -288,8 +288,8 @@ export async function fetchPriceless(): Promise<PricelessStudent[]> {
 }
 
 /** Sets the student's price per hour, the agreed time (and hours) and confirms the class. */
-export async function confirmRequest(lessonId: string, rate: number, instructorId: string, time: string, hours: number) {
-  check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId, p_time: time, p_hours: hours }))
+export async function confirmRequest(lessonId: string, rate: number, instructorId: string, time: string, hours: number, lang: string) {
+  check(await supabase.rpc('confirm_request', { p_lesson: lessonId, p_rate: rate, p_instructor: instructorId, p_time: time, p_hours: hours, p_lang: lang }))
 }
 
 /** Confirmed classes from today on, for the agenda (admins can move them). */
@@ -297,7 +297,7 @@ export async function fetchUpcoming(): Promise<UpcomingLesson[]> {
   const t = new Date()
   const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
   const rows = check(await supabase.from('lessons')
-    .select('id, lesson_date, start_time, hours, staff_note, instructor:instructors(full_name), student:students(*)')
+    .select('id, lesson_date, start_time, hours, class_lang, staff_note, instructor:instructors(full_name), student:students(*)')
     .eq('status', 'confirmed').gte('lesson_date', today)
     .order('lesson_date').order('start_time').limit(60)) as unknown as
     (Omit<UpcomingLesson, 'instructor_name'> & { instructor: { full_name: string } | null })[]

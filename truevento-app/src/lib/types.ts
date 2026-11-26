@@ -114,6 +114,8 @@ export interface ClassRequest {
   lesson_date: string
   /** null: the time is agreed with the student on WhatsApp */
   start_time: string | null
+  /** the language the class is taught in */
+  class_lang: 'es' | 'pt' | 'en'
   hours: number
   student_note: string | null
   instructor_id: string | null
@@ -128,6 +130,7 @@ export interface UpcomingLesson {
   start_time: string
   hours: number
   staff_note: string | null
+  class_lang: 'es' | 'pt' | 'en'
   instructor_name: string | null
   student: Student
 }
@@ -137,6 +140,8 @@ export interface PricelessStudent {
   student: Student
   lessons: { id: string; lesson_date: string; start_time: string; hours: number; instructor_name: string | null }[]
 }
+
+export const CLASS_LANG_LABEL: Record<string, string> = { es: 'Español', pt: 'Portugués', en: 'Inglés' }
 
 export const EXPERIENCE_LABEL: Record<string, string> = {
   none: 'Nunca hizo kite',

@@ -5,7 +5,7 @@ import { useInstructors } from '../lib/hooks'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
 import { friendlyError } from '../lib/errors'
-import { EXPERIENCE_LABEL, type ClassRequest, type Instructor, type PricelessStudent } from '../lib/types'
+import { CLASS_LANG_LABEL, EXPERIENCE_LABEL, type ClassRequest, type Instructor, type PricelessStudent } from '../lib/types'
 import { NotificationsCard } from '../components/NotificationsCard'
 import { UpcomingSection } from '../components/Upcoming'
 import { EmptyState, ErrorBox, Field, Icon, Loading, OfflineNote, PageHeader, Spinner, useConfirm, useToast } from '../components/ui'
@@ -86,6 +86,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   // agreed with the student on WhatsApp
   const [time, setTime] = useState(r.start_time ?? '')
   const [hours, setHours] = useState(r.hours)
+  const [classLang, setClassLang] = useState(r.class_lang ?? 'es')
   const [taken, setTaken] = useState<{ start: string; hours: number }[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,7 +126,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
     if (!instructorId) return setError('Elegí quién da la clase.')
     setBusy(true)
     try {
-      await confirmRequest(r.id, rateN, instructorId, time, hours)
+      await confirmRequest(r.id, rateN, instructorId, time, hours, classLang)
       toast(`Clase de ${s.full_name} confirmada. Ya la ve en su app.`)
       onDone()
       requestsChanged()
@@ -175,7 +176,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       <div className="mt-4 rounded-xl bg-brand-soft px-4 py-3 text-brand-deep">
         <div className="flex items-center gap-2 font-semibold"><Icon name="calendar" className="h-4 w-4" /> {longDay(r.lesson_date)}</div>
         <div className="mt-0.5 text-sm">
-          {formatHours(r.hours)} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ''}
+          {formatHours(r.hours)} · clase en {CLASS_LANG_LABEL[r.class_lang ?? 'es'].toLowerCase()} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ''}
         </div>
       </div>
       {r.student_note && <p className="mt-3 rounded-xl bg-surface-2 px-4 py-2.5 text-sm text-ink-soft">“{r.student_note}”</p>}
@@ -199,6 +200,13 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
             <select id={id} className={`input tabular ${time ? '' : 'text-ink-mute'}`} value={time} onChange={(e) => setTime(e.target.value)}>
               <option value="">Elegí…</option>
               {TIMES.map((t) => <option key={t} value={t} disabled={clashes(t)}>{t}{clashes(t) ? ' · ocupado' : ''}</option>)}
+            </select>
+          )}
+        </Field>
+        <Field label="Idioma de la clase">
+          {(id) => (
+            <select id={id} className="input" value={classLang} onChange={(e) => setClassLang(e.target.value as 'es' | 'pt' | 'en')}>
+              {Object.entries(CLASS_LANG_LABEL).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
             </select>
           )}
         </Field>

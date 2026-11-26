@@ -102,16 +102,21 @@ export async function instructorDirectory(): Promise<Person[]> {
   return check(await supabase.rpc('instructor_directory')) as Person[]
 }
 
-export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string) {
+export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string, lang: string) {
   check(await supabase.rpc('request_lesson', {
-    p_date: date, p_time: time, p_hours: hours, p_instructor: instructorId, p_note: note || null,
+    p_date: date, p_time: time, p_hours: hours, p_instructor: instructorId, p_note: note || null, p_lang: lang,
   }))
 }
 
-export async function scheduleLesson(studentId: string, instructorId: string, date: string, time: string, hours: number, note: string) {
-  check(await supabase.rpc('schedule_lesson', {
+/** Staff: the language the class is taught in. */
+export async function setClassLang(id: string, lang: string) {
+  check(await supabase.rpc('set_class_lang', { p_lesson: id, p_lang: lang }))
+}
+
+export async function scheduleLesson(studentId: string, instructorId: string, date: string, time: string, hours: number, note: string): Promise<string> {
+  return check(await supabase.rpc('schedule_lesson', {
     p_student: studentId, p_instructor: instructorId, p_date: date, p_time: time, p_hours: hours, p_note: note || null,
-  }))
+  })) as string
 }
 
 export async function confirmLesson(id: string, instructorId: string, date: string, time: string, hours: number, note: string) {

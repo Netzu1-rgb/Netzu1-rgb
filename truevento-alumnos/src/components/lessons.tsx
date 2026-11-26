@@ -7,7 +7,7 @@ import { notifyChange } from '../lib/hooks'
 import type { Lesson, LessonStatus, Person, Skill, SkillStatus } from '../lib/types'
 import { levelName } from '../lib/types'
 import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
-import { skillText, t } from '../i18n'
+import { getLang, LANGS, skillText, t, type Lang } from '../i18n'
 import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
 import { AgreePriceButton } from './contact'
@@ -25,6 +25,23 @@ const STATUS: Record<LessonStatus, { label: Key; cls: string }> = {
 
 export function StatusBadge({ status }: { status: LessonStatus }) {
   return <span className={`badge ${STATUS[status].cls}`}>{t(STATUS[status].label)}</span>
+}
+
+const classLangIn = (l?: string) => t(`classLang.in.${l === 'pt' || l === 'en' ? l : 'es'}` as Key)
+
+/** Español / Português / English, for the class (not the app). */
+function ClassLangPicker({ value, onChange }: { value: Lang; onChange: (l: Lang) => void }) {
+  return (
+    <fieldset>
+      <legend className="field-label">{t('classLang.title')}</legend>
+      <div className="flex flex-wrap gap-2">
+        {LANGS.map((l) => (
+          <button key={l.value} type="button" lang={l.value} aria-pressed={value === l.value} onClick={() => onChange(l.value)}
+            className={value === l.value ? 'chip-on' : 'chip'}>{l.label}</button>
+        ))}
+      </div>
+    </fieldset>
+  )
 }
 
 /** " a las 10:00", or nothing while the time is still to be agreed. */
@@ -53,6 +70,7 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-heading">{dayLabel(lesson.lesson_date)}</span>
             <StatusBadge status={lesson.status} />
+            {lesson.class_lang && <span className="badge bg-surface-2 uppercase text-ink-soft" title={t('classLang.summary', { lang: classLangIn(lesson.class_lang) })}>{lesson.class_lang}</span>}
             {lesson.price_pending && lesson.status !== 'done' && lesson.status !== 'cancelled' && <span className="badge bg-sand text-ink-soft">{t('lesson.pricePending')}</span>}
           </div>
           <div className="mt-0.5 text-sm text-ink-soft">
@@ -67,7 +85,7 @@ export function LessonCard({ lesson, show, actions, simple = false }: {
         </div>
       </div>
       {simple && lesson.status === 'requested' && (
-        <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} hours={lesson.hours} className="mt-3 w-full" />
+        <AgreePriceButton me={lesson.student_name ?? ''} date={lesson.lesson_date} hours={lesson.hours} lang={lesson.class_lang} className="mt-3 w-full" />
       )}
       {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -139,6 +157,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   const [summary, setSummary] = useState<StudentSummary | null>(null)
   const [phone, setPhone] = useState('')
   const [sent, setSent] = useState(false)
+  const [classLang, setClassLang] = useState<Lang>(getLang())
   const needPhone = summary !== null && !waNumber(summary.phone)
 
   useEffect(() => {
@@ -146,6 +165,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     setError(null)
     setSent(false)
     setPhone('')
+    setClassLang(getLang())
     void api.myStudentSummary().then(setSummary).catch(() => setSummary(null))
     setStep(1)
     setExtras(false)
@@ -166,7 +186,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     void run(async () => {
       if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })
       // only the day and the hours: the time is agreed on WhatsApp
-      await api.requestLesson(slot.date, null, slot.hours, instructor || null, note.trim())
+      await api.requestLesson(slot.date, null, slot.hours, instructor || null, note.trim(), classLang)
     }, t('ask.sent'), () => setSent(true))
   }
 
@@ -179,7 +199,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
           <h3 className="text-xl font-bold text-heading">{t('ask.sentTitle')}</h3>
           <p className="text-sm text-ink-mute">{longDay(slot.date, true)} · {formatHours(slot.hours)}</p>
           <p className="text-ink-soft">{t('ask.sentText')}</p>
-          <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} hours={slot.hours} label="wa.write" className="w-full" />
+          <AgreePriceButton me={summary?.full_name ?? me.full_name ?? ''} date={slot.date} hours={slot.hours} lang={classLang} label="wa.write" className="w-full" />
         </div>
       </Modal>
     )
@@ -211,6 +231,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
             <>
               <p className="rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-heading">{longDay(slot.date, true)}</p>
               <DurationPicker value={slot.hours} onChange={(h) => setSlot({ ...slot, hours: h })} />
+              <ClassLangPicker value={classLang} onChange={setClassLang} />
               <p className="flex gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="mt-0.5 h-4 w-4 shrink-0" /> {t('ask.timeNote')}</p>
             </>
           )}
@@ -219,7 +240,8 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
               <div className="rounded-2xl bg-tile p-5 text-white">
                 <div className="text-xs font-semibold uppercase tracking-wide text-brand-200">{t('ask.when')}</div>
                 <div className="mt-1 font-display text-2xl font-bold">{longDay(slot.date, true)}</div>
-                <div className="mt-1 text-brand-100">{formatHours(slot.hours)} · {t('lesson.tbdLong')}</div>
+                <div className="mt-1 text-brand-100">{formatHours(slot.hours)} · {t('classLang.summary', { lang: classLangIn(classLang) })}</div>
+                <div className="mt-0.5 text-sm text-brand-200">{t('lesson.tbdLong')}</div>
               </div>
               <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
               {needPhone && (
@@ -270,6 +292,7 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
   const [instructor, setInstructor] = useState('')
   const [slot, setSlot] = useState<Slot>({ date: today(), time: '', hours: 1.5 })
   const [note, setNote] = useState('')
+  const [classLang, setClassLang] = useState<Lang>('es')
   const [students, setStudents] = useState<Person[]>([])
   const [people, setPeople] = useState<Person[]>([])
   const { busy, error, setError, run, conflicts } = useSubmit()
@@ -283,6 +306,7 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
       ? { date: lesson.lesson_date < today() && isAdmin ? today() : lesson.lesson_date, time: shortTime(lesson.start_time), hours: lesson.hours }
       : { date: today(), time: '', hours: 1.5 })
     setNote('')
+    setClassLang(lesson?.class_lang ?? 'es')
     void api.instructorDirectory().then(setPeople).catch(() => setPeople([]))
     if (!lesson) void api.listStudents().then(setStudents).catch(() => setStudents([]))
   }, [open, lesson, isAdmin, myInstructorId, setError])
@@ -292,9 +316,15 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
     if (!instructor) return setError(t('err.pickInstructor'))
     if (!slot.time) return setError(t('err.pickTime'))
     void run(
-      () => lesson
-        ? api.confirmLesson(lesson.id, instructor, slot.date, slot.time, slot.hours, note.trim())
-        : api.scheduleLesson(student, instructor, slot.date, slot.time, slot.hours, note.trim()),
+      async () => {
+        if (lesson) {
+          await api.confirmLesson(lesson.id, instructor, slot.date, slot.time, slot.hours, note.trim())
+          if (classLang !== (lesson.class_lang ?? 'es')) await api.setClassLang(lesson.id, classLang)
+        } else {
+          const id = await api.scheduleLesson(student, instructor, slot.date, slot.time, slot.hours, note.trim())
+          if (classLang !== 'es') await api.setClassLang(id, classLang)
+        }
+      },
       t(lesson ? 'schedule.confirmed' : 'schedule.scheduled'),
       onClose,
     )
@@ -320,6 +350,7 @@ export function ScheduleModal({ open, onClose, lesson, myInstructorId, isAdmin }
           </Field>
         )}
         {lesson?.student_note && <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink-soft">“{lesson.student_note}”</p>}
+        <ClassLangPicker value={classLang} onChange={setClassLang} />
         <Field label={t('schedule.who')}>
           {(id) => (
             <select id={id} className="input" value={instructor} disabled={!isAdmin} onChange={(e) => setInstructor(e.target.value)}>

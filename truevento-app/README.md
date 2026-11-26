@@ -75,6 +75,10 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Idioma de la clase
+
+Al pedir una clase el alumno elige en qué idioma la quiere: **español, portugués o inglés** (por defecto, el idioma en que usa la app). Se ve en Solicitudes ("clase en portugués"), en Próximas clases, en la agenda de los instructores (ES / PT / EN) y en la notificación del pedido, y va en el mensaje de WhatsApp. La escuela lo puede cambiar al confirmar (Gestión) o al agendar/confirmar (app de alumnos). Migración: `20261201000000_class_language.sql` (prueba: `supabase/tests/class_language.sql`).
+
 ## Cambiar la fecha de una clase (solo administración)
 
 Si llueve o el viento no acompaña, en **Solicitudes → Próximas clases → Cambiar fecha** se elige el motivo (lluvia, sin viento, viento muy fuerte u otro), el nuevo día y el horario (los ocupados aparecen bloqueados). El alumno recibe la notificación con el motivo en su idioma y queda el botón **Avisar por WhatsApp** con el mensaje armado. Los instructores no pueden mover clases: confirman los pedidos en el día que pidió el alumno y pueden cancelar. En la app de alumnos, "Cambiar fecha" aparece solo para administradores. Migración: `20261130000000_admin_reschedule.sql` (prueba: `supabase/tests/reschedule.sql`).

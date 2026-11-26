@@ -6,7 +6,7 @@ import { friendlyError } from '../lib/errors'
 import { formatHours } from '../lib/money'
 import { openWhatsApp, waLink } from '../lib/whatsapp'
 import { RESCHEDULE_REASONS, rescheduleMessage, studentLang, type RescheduleReason } from '../lib/requestMessage'
-import type { UpcomingLesson } from '../lib/types'
+import { CLASS_LANG_LABEL, type UpcomingLesson } from '../lib/types'
 import { ErrorBox, Field, Icon, Modal, Spinner, useToast } from './ui'
 
 // half hours, 07:00 to 18:00
@@ -51,7 +51,7 @@ export function UpcomingSection() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold text-heading">{l.student.full_name}</div>
-              <div className="text-sm text-ink-soft">{dayLabel(l.lesson_date)}{l.instructor_name ? ` · ${l.instructor_name}` : ''}</div>
+              <div className="text-sm text-ink-soft">{dayLabel(l.lesson_date)}{l.instructor_name ? ` · ${l.instructor_name}` : ''} · {CLASS_LANG_LABEL[l.class_lang ?? 'es']}</div>
             </div>
             <button type="button" className="btn-ghost min-h-10 w-full px-3 py-2 text-sm sm:w-auto sm:shrink-0" onClick={() => setMoving(l)}>
               <Icon name="calendar" className="h-4 w-4" /> Cambiar fecha
