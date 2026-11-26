@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { busyTimes, confirmRequest, fetchPriceless, fetchRequests, rejectRequest, updateStudent } from '../lib/api'
+import { busyTimes, confirmRequest, createInstructor, fetchPriceless, fetchRequests, rejectRequest, saveInstructor, updateStudent } from '../lib/api'
+import { findInstructorByName } from '../lib/instructors'
 import { useInstructors } from '../lib/hooks'
 import { useData } from '../lib/useData'
 import { classAmounts, formatHours, formatMoney, fromCents, hasAtMostTwoDecimals, parseDecimal } from '../lib/money'
@@ -62,7 +63,8 @@ export default function Requests() {
           text={`Cuando un alumno pida una clase en ${STUDENTS_APP_URL.replace(/^https?:\/\//, '')}, aparece acá con sus datos, el día y el horario. Vos solo ponés el precio por hora.`} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {list.map((r) => <RequestCard key={r.id} request={r} instructors={active} onDone={reloadAll} />)}
+          {list.map((r) => <RequestCard key={r.id} request={r} instructors={active} allInstructors={instructors.data ?? []}
+            onDone={() => { reloadAll(); instructors.reload() }} />)}
         </div>
       )}
       <UpcomingSection />
@@ -75,14 +77,25 @@ const TIMES = Array.from({ length: 23 }, (_, k) => `${String(7 + Math.floor(k / 
 const HOURS = [1, 1.5, 2, 2.5, 3, 3.5, 4]
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5))
 
-function RequestCard({ request: r, instructors, onDone }: { request: ClassRequest; instructors: Instructor[]; onDone: () => void }) {
-  const { currency } = useAuth()
+/** The choice in the instructor list that adds a new one. */
+const NEW_INSTRUCTOR = '__new__'
+
+function RequestCard({ request: r, instructors, allInstructors, onDone }: {
+  request: ClassRequest; instructors: Instructor[]; allInstructors: Instructor[]; onDone: () => void
+}) {
+  const { currency, session } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
   const s = r.student
   const isNew = s.hourly_rate == null
   const [rate, setRate] = useState(toInput(s.hourly_rate))
   const [instructorId, setInstructorId] = useState('')
+  // a new instructor, added from here
+  const [newName, setNewName] = useState('')
+  const [newPay, setNewPay] = useState('')
+  const isNewIns = instructorId === NEW_INSTRUCTOR
+  const sameName = isNewIns ? findInstructorByName(allInstructors, newName) : undefined
+  const newPayN = parseDecimal(newPay)
   // agreed with the student on WhatsApp
   const [time, setTime] = useState(r.start_time ?? '')
   const [hours, setHours] = useState(r.hours)
@@ -109,7 +122,9 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
 
   const rateN = parseDecimal(rate)
   const ins = instructors.find((i) => i.id === instructorId)
-  const amounts = rateN !== null && ins ? classAmounts(hours, rateN, ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
+  // what the instructor is paid: the chosen one, the one with the same name, or the new pay typed
+  const pay = isNewIns ? (sameName ? (sameName.kind === 'owner' ? 0 : sameName.hourly_pay) : newPayN) : ins ? (ins.kind === 'owner' ? 0 : ins.hourly_pay) : null
+  const amounts = rateN !== null && pay !== null ? classAmounts(hours, rateN, pay) : null
   const agreeLink = waLink(s.phone, requestMessage({
     studentName: s.full_name, lang: s.lang, phone: s.phone,
     date: r.lesson_date, time: time || null, hours,
@@ -124,9 +139,23 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
     if (!time) return setError('Elegí el horario que acordaron por WhatsApp.')
     if (clashes(time)) return setError('Ese horario se superpone con otra clase de ese día. Elegí otro.')
     if (!instructorId) return setError('El alumno no eligió instructor: elegí quién da la clase.')
+    if (isNewIns && newName.trim().replace(/\s+/g, ' ').length < 2) return setError('Escribí el nombre del nuevo instructor.')
+    if (isNewIns && !sameName && (newPayN === null || newPayN < 0 || !hasAtMostTwoDecimals(newPayN))) return setError('Escribí cuánto se le paga por hora al nuevo instructor (0 si no cobra).')
     setBusy(true)
     try {
-      await confirmRequest(r.id, rateN, instructorId, time, hours, classLang)
+      let who = instructorId
+      if (isNewIns) {
+        if (sameName) {
+          // the same person, already saved: use them (and bring them back to the list if hidden)
+          who = sameName.id
+          if (!sameName.active) await saveInstructor({ ...sameName, active: true })
+        } else {
+          who = crypto.randomUUID()
+          const res = await createInstructor({ id: who, full_name: newName.trim().replace(/\s+/g, ' '), hourly_pay: newPayN!, active: true }, session!.user.id)
+          if (res === 'queued') throw new Error('Sin conexión: el instructor nuevo se guarda cuando vuelva internet. Confirmá la clase después.')
+        }
+      }
+      await confirmRequest(r.id, rateN, who, time, hours, classLang)
       toast(`Clase de ${s.full_name} confirmada. Ya la ve en su app.`)
       onDone()
       requestsChanged()
@@ -233,9 +262,22 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
             <select id={id} className={`input ${!instructorId ? 'ring-2 ring-amber-400/70' : ''}`} value={instructorId} onChange={(e) => setInstructorId(e.target.value)}>
               {!instructorId && <option value="" disabled>Elegí el instructor…</option>}
               {instructors.map((i) => <option key={i.id} value={i.id}>{i.full_name}</option>)}
+              <option value={NEW_INSTRUCTOR}>+ Nuevo instructor…</option>
             </select>
           )}
         </Field>
+        {isNewIns && (
+          <>
+            <Field label="Nombre del nuevo instructor" hint={sameName ? `Ya está guardado: se usa ${sameName.full_name}.` : 'Queda en la lista de instructores.'}>
+              {(id) => <input id={id} className="input" autoFocus placeholder="Ej: Fran" value={newName} onChange={(e) => setNewName(e.target.value)} />}
+            </Field>
+            {!sameName && (
+              <Field label="Pago por hora al instructor" hint="Lo que la escuela le paga por cada hora de clase.">
+                {(id) => <input id={id} className="input tabular" inputMode="decimal" placeholder="Ej: 100" value={newPay} onChange={(e) => setNewPay(e.target.value)} />}
+              </Field>
+            )}
+          </>
+        )}
       </div>
       {amounts && (
         <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm text-ink-soft">

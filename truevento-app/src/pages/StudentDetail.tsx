@@ -89,6 +89,16 @@ export default function StudentDetail() {
                 <div className="tabular font-semibold">{formatMoney(c.total_amount, currency)}</div>
                 <div className="tabular text-sm text-ink-mute">{formatHours(c.hours)}</div>
               </div>
+              {isAdmin && (
+                c.settlement_id
+                  ? <span className="shrink-0 rounded-lg bg-surface-2 px-2 py-1 text-xs text-ink-mute" title="Ya se liquidó al instructor: no se puede cambiar">Liquidada</span>
+                  : !c.pending && (
+                    <Link to={`/clases/${c.id}/editar`} aria-label={`Editar la clase del ${formatDate(c.class_date)}`}
+                      className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-lg text-ink-soft hover:bg-surface-2">
+                      <Icon name="edit" className="h-4 w-4" />
+                    </Link>
+                  )
+              )}
             </li>
           ))}
         </ul>
