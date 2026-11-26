@@ -37,9 +37,9 @@ insert into private.push_config (url, secret) values ('https://g.example/api/pus
 
 \echo '1. the student chooses the language; by default, the one of their app'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 1.5, null, null, 'en'));
-insert into tests.vars values ('l2', public.request_lesson(current_date + 3, null, 1));
-insert into tests.vars values ('l3', public.request_lesson(current_date + 4, null, 1, null, null, 'xx'));
+insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 1.5, null, null, 'en', p_accept_rules => true));
+insert into tests.vars values ('l2', public.request_lesson(current_date + 3, null, 1, p_accept_rules => true));
+insert into tests.vars values ('l3', public.request_lesson(current_date + 4, null, 1, null, null, 'xx', p_accept_rules => true));
 do $$ begin
   assert (select class_lang from public.lessons where id = (select v::uuid from tests.vars where k = 'l1')) = 'en';
   assert (select class_lang from public.lessons where id = (select v::uuid from tests.vars where k = 'l2')) = 'pt', 'app language';

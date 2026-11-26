@@ -38,7 +38,7 @@ insert into private.push_config (url, secret) values ('https://g.example/api/pus
 
 \echo '1. a request with a day and hours only'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 2));
+insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 2, p_accept_rules => true));
 do $$ begin
   assert (select start_time from public.lessons where id = (select v::uuid from tests.vars where k = 'l1')) is null;
   assert (select count(*) from public.busy_slots(current_date, current_date + 7)) = 0, 'takes no slot';
@@ -46,7 +46,7 @@ do $$ begin
     tests.last_push() -> 'messages' -> 0 -> 'payload' ->> 'body';
 end $$;
 -- two requests the same day are fine (they are agreed on WhatsApp)
-insert into tests.vars values ('l2', public.request_lesson(current_date + 2, null, 1.5));
+insert into tests.vars values ('l2', public.request_lesson(current_date + 2, null, 1.5, p_accept_rules => true));
 reset role;
 
 \echo '2. a confirmed class always has a time'
@@ -78,7 +78,7 @@ end $$;
 
 \echo '4. cancelling a request without a time notifies with a full text'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l3', public.request_lesson(current_date + 5, null, 1));
+insert into tests.vars values ('l3', public.request_lesson(current_date + 5, null, 1, p_accept_rules => true));
 select public.cancel_lesson((select v::uuid from tests.vars where k = 'l3'));
 do $$ begin
   assert tests.last_push() -> 'messages' -> 0 -> 'payload' ->> 'body' like 'Ana Silva canceló la clase del % (horario a coordinar)',

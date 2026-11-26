@@ -42,7 +42,7 @@ insert into private.push_config (url, secret) values ('https://g.example/api/pus
 
 \echo '1. an instructor confirms a request on the requested day, not another'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 1.5));
+insert into tests.vars values ('l1', public.request_lesson(current_date + 2, null, 1.5, p_accept_rules => true));
 select tests.act_as('00000000-0000-0000-0000-0000000000b1');
 select tests.fails($$select public.confirm_lesson((select v::uuid from tests.vars where k = 'l1'),
   '00000000-0000-0000-0000-000000000e01', current_date + 3, '10:00', 1.5)$$) as "instructor moves the day";
@@ -72,7 +72,7 @@ end $$;
 
 \echo '4. it cannot land on a time already taken'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l2', public.request_lesson(current_date + 5, null, 2));
+insert into tests.vars values ('l2', public.request_lesson(current_date + 5, null, 2, p_accept_rules => true));
 select tests.act_as('00000000-0000-0000-0000-0000000000a1');
 select public.confirm_request((select v::uuid from tests.vars where k = 'l2'), 250, '00000000-0000-0000-0000-000000000e01', '09:00');
 select tests.fails($$select public.reschedule_lesson((select v::uuid from tests.vars where k = 'l1'), current_date + 5, '10:00')$$) as "taken";
@@ -81,7 +81,7 @@ select public.reschedule_lesson((select v::uuid from tests.vars where k = 'l1'),
 \echo '5. only confirmed classes, and only admins (students cannot)'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
 select tests.fails($$select public.reschedule_lesson((select v::uuid from tests.vars where k = 'l1'), current_date + 6, '10:00')$$) as "student";
-insert into tests.vars values ('l3', public.request_lesson(current_date + 6, null, 1));
+insert into tests.vars values ('l3', public.request_lesson(current_date + 6, null, 1, p_accept_rules => true));
 select tests.act_as('00000000-0000-0000-0000-0000000000a1');
 select tests.fails($$select public.reschedule_lesson((select v::uuid from tests.vars where k = 'l3'), current_date + 7, '10:00')$$) as "a request";
 reset role;

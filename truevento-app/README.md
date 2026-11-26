@@ -75,6 +75,10 @@ Para activarlo en producción:
 
 Pruebas: `supabase/tests/push.sql` (quién recibe qué y en qué idioma), `api/push.test.ts`, `tests/push/chain.mjs` (base → pg_net → /api/push → servicio de push falso que descifra el mensaje) y `tests/push/sw.cjs` (el service worker muestra la notificación en un navegador real).
 
+## Normas de la escuela
+
+Al reservar, el alumno ve un aviso con las normas (llegada 20 minutos antes, tardanzas, viento, cancelaciones con 24 hs, seguridad y plazo de los paquetes) y, al final, tiene que marcar **"Leí y acepto las normas de la escuela"**; sin eso no se puede enviar el pedido (la base de datos también lo exige y guarda cuándo las aceptó). En Solicitudes se ve "Aceptó las normas de la escuela". Las normas están en español, portugués e inglés y se pueden releer en Ajustes de la app de alumnos (texto en `truevento-alumnos/src/i18n/messages.ts`, claves `rules.1` a `rules.7`). Migración: `20261202000000_school_rules.sql` (prueba: `supabase/tests/school_rules.sql`).
+
 ## Idioma de la clase
 
 Al pedir una clase el alumno elige en qué idioma la quiere: **español, portugués o inglés** (por defecto, el idioma en que usa la app). Se ve en Solicitudes ("clase en portugués"), en Próximas clases, en la agenda de los instructores (ES / PT / EN) y en la notificación del pedido, y va en el mensaje de WhatsApp. La escuela lo puede cambiar al confirmar (Gestión) o al agendar/confirmar (app de alumnos). Migración: `20261201000000_class_language.sql` (prueba: `supabase/tests/class_language.sql`).

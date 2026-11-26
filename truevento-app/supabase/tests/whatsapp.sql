@@ -30,12 +30,12 @@ select tests.act_as('00000000-0000-0000-0000-0000000000d1');
 select public.claim_invite(current_setting('test.code'));
 
 \echo '1. without WhatsApp a class cannot be asked for'
-select tests.fails($$select public.request_lesson(current_date + 2, '10:00', 1)$$) as "no phone";
+select tests.fails($$select public.request_lesson(current_date + 2, '10:00', 1, p_accept_rules => true)$$) as "no phone";
 do $$ begin assert (select count(*) from public.lessons) = 0; end $$;
 
 \echo '2. after adding it, it works'
 select public.update_my_details('+55 88 99999-1234', 60::smallint, 'none');
-select public.request_lesson(current_date + 2, '10:00', 1);
+select public.request_lesson(current_date + 2, '10:00', 1, p_accept_rules => true);
 do $$ begin assert (select count(*) from public.lessons where status = 'requested') = 1; end $$;
 
 \echo '3. the language is saved on the student only, and only valid ones'

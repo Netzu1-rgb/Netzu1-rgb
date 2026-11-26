@@ -13,6 +13,7 @@ import * as api from '../lib/api'
 import { LanguagePicker, t } from '../i18n'
 import type { Key } from '../i18n/messages'
 import { PrivacyModal } from '../components/Privacy'
+import { SchoolRulesModal } from '../components/SchoolRules'
 import { NotificationsCard } from '../components/Notifications'
 
 const demoApi = api as unknown as { resetDemo?: () => void }
@@ -40,6 +41,7 @@ export function SettingsPage() {
   const confirm = useConfirm()
   const navigate = useNavigate()
   const [privacy, setPrivacy] = useState(false)
+  const [rules, setRules] = useState(false)
   const roleLabel = t(me.role === 'student' ? 'settings.roleStudent' : me.role === 'admin' ? 'settings.roleAdmin' : 'settings.roleInstructor')
 
   return (
@@ -91,10 +93,16 @@ export function SettingsPage() {
       }}>
         <Icon name="logout" /> {t('settings.logout')}
       </button>
-      <button type="button" className="w-full text-center text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setPrivacy(true)}>
-        {t('settings.privacy')}
-      </button>
+      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setRules(true)}>
+          {t('rules.title')}
+        </button>
+        <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setPrivacy(true)}>
+          {t('settings.privacy')}
+        </button>
+      </div>
       <PrivacyModal open={privacy} onClose={() => setPrivacy(false)} />
+      <SchoolRulesModal open={rules} onClose={() => setRules(false)} />
       {demoApi.resetDemo && (
         <button type="button" className="btn-ghost w-full" onClick={async () => {
           if (await confirm({ title: t('settings.resetDemo'), message: t('settings.resetDemoMsg'), confirmLabel: t('settings.reset'), danger: true })) demoApi.resetDemo!()

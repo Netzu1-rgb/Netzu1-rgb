@@ -114,29 +114,29 @@ select tests.fails($$select public.set_student_skill('00000000-0000-0000-0000-00
 select tests.fails($$insert into public.announcements (title) values ('hola')$$) as "student posts";
 
 \echo '5. a student asks for classes; past dates are refused'
-select tests.fails($$select public.request_lesson(current_date - 1, '10:00', 1)$$) as "past date";
-select tests.fails($$select public.request_lesson(current_date + 1, '10:00', 1.1)$$) as "not a quarter hour";
+select tests.fails($$select public.request_lesson(current_date - 1, '10:00', 1, p_accept_rules => true)$$) as "past date";
+select tests.fails($$select public.request_lesson(current_date + 1, '10:00', 1.1, p_accept_rules => true)$$) as "not a quarter hour";
 insert into tests.vars values
-  ('req1', public.request_lesson(current_date + 1, '10:00', 1.5, null, 'Primera vez')),
-  ('req2', public.request_lesson(current_date + 2, '15:30', 2, '00000000-0000-0000-0000-000000000e02'));
+  ('req1', public.request_lesson(current_date + 1, '10:00', 1.5, null, 'Primera vez', p_accept_rules => true)),
+  ('req2', public.request_lesson(current_date + 2, '15:30', 2, '00000000-0000-0000-0000-000000000e02', p_accept_rules => true));
 select tests.act_as('00000000-0000-0000-0000-0000000000d2');
-insert into tests.vars values ('req3', public.request_lesson(current_date + 1, '09:00', 1));
+insert into tests.vars values ('req3', public.request_lesson(current_date + 1, '09:00', 1, p_accept_rules => true));
 do $$ begin
   assert (select count(*) from public.agenda(current_date, current_date + 30)) = 1, 'Beto sees only his request';
   assert (select count(*) from public.lessons) = 1;
 end $$;
 select tests.fails($$select public.cancel_lesson((select v::uuid from tests.vars where k = 'req1'))$$) as "cancel another's class";
 -- Ana asked for 10:00–11:30 tomorrow and Beto 09:00–10:00: overlapping times are taken
-select tests.fails($$select public.request_lesson(current_date + 1, '10:00', 1)$$) as "same slot";
-select tests.fails($$select public.request_lesson(current_date + 1, '11:00', 1)$$) as "overlaps Ana's 1:30";
-select tests.fails($$select public.request_lesson(current_date + 1, '08:30', 1)$$) as "overlaps Beto's own";
+select tests.fails($$select public.request_lesson(current_date + 1, '10:00', 1, p_accept_rules => true)$$) as "same slot";
+select tests.fails($$select public.request_lesson(current_date + 1, '11:00', 1, p_accept_rules => true)$$) as "overlaps Ana's 1:30";
+select tests.fails($$select public.request_lesson(current_date + 1, '08:30', 1, p_accept_rules => true)$$) as "overlaps Beto's own";
 do $$ begin
   -- Beto sees Ana's slot as taken, without her name
   assert (select count(*) from public.busy_slots(current_date, current_date + 7)) = 3;
   assert exists (select 1 from public.busy_slots(current_date, current_date + 7) where start_time = '10:00' and hours = 1.5);
 end $$;
 -- right after another class is free
-insert into tests.vars values ('req4', public.request_lesson(current_date + 1, '11:30', 1));
+insert into tests.vars values ('req4', public.request_lesson(current_date + 1, '11:30', 1, p_accept_rules => true));
 select public.cancel_lesson((select v::uuid from tests.vars where k = 'req4'));
 
 \echo '6. instructors confirm their own classes only'
@@ -217,7 +217,7 @@ do $$ begin
   assert (select count(*) from public.student_skills) = 0;
   assert (select count(*) from public.announcements) = 0;
 end $$;
-select tests.fails($$select public.request_lesson(current_date + 3, '10:00', 1)$$) as "inactive student asks";
+select tests.fails($$select public.request_lesson(current_date + 3, '10:00', 1, p_accept_rules => true)$$) as "inactive student asks";
 
 \echo '11. a new student signs up alone; the admin only sets the price'
 select tests.act_as('00000000-0000-0000-0000-0000000000e9');
@@ -231,7 +231,7 @@ do $$ begin
   assert (select count(*) from public.students) = 0, 'still cannot read the students table';
 end $$;
 select public.update_my_details('+55 88 99999-1111', 63::smallint, 'some');
-insert into tests.vars values ('jreq', public.request_lesson(current_date + 5, '10:00', 2, null, 'Primera vez'));
+insert into tests.vars values ('jreq', public.request_lesson(current_date + 5, '10:00', 2, null, 'Primera vez', p_accept_rules => true));
 
 select tests.act_as('00000000-0000-0000-0000-0000000000a1');
 do $$ begin

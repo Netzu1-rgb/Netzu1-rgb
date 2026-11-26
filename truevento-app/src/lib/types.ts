@@ -116,6 +116,8 @@ export interface ClassRequest {
   start_time: string | null
   /** the language the class is taught in */
   class_lang: 'es' | 'pt' | 'en'
+  /** when the student accepted the school's rules for this booking */
+  rules_accepted_at?: string | null
   hours: number
   student_note: string | null
   instructor_id: string | null

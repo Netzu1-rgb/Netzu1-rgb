@@ -179,6 +179,9 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
           {formatHours(r.hours)} · clase en {CLASS_LANG_LABEL[r.class_lang ?? 'es'].toLowerCase()} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ''}
         </div>
       </div>
+      {r.rules_accepted_at && (
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-mute"><Icon name="check" className="h-4 w-4 text-brand-deep" /> Aceptó las normas de la escuela</p>
+      )}
       {r.student_note && <p className="mt-3 rounded-xl bg-surface-2 px-4 py-2.5 text-sm text-ink-soft">“{r.student_note}”</p>}
 
       {/* 1. agree on the price with the student; 2. write it below and confirm */}

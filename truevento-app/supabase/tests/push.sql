@@ -54,7 +54,7 @@ select public.register_student('Bruno Díaz', '+54 9 11 5555-2222', 80::smallint
 
 \echo '2. without configuration nothing is queued and nothing breaks'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l0', public.request_lesson(current_date + 1, '08:00', 1));
+insert into tests.vars values ('l0', public.request_lesson(current_date + 1, '08:00', 1, p_accept_rules => true));
 do $$ begin assert tests.pushes() = 0, 'nothing queued without config'; end $$;
 reset role;
 insert into private.push_config (url, secret) values ('https://gestion.example/api/push', 'test-secret-0123456789abcdef');
@@ -72,7 +72,7 @@ select tests.fails($$select public.save_push_subscription('otra', 'https://push.
 
 \echo '4. a new request notifies the admins (management app), not students'
 select tests.act_as('00000000-0000-0000-0000-0000000000d2');
-insert into tests.vars values ('l1', public.request_lesson(current_date + 2, '10:00', 1.5));
+insert into tests.vars values ('l1', public.request_lesson(current_date + 2, '10:00', 1.5, p_accept_rules => true));
 do $$
 declare p jsonb := tests.last_push(); m jsonb;
 begin
@@ -118,7 +118,7 @@ do $$ begin assert tests.pushes() = 3, 'no change, no notification'; end $$;
 
 \echo '7. a declined request notifies the student (Portuguese)'
 select tests.act_as('00000000-0000-0000-0000-0000000000d1');
-insert into tests.vars values ('l2', public.request_lesson(current_date + 3, '15:00', 1));
+insert into tests.vars values ('l2', public.request_lesson(current_date + 3, '15:00', 1, p_accept_rules => true));
 do $$ begin assert tests.pushes() = 4 and tests.last_push() -> 'messages' -> 0 -> 'payload' ->> 'body' like 'Ana Silva pidió el % a las 15:00', 'admins hear of Ana''s request (she has a price: no note)'; end $$;
 select tests.act_as('00000000-0000-0000-0000-0000000000b1');
 select public.cancel_lesson((select v::uuid from tests.vars where k = 'l2'), 'Sin viento');
@@ -171,7 +171,7 @@ reset role;
 create or replace function private.notify(p_users uuid[], p_app text, p_msg jsonb) returns void
 language plpgsql as $$ begin raise exception 'push service down'; end $$;
 select tests.act_as('00000000-0000-0000-0000-0000000000d2');
-insert into tests.vars values ('l3', public.request_lesson(current_date + 4, '09:00', 1));
+insert into tests.vars values ('l3', public.request_lesson(current_date + 4, '09:00', 1, p_accept_rules => true));
 do $$ begin assert exists (select 1 from public.lessons where id = (select v::uuid from tests.vars where k = 'l3')), 'the class was saved'; end $$;
 
 reset role;

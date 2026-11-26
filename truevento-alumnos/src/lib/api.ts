@@ -105,6 +105,8 @@ export async function instructorDirectory(): Promise<Person[]> {
 export async function requestLesson(date: string, time: string | null, hours: number, instructorId: string | null, note: string, lang: string) {
   check(await supabase.rpc('request_lesson', {
     p_date: date, p_time: time, p_hours: hours, p_instructor: instructorId, p_note: note || null, p_lang: lang,
+    // the student accepted the school's rules for this booking
+    p_accept_rules: true,
   }))
 }
 

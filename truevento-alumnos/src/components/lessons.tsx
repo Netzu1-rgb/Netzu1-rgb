@@ -11,6 +11,7 @@ import { getLang, LANGS, skillText, t, type Lang } from '../i18n'
 import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
 import { AgreePriceButton } from './contact'
+import { SchoolRulesModal } from './SchoolRules'
 import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
 
@@ -158,6 +159,9 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   const [phone, setPhone] = useState('')
   const [sent, setSent] = useState(false)
   const [classLang, setClassLang] = useState<Lang>(getLang())
+  // the school's rules: read them, and accept them to book
+  const [rulesOpen, setRulesOpen] = useState(false)
+  const [rulesOk, setRulesOk] = useState(false)
   const needPhone = summary !== null && !waNumber(summary.phone)
 
   useEffect(() => {
@@ -166,6 +170,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     setSent(false)
     setPhone('')
     setClassLang(getLang())
+    setRulesOk(false)
     void api.myStudentSummary().then(setSummary).catch(() => setSummary(null))
     setStep(1)
     setExtras(false)
@@ -183,6 +188,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
     setError(null)
     if (step < 3) return setStep(step + 1)
     if (needPhone && !waNumber(phone)) return setError(t('err.phone'))
+    if (!rulesOk) return setError(t('err.rules'))
     void run(async () => {
       if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })
       // only the day and the hours: the time is agreed on WhatsApp
@@ -206,6 +212,8 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   }
 
   return (
+    <>
+    <SchoolRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
     <Modal open={open} title={t('ask.title')} onClose={onClose}
       footer={<>
         {step > 1
@@ -226,7 +234,16 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
         </div>
 
         <div key={step} className="page-enter space-y-5">
-          {open && step === 1 && <SlotPicker part="day" value={slot} onChange={setSlot} refreshKey={conflicts} />}
+          {open && step === 1 && (
+            <>
+              <button type="button" onClick={() => setRulesOpen(true)}
+                className="flex w-full items-start gap-3 rounded-xl bg-sand px-4 py-3 text-left text-sm text-ink-soft">
+                <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0 text-brand-deep" />
+                <span>{t('rules.banner')} <b className="font-semibold text-brand-deep underline underline-offset-2">{t('rules.read')}</b></span>
+              </button>
+              <SlotPicker part="day" value={slot} onChange={setSlot} refreshKey={conflicts} />
+            </>
+          )}
           {open && step === 2 && (
             <>
               <p className="rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-semibold text-heading">{longDay(slot.date, true)}</p>
@@ -250,6 +267,16 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
                     value={phone} onChange={(e) => setPhone(e.target.value)} />}
                 </Field>
               )}
+              <div className={`rounded-xl border p-3 ${rulesOk ? 'border-line bg-surface' : 'border-brand/40 bg-brand-soft'}`}>
+                <label className="flex items-start gap-3 text-sm font-semibold text-heading">
+                  <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-brand" checked={rulesOk}
+                    onChange={(e) => { setRulesOk(e.target.checked); setError(null) }} />
+                  <span>{t('rules.accept')}</span>
+                </label>
+                <button type="button" className="ml-8 mt-1 text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setRulesOpen(true)}>
+                  {t('rules.read')}
+                </button>
+              </div>
               {!extras ? (
                 <button type="button" className="text-sm font-semibold text-brand-deep underline underline-offset-2" onClick={() => setExtras(true)}>
                   {t('ask.extras')}
@@ -276,6 +303,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
         {error && <ErrorBox message={error} />}
       </div>
     </Modal>
+    </>
   )
 }
 
