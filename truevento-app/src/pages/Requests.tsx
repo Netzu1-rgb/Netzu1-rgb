@@ -91,13 +91,13 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // who gives it: the student's choice, else their usual instructor, else the first owner
+  // who gives it: the instructor the student chose in their app; if they chose none,
+  // the admin picks one here (nothing is chosen for them)
   useEffect(() => {
-    if (instructorId || !instructors.length) return
-    const pick = [r.instructor_id, s.default_instructor_id].find((id) => id && instructors.some((i) => i.id === id))
-      ?? instructors.find((i) => i.owner_slot === 1)?.id ?? instructors[0].id
-    setInstructorId(pick)
-  }, [instructors, instructorId, r.instructor_id, s.default_instructor_id])
+    if (instructorId || !r.instructor_id || !instructors.some((i) => i.id === r.instructor_id)) return
+    setInstructorId(r.instructor_id)
+  }, [instructors, instructorId, r.instructor_id])
+  const studentChose = !!r.instructor_id && instructors.some((i) => i.id === r.instructor_id)
 
   useEffect(() => {
     let alive = true
@@ -123,7 +123,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
     if (rateN === null || !hasAtMostTwoDecimals(rateN)) return setError('Escribí el precio por hora (por ejemplo 250 o 250,50).')
     if (!time) return setError('Elegí el horario que acordaron por WhatsApp.')
     if (clashes(time)) return setError('Ese horario se superpone con otra clase de ese día. Elegí otro.')
-    if (!instructorId) return setError('Elegí quién da la clase.')
+    if (!instructorId) return setError('El alumno no eligió instructor: elegí quién da la clase.')
     setBusy(true)
     try {
       await confirmRequest(r.id, rateN, instructorId, time, hours, classLang)
@@ -176,7 +176,7 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
       <div className="mt-4 rounded-xl bg-brand-soft px-4 py-3 text-brand-deep">
         <div className="flex items-center gap-2 font-semibold"><Icon name="calendar" className="h-4 w-4" /> {longDay(r.lesson_date)}</div>
         <div className="mt-0.5 text-sm">
-          {formatHours(r.hours)} · clase en {CLASS_LANG_LABEL[r.class_lang ?? 'es'].toLowerCase()} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ''}
+          {formatHours(r.hours)} · clase en {CLASS_LANG_LABEL[r.class_lang ?? 'es'].toLowerCase()} · {r.start_time ? `pidió de ${r.start_time} a ${endTime(r.start_time, r.hours)}` : 'horario a coordinar por WhatsApp'}{asked ? ` · pidió con ${asked}` : ' · sin instructor: lo asignás vos'}
         </div>
       </div>
       {r.rules_accepted_at && (
@@ -228,9 +228,10 @@ function RequestCard({ request: r, instructors, onDone }: { request: ClassReques
           {(id) => <input id={id} className="input tabular text-lg font-semibold" inputMode="decimal" placeholder="Ej: 250"
             value={rate} onChange={(e) => setRate(e.target.value)} autoFocus={isNew} />}
         </Field>
-        <Field label="Quién da la clase">
+        <Field label="Quién da la clase" hint={studentChose ? 'Lo eligió el alumno en su app.' : 'El alumno no eligió instructor en su app: asignalo vos.'}>
           {(id) => (
-            <select id={id} className="input" value={instructorId} onChange={(e) => setInstructorId(e.target.value)}>
+            <select id={id} className={`input ${!instructorId ? 'ring-2 ring-amber-400/70' : ''}`} value={instructorId} onChange={(e) => setInstructorId(e.target.value)}>
+              {!instructorId && <option value="" disabled>Elegí el instructor…</option>}
               {instructors.map((i) => <option key={i.id} value={i.id}>{i.full_name}</option>)}
             </select>
           )}

@@ -283,7 +283,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
                 </button>
               ) : (
                 <div className="page-enter space-y-4">
-                  <Field label={t('ask.instructor')}>
+                  <Field label={t('ask.instructor')} hint={t('ask.instructorHint')}>
                     {(id) => (
                       <select id={id} className="input" value={instructor} onChange={(e) => setInstructor(e.target.value)}>
                         <option value="">{t('ask.anyInstructor')}</option>
