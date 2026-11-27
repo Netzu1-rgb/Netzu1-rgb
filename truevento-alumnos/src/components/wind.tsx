@@ -79,8 +79,44 @@ export function WindSummary({ day }: { day: WindDay }) {
   )
 }
 
+/** The hour shown big: now (today), else the windiest lesson hour. */
+function defaultHour(day: WindDay): string {
+  const now = schoolHour()
+  if (day.hours.some((h) => h.time === now)) return now
+  const lesson = day.hours.filter((h) => { const x = Number(h.time.slice(11, 13)); return x >= 9 && x <= 17 })
+  const pool = lesson.length ? lesson : day.hours
+  return pool.reduce((a, h) => (h.speed > a.speed ? h : a), pool[0]).time
+}
+
+/** Compass rose: the arrow points where the wind goes; the label says where it comes from. */
+function Compass({ deg, size = 132 }: { deg: number; size?: number }) {
+  const dirs = t('wind.dirs').split(',') // N,NE,E,SE,S,SO,O,NO
+  return (
+    <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label={t('wind.dirDeg', { dir: compass(deg), deg })}>
+      <circle cx="60" cy="60" r="56" className="fill-surface-2 stroke-line" strokeWidth="1.5" />
+      {Array.from({ length: 16 }, (_, i) => {
+        const a = (i * 22.5 * Math.PI) / 180, long = i % 4 === 0
+        return <line key={i} x1={60 + Math.sin(a) * (long ? 44 : 48)} y1={60 - Math.cos(a) * (long ? 44 : 48)} x2={60 + Math.sin(a) * 53} y2={60 - Math.cos(a) * 53}
+          className="stroke-ink-mute" strokeWidth={long ? 2 : 1} strokeLinecap="round" />
+      })}
+      {[0, 2, 4, 6].map((k) => {
+        const a = (k * 45 * Math.PI) / 180
+        return <text key={k} x={60 + Math.sin(a) * 34} y={60 - Math.cos(a) * 34 + 4.5} textAnchor="middle" className="fill-ink-soft" style={{ font: '700 12px Inter, sans-serif' }}>{dirs[k]}</text>
+      })}
+      {/* the wind blows from deg towards deg+180 */}
+      <g transform={`rotate(${deg + 180} 60 60)`}>
+        <path d="M60 26 L68 45 L62.5 42.5 L62.5 80 L57.5 80 L57.5 42.5 L52 45 Z" className="fill-brand" />
+        <circle cx="60" cy="84" r="4.5" className="fill-brand" opacity=".35" />
+      </g>
+    </svg>
+  )
+}
+
 export function WindDayCard({ day, top }: { day: WindDay; top: number }) {
   const now = schoolHour()
+  const [picked, setPicked] = useState<string | null>(null)
+  const sel = day.hours.find((h) => h.time === (picked ?? defaultHour(day))) ?? day.hours[0]
+  const level = windLevel(sel.speed, sel.gust)
   return (
     <section className="card p-4" aria-label={windDayLabel(day.date)}>
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -89,37 +125,72 @@ export function WindDayCard({ day, top }: { day: WindDay; top: number }) {
           {day.best ? t('wind.best', day.best) : t('wind.noBest')}
         </span>
       </div>
-      <WindSummary day={day} />
-      <div className="mt-4">
-        <div>
-          <ol className="flex h-32 items-end gap-0.5 sm:gap-1" aria-label={t('wind.byHour')}>
-            {day.hours.map((h) => <HourBar key={h.time} h={h} top={top} now={h.time === now} />)}
-          </ol>
-          <div className="mt-1.5 flex gap-0.5 sm:gap-1" aria-hidden="true">
-            {day.hours.map((h) => (
-              <span key={h.time} className={`tabular flex-1 text-center text-[10px] ${h.time === now ? 'font-bold text-brand-deep' : 'text-ink-mute'}`}>
-                {Number(h.time.slice(11, 13)) % 3 === 0 || h.time === now ? h.time.slice(11, 13) : ''}
-              </span>
-            ))}
+
+      {/* the chosen hour, big: wind, gusts and where it comes from */}
+      <div className="rounded-2xl bg-tile p-4 text-white" aria-live="polite">
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <span className="font-semibold text-brand-100">{sel.time === now ? t('wind.now') : t('wind.atHour', { h: sel.time.slice(11, 16) })}</span>
+          <span className={`badge ${LEVEL_CLS[level].badge}`}>{windLabel(level)}</span>
+        </div>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="grid flex-1 grid-cols-2 gap-3">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-brand-200">{t('wind.windLabel')}</div>
+              <div className="tabular font-display text-6xl font-bold leading-none">{Math.round(sel.speed)}</div>
+              <div className="mt-1 text-sm text-brand-100">{t('wind.knots')}</div>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-brand-200">{t('wind.legendGust')}</div>
+              <div className="tabular font-display text-6xl font-bold leading-none text-[#ffb4c8]">{sel.gust !== null ? Math.round(sel.gust) : '—'}</div>
+              <div className="mt-1 text-sm text-brand-100">{t('wind.knots')}</div>
+            </div>
           </div>
+          <div className="shrink-0 rounded-full bg-white p-1"><Compass deg={sel.direction} size={112} /></div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-sm text-brand-100">
+          <span>{t('wind.fromLong', { dir: compass(sel.direction), deg: Math.round(sel.direction) })}</span>
+          <span>{t('wind.dayRange', { avg: day.avg, max: day.max })}{day.gustMax !== null ? ` · ${t('wind.dayGust', { gust: day.gustMax })}` : ''}</span>
+        </div>
+        {(day.agreement || day.gusty) && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {day.gusty && <span className="badge bg-coral-soft text-coral-ink">{t('wind.gusty')}</span>}
+            {day.agreement && <span className={`badge ${AGREEMENT[day.agreement].cls}`} title={t('wind.agreeHint')}>{t(AGREEMENT[day.agreement].key)}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs text-ink-mute">{t('wind.tapHour')}</p>
+        <ol className="flex h-32 items-end gap-0.5 sm:gap-1" aria-label={t('wind.byHour')}>
+          {day.hours.map((h) => <HourBar key={h.time} h={h} top={top} now={h.time === now} selected={h.time === sel.time} onPick={() => setPicked(h.time)} />)}
+        </ol>
+        <div className="mt-1.5 flex gap-0.5 sm:gap-1" aria-hidden="true">
+          {day.hours.map((h) => (
+            <span key={h.time} className={`tabular flex-1 text-center text-[10px] ${h.time === sel.time ? 'font-bold text-brand-deep' : 'text-ink-mute'}`}>
+              {Number(h.time.slice(11, 13)) % 3 === 0 || h.time === sel.time ? h.time.slice(11, 13) : ''}
+            </span>
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
-function HourBar({ h, top, now }: { h: WindHour; top: number; now: boolean }) {
+function HourBar({ h, top, now, selected, onPick }: { h: WindHour; top: number; now: boolean; selected: boolean; onPick: () => void }) {
   const gust = h.gust ?? h.speed
   const speed = Math.round(h.speed)
   return (
-    <li className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
-      aria-label={t('wind.hourA11y', { h: h.time.slice(11, 13), kn: speed, gust: h.gust !== null ? Math.round(h.gust) : '—', dir: compass(h.direction) }) + (now ? ` (${t('wind.now')})` : '')}>
-      <span className={`tabular text-[10px] font-semibold ${now ? 'text-brand-deep' : 'text-ink-soft'}`}>{speed}</span>
-      <div className={`grow-up relative w-full max-w-5 rounded-t-md bg-gust ${now ? 'ring-2 ring-brand ring-offset-1 ring-offset-surface' : ''}`}
-        style={{ height: `${Math.min(100, (gust / top) * 100)}%` }}>
-        <div className={`absolute inset-x-0 bottom-0 rounded-t-md ${LEVEL_CLS[windLevel(h.speed, h.gust)].bar}`}
-          style={{ height: `${(h.speed / Math.max(gust, 0.1)) * 100}%` }} />
-      </div>
+    <li className="flex h-full min-w-0 flex-1">
+      <button type="button" onClick={onPick} aria-pressed={selected}
+        className={`flex h-full w-full flex-col items-center justify-end gap-1 rounded-md ${selected ? 'bg-brand-soft' : ''}`}
+        aria-label={t('wind.hourA11y', { h: h.time.slice(11, 13), kn: speed, gust: h.gust !== null ? Math.round(h.gust) : '—', dir: compass(h.direction) }) + (now ? ` (${t('wind.now')})` : '')}>
+        <span className={`tabular text-[10px] font-semibold ${selected ? 'text-brand-deep' : 'text-ink-soft'}`}>{speed}</span>
+        <div className={`grow-up relative w-full max-w-5 rounded-t-md bg-gust ${now ? 'ring-2 ring-brand ring-offset-1 ring-offset-surface' : ''}`}
+          style={{ height: `${Math.min(100, (gust / top) * 100)}%` }}>
+          <div className={`absolute inset-x-0 bottom-0 rounded-t-md ${LEVEL_CLS[windLevel(h.speed, h.gust)].bar}`}
+            style={{ height: `${(h.speed / Math.max(gust, 0.1)) * 100}%` }} />
+        </div>
+      </button>
     </li>
   )
 }
@@ -161,6 +232,7 @@ export function WindForecast() {
         </div>
       </div>
       <div key={day.date} className="page-enter"><WindDayCard day={day} top={top} /></div>
+      <p className="flex gap-2 rounded-xl bg-sand px-3 py-2.5 text-sm text-ink-soft" role="note"><Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" /> {t('wind.disclaimer')}</p>
       <p className="text-center text-xs text-ink-mute">{t('wind.colors')}</p>
       <p className="text-center text-xs text-ink-mute">{t('wind.footerShort', { source, time: updated })}</p>
       {data.calibration && (
