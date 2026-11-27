@@ -26,6 +26,8 @@ export function onAuthChange(fn: (userId: string | null) => void): () => void {
 
 export async function signIn(login: string, password: string) {
   check(await supabase.auth.signInWithPassword({ email: loginToEmail(login, DOMAIN), password }))
+  // a sign-in made now: required steps (like confirming the WhatsApp number) come first
+  try { sessionStorage.setItem('truevento-fresh-login', '1') } catch { /* not kept */ }
 }
 
 export async function signOut() {

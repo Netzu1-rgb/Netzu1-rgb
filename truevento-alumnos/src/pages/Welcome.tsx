@@ -2,7 +2,7 @@ import { isStandalone } from '../lib/pwa'
 import { openWhatsApp } from '../lib/whatsapp'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { PrivacyModal, schoolWhatsAppLink } from '../components/Privacy'
-import { ErrorBox, Field, Icon, Spinner } from '../components/ui'
+import { ErrorBox, Field, Icon, Modal, Spinner } from '../components/ui'
 import { useSession } from '../context/Session'
 import { LanguagePicker, t } from '../i18n'
 import * as api from '../lib/api'
@@ -317,51 +317,81 @@ export function ClaimCode() {
   )
 }
 
+/** Marks a sign-in made now (not a session kept from before): then the phone check blocks. */
+const FRESH_KEY = 'truevento-fresh-login'
+const isFreshLogin = () => { try { return sessionStorage.getItem(FRESH_KEY) === '1' } catch { return false } }
+const clearFreshLogin = () => { try { sessionStorage.removeItem(FRESH_KEY) } catch { /* nothing */ } }
+
+/** The WhatsApp number with its country, already filled in; calls onSaved with the new number. */
+function PhoneConfirmForm({ summary, onSaved, extra }: { summary: StudentSummary; onSaved: (phone: string) => void; extra?: ReactNode }) {
+  const raw = summary.phone ?? ''
+  // the saved number, with the country guessed in front (they can change it)
+  const [phone, setPhone] = useState(raw.trim().startsWith('+') ? raw : joinPhone(guessCountry(), raw))
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <form className="space-y-4" noValidate onSubmit={async (e) => {
+      e.preventDefault()
+      if (!validPhone(phone) || !phone.trim().startsWith('+')) return setError(t('err.phone'))
+      setBusy(true); setError(null)
+      try {
+        await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary.weight_kg, experience: summary.experience })
+        onSaved(phone.trim())
+      } catch (err) { setError(friendlyError(err)) } finally { setBusy(false) }
+    }}>
+      <p className="text-sm text-ink-soft">{t('phoneGate.text')}</p>
+      <Field label={t('data.phone')} hint={t('data.phoneHint')}>
+        {(id) => <PhoneInput id={id} value={phone} onChange={setPhone} />}
+      </Field>
+      {error && <ErrorBox message={error} />}
+      <button type="submit" className="btn-dark w-full" disabled={busy}>{busy && <Spinner />} {t('phoneGate.save')}</button>
+      {extra}
+    </form>
+  )
+}
+
 /**
- * Before entering, a student whose WhatsApp has no country code confirms it with the
- * country list (a number without its code could be taken as being from another country).
- * Only once: with the number saved with its code, this screen never shows again.
+ * A student whose WhatsApp has no country code (it could be taken as being from another
+ * country) confirms it with the country list. Signing in now: a required step before
+ * entering. Already signed in from before: the app opens and shows a "pending change"
+ * notice with a button. Once saved with its code, neither shows again.
  */
 export function PhoneGate({ children }: { children: ReactNode }) {
   const { signOut } = useSession()
   const [summary, setSummary] = useState<StudentSummary | null | undefined>(undefined)
-  const [phone, setPhone] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [fresh] = useState(isFreshLogin)
+  const [open, setOpen] = useState(false)
   useEffect(() => {
     let alive = true
     // if the data cannot be read (no connection), nobody is kept out
-    api.myStudentSummary().then((s) => {
-      if (!alive) return
-      setSummary(s)
-      // the saved number, with the country guessed in front (they can change it)
-      const raw = s?.phone ?? ''
-      setPhone(raw.trim().startsWith('+') ? raw : joinPhone(guessCountry(), raw))
-    }).catch(() => { if (alive) setSummary(null) })
+    api.myStudentSummary().then((s) => { if (alive) setSummary(s) }).catch(() => { if (alive) setSummary(null) })
     return () => { alive = false }
   }, [])
   if (summary === undefined) return null
-  if (!summary || (summary.phone ?? '').trim().startsWith('+')) return <>{children}</>
+  const pending = !!summary && !(summary.phone ?? '').trim().startsWith('+')
+  const saved = (phone: string) => { setSummary({ ...summary!, phone }); setOpen(false); clearFreshLogin() }
+  if (!pending) return <>{children}</>
+  if (fresh) {
+    return (
+      <Shell subtitle={t('phoneGate.subtitle')}>
+        <h2 className="mb-2 font-display text-xl font-bold text-heading">{t('phoneGate.title')}</h2>
+        <PhoneConfirmForm summary={summary!} onSaved={saved} extra={
+          <button type="button" className="w-full text-sm font-semibold text-ink-mute underline underline-offset-2" onClick={() => { clearFreshLogin(); void signOut() }}>{t('settings.logout')}</button>
+        } />
+      </Shell>
+    )
+  }
   return (
-    <Shell subtitle={t('phoneGate.subtitle')}>
-      <form className="space-y-4" noValidate onSubmit={async (e) => {
-        e.preventDefault()
-        if (!validPhone(phone) || !phone.trim().startsWith('+')) return setError(t('err.phone'))
-        setBusy(true); setError(null)
-        try {
-          await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary.weight_kg, experience: summary.experience })
-          setSummary({ ...summary, phone: phone.trim() })
-        } catch (err) { setError(friendlyError(err)) } finally { setBusy(false) }
-      }}>
-        <h2 className="font-display text-xl font-bold text-heading">{t('phoneGate.title')}</h2>
-        <p className="text-sm text-ink-soft">{t('phoneGate.text')}</p>
-        <Field label={t('data.phone')} hint={t('data.phoneHint')}>
-          {(id) => <PhoneInput id={id} value={phone} onChange={setPhone} />}
-        </Field>
-        {error && <ErrorBox message={error} />}
-        <button type="submit" className="btn-dark w-full" disabled={busy}>{busy && <Spinner />} {t('phoneGate.save')}</button>
-        <button type="button" className="w-full text-sm font-semibold text-ink-mute underline underline-offset-2" onClick={() => void signOut()}>{t('settings.logout')}</button>
-      </form>
-    </Shell>
+    <>
+      <div className="fixed inset-x-3 bottom-24 z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-tile px-4 py-3 text-sm text-white shadow-xl ring-1 ring-white/10 lg:bottom-6" role="status">
+        <Icon name="whatsapp" className="h-5 w-5 shrink-0 text-brand-200" />
+        <span className="flex-1"><b className="block">{t('phoneGate.pending')}</b>{t('phoneGate.pendingText')}</span>
+        <button type="button" className="shrink-0 rounded-lg bg-brand px-3 py-1.5 font-semibold" onClick={() => setOpen(true)}>{t('phoneGate.pendingBtn')}</button>
+      </div>
+      {children}
+      <Modal open={open} title={t('phoneGate.title')} onClose={() => setOpen(false)}>
+        <PhoneConfirmForm summary={summary!} onSaved={saved} />
+      </Modal>
+    </>
   )
 }
