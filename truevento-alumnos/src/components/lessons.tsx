@@ -12,7 +12,7 @@ import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
 import { AgreePriceButton, WriteToStudentButton } from './contact'
 import { SchoolRulesModal } from './SchoolRules'
-import { PhoneInput, validPhone } from './PhoneInput'
+import { PhoneInput, phoneError } from './PhoneInput'
 import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
 
@@ -195,7 +195,8 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   function next() {
     setError(null)
     if (step < 3) return setStep(step + 1)
-    if (needPhone && !validPhone(phone)) return setError(t('err.phone'))
+    const pe = needPhone ? phoneError(phone) : null
+    if (pe) return setError(t(pe))
     if (!rulesOk) return setError(t('err.rules'))
     void run(async () => {
       if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })

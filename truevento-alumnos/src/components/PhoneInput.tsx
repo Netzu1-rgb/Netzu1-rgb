@@ -50,7 +50,7 @@ export function guessCountry(): string {
 /** The number to save: the country code and the digits typed (without a leading 0). */
 export function joinPhone(iso: string, national: string): string {
   const raw = national.trim()
-  if (iso === OTHER) return raw
+  if (iso === OTHER || !iso) return raw
   const c = COUNTRIES.find((x) => x.iso === iso)!
   let digits = raw.replace(/\D/g, '').replace(/^0+/, '')
   // someone who types the code again: do not repeat it
@@ -62,7 +62,8 @@ export function joinPhone(iso: string, national: string): string {
 
 /** Splits a saved number into country and the rest, to edit it. */
 function splitPhone(phone: string): { iso: string; national: string } {
-  if (!phone.trim()) return { iso: guessCountry(), national: '' }
+  // a new number: no country chosen, the person has to pick it
+  if (!phone.trim()) return { iso: '', national: '' }
   const c = countryOf(phone)
   if (c) return { iso: c.iso, national: phone.replace(/[^\d+]/g, '').slice(1 + c.code.replace(/\D/g, '').length) }
   return phone.trim().startsWith('+') ? { iso: OTHER, national: phone.trim() } : { iso: guessCountry(), national: phone.trim() }
@@ -89,8 +90,10 @@ export function PhoneInput({ id, value, onChange, required }: {
   const c = COUNTRIES.find((x) => x.iso === iso)
   return (
     <div className="flex gap-2">
-      <select aria-label={t('phone.country')} className="input w-[7.5rem] shrink-0 px-2" value={iso}
+      <select aria-label={t('phone.country')} value={iso} required
+        className={`input w-[8.5rem] shrink-0 px-2 ${iso ? '' : 'text-ink-mute ring-2 ring-amber-400/70'}`}
         onChange={(e) => set({ iso: e.target.value, national })}>
+        {!iso && <option value="" disabled>{t('phone.pick')}</option>}
         {COUNTRIES.map((x) => <option key={x.iso} value={x.iso}>{x.flag} {x.code}</option>)}
         <option value={OTHER}>🌐 {t('phone.other')}</option>
       </select>
@@ -106,5 +109,12 @@ export function validPhone(phone: string): boolean {
   const all = phone.replace(/\D/g, '')
   const c = countryOf(phone)
   const national = c ? all.length - c.code.replace(/\D/g, '').length : all.length
-  return phone.trim().startsWith('+') ? national >= 6 : all.length >= 8
+  // always with the country code: a number without it is never valid
+  return phone.trim().startsWith('+') && national >= 6
+}
+
+/** The message for a wrong number: the country is missing, or the number is too short. */
+export function phoneError(phone: string): 'err.country' | 'err.phone' | null {
+  if (!phone.trim().startsWith('+')) return phone.replace(/\D/g, '').length ? 'err.country' : 'err.phone'
+  return validPhone(phone) ? null : 'err.phone'
 }

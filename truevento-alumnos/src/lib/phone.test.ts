@@ -30,3 +30,14 @@ describe('WhatsApp number with the country chosen', () => {
     expect(validPhone('')).toBe(false)
   })
 })
+
+import { phoneError } from '../components/PhoneInput'
+
+describe('the country is required', () => {
+  it('a number without its country asks for the country', () => {
+    expect(phoneError('221 572-7583')).toBe('err.country')
+    expect(phoneError('')).toBe('err.phone')
+    expect(phoneError('+54 9 22')).toBe('err.phone')
+    expect(phoneError('+54 9 2215727583')).toBeNull()
+  })
+})

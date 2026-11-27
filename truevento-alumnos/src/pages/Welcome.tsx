@@ -10,7 +10,7 @@ import { friendlyError } from '../lib/errors'
 import { normalizeCode } from '../lib/format'
 import type { InvitePreview, PersonalData, StudentSummary } from '../lib/types'
 import { EXPERIENCE, experienceLabel } from '../lib/types'
-import { guessCountry, joinPhone, PhoneInput, validPhone } from '../components/PhoneInput'
+import { guessCountry, joinPhone, PhoneInput, phoneError } from '../components/PhoneInput'
 
 function Shell({ children, subtitle }: { children: ReactNode; subtitle: string }) {
   return (
@@ -126,7 +126,8 @@ export function PersonalFields({ value, onChange, withName = true }: {
 /** Checks the personal data; returns a message or null. */
 export function personalError(d: PersonalData, withName = true): string | null {
   if (withName && d.full_name.trim().length < 3) return t('err.name')
-  if (!validPhone(d.phone)) return t('err.phone')
+  const pe = phoneError(d.phone)
+  if (pe) return t(pe)
   if (d.weight_kg !== null && (d.weight_kg < 20 || d.weight_kg > 200)) return t('err.weight')
   if (!d.experience) return t('err.experience')
   return null
@@ -332,7 +333,8 @@ function PhoneConfirmForm({ summary, onSaved, extra }: { summary: StudentSummary
   return (
     <form className="space-y-4" noValidate onSubmit={async (e) => {
       e.preventDefault()
-      if (!validPhone(phone) || !phone.trim().startsWith('+')) return setError(t('err.phone'))
+      const pe = phoneError(phone)
+      if (pe) return setError(t(pe))
       setBusy(true); setError(null)
       try {
         await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary.weight_kg, experience: summary.experience })
