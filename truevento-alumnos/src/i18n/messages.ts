@@ -85,7 +85,9 @@ export const es = {
   // personal data
   'data.name': 'Nombre y apellido',
   'data.phone': 'WhatsApp',
-  'data.phoneHint': 'Con código de país y de área. Ej: +54 9 221 555-1234',
+  'data.phoneHint': 'Elegí tu país y escribí tu número con código de área (en Argentina, sin 0 ni 15).',
+  'phone.country': 'País',
+  'phone.other': 'Otro',
   'data.weight': 'Peso aproximado en kg (opcional)',
   'data.weightHint': 'Sirve para elegir el tamaño de kite.',
   'data.experience': 'Experiencia',
@@ -526,7 +528,9 @@ export const pt: Dict = {
 
   'data.name': 'Nome e sobrenome',
   'data.phone': 'WhatsApp',
-  'data.phoneHint': 'Com código do país e DDD. Ex: +55 88 99999-1234',
+  'data.phoneHint': 'Escolha seu país e digite seu número com DDD.',
+  'phone.country': 'País',
+  'phone.other': 'Outro',
   'data.weight': 'Peso aproximado em kg (opcional)',
   'data.weightHint': 'Ajuda a escolher o tamanho do kite.',
   'data.experience': 'Experiência',
@@ -953,7 +957,9 @@ export const en: Dict = {
 
   'data.name': 'Full name',
   'data.phone': 'WhatsApp',
-  'data.phoneHint': 'With country and area code. E.g. +44 7700 900123',
+  'data.phoneHint': 'Choose your country and type your number with the area code.',
+  'phone.country': 'Country',
+  'phone.other': 'Other',
   'data.weight': 'Approximate weight in kg (optional)',
   'data.weightHint': 'It helps choose the kite size.',
   'data.experience': 'Experience',

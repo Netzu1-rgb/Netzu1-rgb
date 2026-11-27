@@ -12,6 +12,7 @@ import { useMe } from '../context/Session'
 import { waNumber } from '../lib/whatsapp'
 import { AgreePriceButton, WriteToStudentButton } from './contact'
 import { SchoolRulesModal } from './SchoolRules'
+import { PhoneInput, validPhone } from './PhoneInput'
 import type { StudentSummary } from '../lib/types'
 import type { Key } from '../i18n/messages'
 
@@ -194,7 +195,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
   function next() {
     setError(null)
     if (step < 3) return setStep(step + 1)
-    if (needPhone && !waNumber(phone)) return setError(t('err.phone'))
+    if (needPhone && !validPhone(phone)) return setError(t('err.phone'))
     if (!rulesOk) return setError(t('err.rules'))
     void run(async () => {
       if (needPhone) await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary?.weight_kg ?? null, experience: summary?.experience ?? null })
@@ -270,8 +271,7 @@ export function RequestLessonModal({ open, onClose }: { open: boolean; onClose: 
               <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="whatsapp" className="h-4 w-4 shrink-0" /> {t('ask.pendingNote')}</p>
               {needPhone && (
                 <Field label={t('data.phone')} hint={<>{t('data.phoneHint')}<br />{t('ask.phoneWhy')}</>}>
-                  {(id) => <input id={id} type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="+55 88 99999-1234"
-                    value={phone} onChange={(e) => setPhone(e.target.value)} />}
+                  {(id) => <PhoneInput id={id} value={phone} onChange={setPhone} />}
                 </Field>
               )}
               <div className={`rounded-xl border p-3 ${rulesOk ? 'border-line bg-surface' : 'border-brand/40 bg-brand-soft'}`}>

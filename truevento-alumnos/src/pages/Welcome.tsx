@@ -10,6 +10,7 @@ import { friendlyError } from '../lib/errors'
 import { normalizeCode } from '../lib/format'
 import type { InvitePreview, PersonalData } from '../lib/types'
 import { EXPERIENCE, experienceLabel } from '../lib/types'
+import { PhoneInput, validPhone } from '../components/PhoneInput'
 
 function Shell({ children, subtitle }: { children: ReactNode; subtitle: string }) {
   return (
@@ -96,8 +97,7 @@ export function PersonalFields({ value, onChange, withName = true }: {
         </Field>
       )}
       <Field label={t('data.phone')} hint={t('data.phoneHint')}>
-        {(id) => <input id={id} className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={40}
-          value={value.phone} onChange={(e) => onChange({ ...value, phone: e.target.value })} />}
+        {(id) => <PhoneInput id={id} value={value.phone} onChange={(phone) => onChange({ ...value, phone })} />}
       </Field>
       <p className="-mt-2 flex gap-2 rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-brand-deep">
         <Icon name="whatsapp" className="mt-0.5 h-4 w-4 shrink-0" /> {t('ask.phoneWhy')}
@@ -126,7 +126,7 @@ export function PersonalFields({ value, onChange, withName = true }: {
 /** Checks the personal data; returns a message or null. */
 export function personalError(d: PersonalData, withName = true): string | null {
   if (withName && d.full_name.trim().length < 3) return t('err.name')
-  if (d.phone.replace(/\D/g, '').length < 8) return t('err.phone')
+  if (!validPhone(d.phone)) return t('err.phone')
   if (d.weight_kg !== null && (d.weight_kg < 20 || d.weight_kg > 200)) return t('err.weight')
   if (!d.experience) return t('err.experience')
   return null
