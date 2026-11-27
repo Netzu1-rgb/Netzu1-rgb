@@ -9,7 +9,7 @@ import { t } from './i18n'
 import { SettingsPage, WindPage } from './pages/common'
 import { StaffAgenda, StaffAnnouncements, StaffStudentDetail, StaffStudents, StaffToday } from './pages/staff'
 import { StudentAgenda, StudentHome, StudentProgress } from './pages/student'
-import Welcome, { ClaimCode } from './pages/Welcome'
+import Welcome, { ClaimCode, PhoneGate } from './pages/Welcome'
 
 const SPLASH_MIN_MS = 1800
 const started = performance.now()
@@ -48,7 +48,7 @@ function Screens({ status, role, retry }: { status: string; role: string | null;
   if (status === 'noRole') return <ClaimCode />
 
   const staff = role !== 'student'
-  return (
+  const routes = (
     <Routes>
       <Route element={<Layout />}>
         <Route index element={staff ? <StaffToday /> : <StudentHome />} />
@@ -64,4 +64,6 @@ function Screens({ status, role, retry }: { status: string; role: string | null;
       </Route>
     </Routes>
   )
+  // a student first confirms a WhatsApp number with its country code
+  return staff ? routes : <PhoneGate>{routes}</PhoneGate>
 }

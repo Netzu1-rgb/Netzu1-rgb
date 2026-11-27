@@ -8,9 +8,9 @@ import { LanguagePicker, t } from '../i18n'
 import * as api from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { normalizeCode } from '../lib/format'
-import type { InvitePreview, PersonalData } from '../lib/types'
+import type { InvitePreview, PersonalData, StudentSummary } from '../lib/types'
 import { EXPERIENCE, experienceLabel } from '../lib/types'
-import { PhoneInput, validPhone } from '../components/PhoneInput'
+import { guessCountry, joinPhone, PhoneInput, validPhone } from '../components/PhoneInput'
 
 function Shell({ children, subtitle }: { children: ReactNode; subtitle: string }) {
   return (
@@ -312,6 +312,55 @@ export function ClaimCode() {
           {busy && <Spinner />} {t('welcome.continue')}
         </button>
         <button type="button" className="btn-ghost w-full" onClick={() => void signOut()}>{t('welcome.exit')}</button>
+      </form>
+    </Shell>
+  )
+}
+
+/**
+ * Before entering, a student whose WhatsApp has no country code confirms it with the
+ * country list (a number without its code could be taken as being from another country).
+ * Only once: with the number saved with its code, this screen never shows again.
+ */
+export function PhoneGate({ children }: { children: ReactNode }) {
+  const { signOut } = useSession()
+  const [summary, setSummary] = useState<StudentSummary | null | undefined>(undefined)
+  const [phone, setPhone] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    // if the data cannot be read (no connection), nobody is kept out
+    api.myStudentSummary().then((s) => {
+      if (!alive) return
+      setSummary(s)
+      // the saved number, with the country guessed in front (they can change it)
+      const raw = s?.phone ?? ''
+      setPhone(raw.trim().startsWith('+') ? raw : joinPhone(guessCountry(), raw))
+    }).catch(() => { if (alive) setSummary(null) })
+    return () => { alive = false }
+  }, [])
+  if (summary === undefined) return null
+  if (!summary || (summary.phone ?? '').trim().startsWith('+')) return <>{children}</>
+  return (
+    <Shell subtitle={t('phoneGate.subtitle')}>
+      <form className="space-y-4" noValidate onSubmit={async (e) => {
+        e.preventDefault()
+        if (!validPhone(phone) || !phone.trim().startsWith('+')) return setError(t('err.phone'))
+        setBusy(true); setError(null)
+        try {
+          await api.updateMyDetails({ phone: phone.trim(), weight_kg: summary.weight_kg, experience: summary.experience })
+          setSummary({ ...summary, phone: phone.trim() })
+        } catch (err) { setError(friendlyError(err)) } finally { setBusy(false) }
+      }}>
+        <h2 className="font-display text-xl font-bold text-heading">{t('phoneGate.title')}</h2>
+        <p className="text-sm text-ink-soft">{t('phoneGate.text')}</p>
+        <Field label={t('data.phone')} hint={t('data.phoneHint')}>
+          {(id) => <PhoneInput id={id} value={phone} onChange={setPhone} />}
+        </Field>
+        {error && <ErrorBox message={error} />}
+        <button type="submit" className="btn-dark w-full" disabled={busy}>{busy && <Spinner />} {t('phoneGate.save')}</button>
+        <button type="button" className="w-full text-sm font-semibold text-ink-mute underline underline-offset-2" onClick={() => void signOut()}>{t('settings.logout')}</button>
       </form>
     </Shell>
   )
