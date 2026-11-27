@@ -54,5 +54,20 @@ export default defineConfig(() => {
         devOptions: { enabled: false },
       }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          // libraries in their own files: they rarely change, so after an update phones
+          // download only the app's own code again
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return undefined
+            if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react'
+            if (id.includes('react-router')) return 'router'
+            if (id.includes('@supabase')) return 'supabase'
+            return 'vendor'
+          },
+        },
+      },
+    },
   }
 })

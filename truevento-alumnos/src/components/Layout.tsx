@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { useMe } from '../context/Session'
 import { LanguageMenu, t, useLang } from '../i18n'
 import type { Key } from '../i18n/messages'
 import { RequestLessonModal, ScheduleModal } from './lessons'
-import { Icon } from './ui'
+import { Icon, Loading } from './ui'
 import * as api from '../lib/api'
 import { addDays, today } from '../lib/format'
 import { useLoad } from '../lib/hooks'
@@ -112,7 +112,7 @@ export default function Layout() {
 
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-32 pt-4 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
           {/* each screen fades in when you arrive */}
-          <div key={pathname} className="page-enter"><Outlet /></div>
+          <div key={pathname} className="page-enter"><Suspense fallback={<Loading />}><Outlet /></Suspense></div>
         </main>
 
         {/* phones and tablets: bottom bar with the main action in the middle */}

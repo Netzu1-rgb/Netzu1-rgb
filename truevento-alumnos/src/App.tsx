@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import Layout from './components/Layout'
 import { ErrorBox } from './components/ui'
@@ -6,12 +6,23 @@ import UpdateBanner from './components/UpdateBanner'
 import { useSession } from './context/Session'
 import { isConfigured } from './lib/supabase'
 import { t } from './i18n'
-import { SettingsPage, WindPage } from './pages/common'
-import { StaffAgenda, StaffAnnouncements, StaffStudentDetail, StaffStudents, StaffToday } from './pages/staff'
-import { StudentAgenda, StudentHome, StudentProgress } from './pages/student'
+// each screen is downloaded when it is first opened: a student never downloads the staff ones
+const page = <K extends string>(load: () => Promise<Record<K, React.ComponentType>>, name: K) =>
+  lazy(() => load().then((m) => ({ default: m[name] })))
+const SettingsPage = page(() => import('./pages/common'), 'SettingsPage')
+const WindPage = page(() => import('./pages/common'), 'WindPage')
+const StaffToday = page(() => import('./pages/staff'), 'StaffToday')
+const StaffAgenda = page(() => import('./pages/staff'), 'StaffAgenda')
+const StaffStudents = page(() => import('./pages/staff'), 'StaffStudents')
+const StaffStudentDetail = page(() => import('./pages/staff'), 'StaffStudentDetail')
+const StaffAnnouncements = page(() => import('./pages/staff'), 'StaffAnnouncements')
+const StudentHome = page(() => import('./pages/student'), 'StudentHome')
+const StudentAgenda = page(() => import('./pages/student'), 'StudentAgenda')
+const StudentProgress = page(() => import('./pages/student'), 'StudentProgress')
 import Welcome, { ClaimCode, PhoneGate } from './pages/Welcome'
 
-const SPLASH_MIN_MS = 1800
+// the logo shows briefly when the app opens (it used to wait 1.8 s even when ready)
+const SPLASH_MIN_MS = 800
 const started = performance.now()
 
 function hideSplash() {
@@ -49,6 +60,7 @@ function Screens({ status, role, retry }: { status: string; role: string | null;
 
   const staff = role !== 'student'
   const routes = (
+    <Suspense fallback={null}>
     <Routes>
       <Route element={<Layout />}>
         <Route index element={staff ? <StaffToday /> : <StudentHome />} />
@@ -63,6 +75,7 @@ function Screens({ status, role, retry }: { status: string; role: string | null;
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
+    </Suspense>
   )
   // a student first confirms a WhatsApp number with its country code
   return staff ? routes : <PhoneGate>{routes}</PhoneGate>
