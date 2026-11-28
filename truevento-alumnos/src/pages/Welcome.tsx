@@ -1,4 +1,5 @@
-import { isStandalone } from '../lib/pwa'
+import { detectBrowser, isStandalone } from '../lib/pwa'
+import { openInstallCoach } from '../components/InstallCoach'
 import { openWhatsApp } from '../lib/whatsapp'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { PrivacyModal, schoolWhatsAppLink } from '../components/Privacy'
@@ -258,11 +259,17 @@ export default function Welcome() {
         )}
       </form>
       {/* first visit from a browser: how to keep the app on the home screen */}
-      {!isStandalone() && (
-        <a href="/instalar.html" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm font-semibold text-brand-deep">
+      {!isStandalone() && (detectBrowser() === 'desktop' ? (
+        <a href="/instalar" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm font-semibold text-brand-deep">
           <Icon name="install" className="h-4 w-4" /> {t('welcome.install')}
         </a>
-      )}
+      ) : (
+        // on a phone: one tap installs it (Android) or an arrow shows where to tap (iPhone)
+        <button type="button" onClick={openInstallCoach}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3.5 text-base font-semibold text-white shadow-lg">
+          <Icon name="install" className="h-5 w-5" /> {t('welcome.installBtn')}
+        </button>
+      ))}
     </Shell>
   )
 }

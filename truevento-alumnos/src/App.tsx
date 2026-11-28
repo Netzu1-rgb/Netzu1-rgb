@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import Layout from './components/Layout'
 import { ErrorBox } from './components/ui'
 import UpdateBanner from './components/UpdateBanner'
+import InstallCoach from './components/InstallCoach'
 import { useSession } from './context/Session'
 import { isConfigured } from './lib/supabase'
 import { t } from './i18n'
@@ -44,6 +45,8 @@ export default function App() {
   return (
     <>
       <UpdateBanner />
+      {/* in a phone's browser: how to install the app (never inside the installed app) */}
+      <InstallCoach />
       <Screens status={status} role={me?.role ?? null} retry={refresh} />
     </>
   )

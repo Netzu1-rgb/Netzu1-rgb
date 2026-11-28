@@ -41,3 +41,18 @@ describe('the country is required', () => {
     expect(phoneError('+54 9 2215727583')).toBeNull()
   })
 })
+
+import { detectBrowser } from './pwa'
+
+describe('which phone and browser, for the install guide', () => {
+  const ios = (v: string, os = '18_6') => `Mozilla/5.0 (iPhone; CPU iPhone OS ${os} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${v} Mobile/15E148 Safari/604.1`
+  it('tells the iPhone versions and browsers apart', () => {
+    expect(detectBrowser(ios('26.0'))).toBe('ios26')
+    expect(detectBrowser(ios('17.5', '17_5'))).toBe('ios18')
+    expect(detectBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0 Mobile/15E148 Safari/604.1')).toBe('ios-chrome')
+    expect(detectBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0')).toBe('in-app')
+    expect(detectBrowser('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15', 5, 'MacIntel')).toBe('ipad')
+    expect(detectBrowser('Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36')).toBe('android')
+    expect(detectBrowser('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36', 0, 'Win32')).toBe('desktop')
+  })
+})

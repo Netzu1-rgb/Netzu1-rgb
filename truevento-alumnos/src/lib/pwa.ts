@@ -69,3 +69,22 @@ export function useOnline(): boolean {
   }, [])
   return online
 }
+
+/**
+ * Which phone and browser this is, read from what the browser says about itself, so the
+ * person never has to know it: Safari on iOS 26 (small bar with •••) or on iOS 18 and older
+ * (buttons at the bottom), Chrome on iPhone, iPad, an app's own browser (Instagram,
+ * Facebook: no install from there), Android, or a computer.
+ */
+export type Browser = 'ios26' | 'ios18' | 'ios-chrome' | 'ipad' | 'in-app' | 'android' | 'desktop'
+export function detectBrowser(ua: string = navigator.userAgent, touch = navigator.maxTouchPoints ?? 0, platform = navigator.platform): Browser {
+  if (/Instagram|FBAN|FBAV|FB_IAB|Line\//.test(ua)) return 'in-app'
+  if (/android/i.test(ua)) return 'android'
+  const ipad = /iPad/.test(ua) || (platform === 'MacIntel' && touch > 1)
+  if (!/iPhone|iPod/.test(ua) && !ipad) return 'desktop'
+  if (/CriOS|FxiOS|EdgiOS/.test(ua)) return 'ios-chrome'
+  if (ipad) return 'ipad'
+  const v = Number((ua.match(/Version\/(\d+)/) || [])[1] || 0)
+  const os = Number((ua.match(/OS (\d+)_/) || [])[1] || 0)
+  return v >= 26 || os >= 26 ? 'ios26' : 'ios18'
+}

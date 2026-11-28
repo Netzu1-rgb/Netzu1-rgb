@@ -46,6 +46,12 @@
 .m18 .r i.s { opacity: 1; transform: scale(1.4) }
 .mch .u { position: absolute; left: 6px; right: 6px; top: 6px; height: 12px; border-radius: 7px; background: #cfd1d9 }
 .mch .u .s { position: absolute; right: 2px; top: 2px; width: 8px; height: 8px; border-radius: 2px; background: #3c4043 }
+
+.onetap { display: none; margin: 4px 0 18px; padding: 16px; border-radius: 18px; background: linear-gradient(135deg,#4f73f2,#8a3fe6 55%,#ee4a7c); color: #fff; box-shadow: 0 14px 30px -14px rgba(109,75,233,.8) }
+.onetap.show { display: block }
+.onetap b { display: block; font-size: 17px }
+.onetap p { margin: 4px 0 12px; font-size: 14px; opacity: .92 }
+.onetap button { width: 100%; padding: 13px; border: 0; border-radius: 12px; background: #fff; color: #2b1a66; font: inherit; font-weight: 800; font-size: 16px; cursor: pointer }
 </style>
 <title>Instalar Truevento</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -210,6 +216,7 @@ button:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px }
 footer { color: var(--ink-mute); font-size: 13px; padding-block: 2.2rem 2.6rem }
 </style>
 
+<link rel="manifest" href="/manifest.webmanifest">
 </head>
 <body>
 <header class="hero">
@@ -239,6 +246,7 @@ footer { color: var(--ink-mute); font-size: 13px; padding-block: 2.2rem 2.6rem }
   </div>
   <p class="hint" data-t="detected" id="detected"></p>
   <div id="variants"></div>
+  <div class="onetap" id="onetap"><b data-t="oneTapTitle"></b><p data-t="oneTapText"></p><button type="button" id="onetap-btn" data-t="oneTapBtn"></button></div>
   <ol class="steps" id="steps" role="tabpanel" aria-live="polite"></ol>
 
   <section class="after">
@@ -268,6 +276,7 @@ const T = {
     intro: 'En un minuto la app queda instalada como cualquier otra: con su ícono, se abre de un toque y a pantalla completa. No hace falta bajarla de ninguna tienda.',
     perk1: 'Se abre de un toque', perk2: 'Te avisa cuando confirmamos tu clase', perk3: 'Sin App Store ni Play Store',
     detected: { ios: 'Detectamos un iPhone. ¿Tenés Android? Tocá “Android”.', android: 'Detectamos un Android. ¿Tenés iPhone? Tocá “iPhone”.', other: 'Elegí tu celular. Hacé estos pasos desde el celular, no desde la computadora.' },
+    oneTapTitle: "Instalala con un toque", oneTapText: "Tu celular permite instalarla directo: tocá el botón y confirmá.", oneTapBtn: "Instalar Truevento",
     step: 'Paso', share: 'Compartir', more: 'Más',
     ui: { addHome: 'Agregar a pantalla de inicio', add: 'Agregar', cancel: 'Cancelar', addTitle: 'Agregar a inicio', webApp: 'Abrir como app web', copy: 'Copiar', fav: 'Agregar a favoritos', read: 'Agregar a la lista de lectura',
       install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nueva pestaña', history: 'Historial', downloads: 'Descargas', shareA: 'Compartir…', addHomeA: 'Agregar a la pantalla principal', bannerA: 'Instalar Truevento', find: "Buscar en la página", viewMore: "Ver más", addHome26: "Agregar a inicio" },
@@ -303,6 +312,7 @@ const T = {
     intro: 'Em um minuto o app fica instalado como qualquer outro: com ícone, abre com um toque e em tela cheia. Não precisa baixar de nenhuma loja.',
     perk1: 'Abre com um toque', perk2: 'Avisa quando confirmamos sua aula', perk3: 'Sem App Store nem Play Store',
     detected: { ios: 'Detectamos um iPhone. Tem Android? Toque em “Android”.', android: 'Detectamos um Android. Tem iPhone? Toque em “iPhone”.', other: 'Escolha o seu celular. Faça estes passos no celular, não no computador.' },
+    oneTapTitle: "Instale com um toque", oneTapText: "Seu celular permite instalar direto: toque no botão e confirme.", oneTapBtn: "Instalar Truevento",
     step: 'Passo', share: 'Compartilhar', more: 'Mais',
     ui: { addHome: 'Adicionar à Tela de Início', add: 'Adicionar', cancel: 'Cancelar', addTitle: 'Adicionar à Tela de Início', webApp: 'Abrir como App Web', copy: 'Copiar', fav: 'Adicionar aos Favoritos', read: 'Adicionar à Lista de Leitura',
       install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nova guia', history: 'Histórico', downloads: 'Downloads', shareA: 'Compartilhar…', addHomeA: 'Adicionar à tela inicial', bannerA: 'Instalar Truevento', find: "Buscar na Página", viewMore: "Ver Mais", addHome26: "Adicionar à Tela de Início" },
@@ -338,6 +348,7 @@ const T = {
     intro: 'In a minute the app is installed like any other: with its own icon, it opens in one tap and full screen. No app store needed.',
     perk1: 'Opens in one tap', perk2: 'Tells you when your lesson is confirmed', perk3: 'No App Store or Play Store',
     detected: { ios: 'We detected an iPhone. On Android? Tap “Android”.', android: 'We detected an Android phone. On iPhone? Tap “iPhone”.', other: 'Choose your phone. Follow these steps on your phone, not on a computer.' },
+    oneTapTitle: "Install it with one tap", oneTapText: "Your phone can install it directly: tap the button and confirm.", oneTapBtn: "Install Truevento",
     step: 'Step', share: 'Share', more: 'More',
     ui: { addHome: 'Add to Home Screen', add: 'Add', cancel: 'Cancel', addTitle: 'Add to Home Screen', webApp: 'Open as Web App', copy: 'Copy', fav: 'Add to Favourites', read: 'Add to Reading List',
       install: 'Install app', installBtn: 'Install', installQ: 'Install app', newTab: 'New tab', history: 'History', downloads: 'Downloads', shareA: 'Share…', addHomeA: 'Add to Home screen', bannerA: 'Install Truevento', find: "Find on Page", viewMore: "View More", addHome26: "Add to Home Screen" },
@@ -514,6 +525,21 @@ document.getElementById('copy').addEventListener('click', async () => {
   setTimeout(() => { btn.textContent = T[lang].copy }, 2200)
 })
 render()
+// one tap on Android: the browser's own install window
+let deferredInstall = null
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  deferredInstall = e
+  document.getElementById('onetap').classList.add('show')
+})
+window.addEventListener('appinstalled', () => document.getElementById('onetap').classList.remove('show'))
+document.getElementById('onetap-btn').addEventListener('click', async () => {
+  if (!deferredInstall) return
+  deferredInstall.prompt()
+  await deferredInstall.userChoice
+  deferredInstall = null
+  document.getElementById('onetap').classList.remove('show')
+})
 </script>
 
 </body>
