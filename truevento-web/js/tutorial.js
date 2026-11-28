@@ -3,6 +3,9 @@
 (function () {
   const APP = 'app.truevento.com'
   const IMG = { icon: 'assets/app-icon.png', shot: { es: 'assets/tut-es.jpg', pt: 'assets/tut-pt.jpg', en: 'assets/tut-en.jpg' } }
+  // the "App" section: which phone this is, and one button to install on it
+  const DEV = {"es":{"mine":"Tu celular","detected":"Detectamos","names":{"ios26":"iPhone con iOS 26 (Safari)","ios18":"iPhone con iOS 18 o anterior (Safari)","chrome":"iPhone con Chrome","android":"Android"},"iosBtn":"Instalar en mi iPhone","iosSub":"Se abre la app y una flecha te muestra dónde tocar","andBtn":"Instalar con un toque","andSub":"Se abre la app: tocá “Instalar” y listo","steps":"Prefiero ver el paso a paso","notMine":"¿No es tu celular? Elegilo abajo.","inAppTitle":"Abrí esta página en tu navegador","deskTitle":"Escaneá con la cámara de tu celular","deskText":"Se abre la app en tu celular con la guía para instalarla según tu modelo."},"pt":{"mine":"Seu celular","detected":"Detectamos","names":{"ios26":"iPhone com iOS 26 (Safari)","ios18":"iPhone com iOS 18 ou anterior (Safari)","chrome":"iPhone com Chrome","android":"Android"},"iosBtn":"Instalar no meu iPhone","iosSub":"O app abre e uma seta mostra onde tocar","andBtn":"Instalar com um toque","andSub":"O app abre: toque em “Instalar” e pronto","steps":"Prefiro ver o passo a passo","notMine":"Não é o seu celular? Escolha abaixo.","inAppTitle":"Abra esta página no seu navegador","deskTitle":"Escaneie com a câmera do seu celular","deskText":"O app abre no seu celular com o guia para instalar de acordo com o seu modelo."},"en":{"mine":"Your phone","detected":"We detected","names":{"ios26":"iPhone with iOS 26 (Safari)","ios18":"iPhone with iOS 18 or older (Safari)","chrome":"iPhone with Chrome","android":"Android"},"iosBtn":"Install on my iPhone","iosSub":"The app opens and an arrow shows you where to tap","andBtn":"Install with one tap","andSub":"The app opens: tap “Install” and you’re done","steps":"I’d rather see the step by step","notMine":"Not your phone? Choose it below.","inAppTitle":"Open this page in your browser","deskTitle":"Scan with your phone’s camera","deskText":"The app opens on your phone with the install guide for your model."}}
+  const QR = "<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 31 31\" shape-rendering=\"crispEdges\"><path fill=\"#ffffff\" d=\"M0 0h31v31H0z\"/><path stroke=\"#0f172a\" d=\"M1 1.5h7m3 0h2m2 0h1m3 0h3m1 0h7M1 2.5h1m5 0h1m3 0h1m4 0h4m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h3m5 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h3m1 0h4m1 0h1m2 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h4m1 0h1m5 0h2M1 9.5h1m1 0h5m2 0h1m4 0h4m1 0h1m2 0h5M1 10.5h1m1 0h1m6 0h1m1 0h1m4 0h5m1 0h3m3 0h1M1 11.5h3m2 0h3m4 0h1m2 0h2M3 12.5h2m1 0h1m1 0h2m1 0h2m2 0h2m4 0h2m1 0h1m1 0h1m1 0h1M2 13.5h1m1 0h2m1 0h1m1 0h2m5 0h1m1 0h2m1 0h1m4 0h2M4 14.5h1m3 0h1m1 0h2m2 0h2m1 0h5m1 0h1m1 0h1m3 0h1M1 15.5h2m3 0h3m1 0h2m1 0h4m1 0h1m3 0h1m2 0h3M6 16.5h1m1 0h5m1 0h1m1 0h2m2 0h4m1 0h1m2 0h1M1 17.5h2m2 0h4m1 0h4m1 0h1m2 0h3m3 0h1m1 0h2M1 18.5h2m1 0h3m2 0h3m1 0h1m3 0h2m1 0h2m1 0h3m1 0h1m1 0h1M1 19.5h1m1 0h6m1 0h1m1 0h1m3 0h3m2 0h1m3 0h1m1 0h1M1 20.5h1m1 0h3m5 0h1m1 0h1m1 0h2m4 0h1m3 0h1m2 0h1M1 21.5h1m1 0h1m2 0h3m1 0h2m1 0h1m2 0h1m1 0h1m2 0h5m1 0h3M9 22.5h1m1 0h5m1 0h3m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h4m2 0h3m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h2m2 0h2m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h1m5 0h4m2 0h5m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h4m1 0h1m2 0h3m1 0h1m2 0h1m1 0h4M1 27.5h1m1 0h3m1 0h1m1 0h5m1 0h4m1 0h1m1 0h7M1 28.5h1m5 0h1m3 0h1m7 0h3m2 0h3m1 0h1M1 29.5h7m1 0h6m1 0h3m1 0h1m4 0h1m1 0h1\"/></svg>"
   const UI = {
     es: { tag: 'Instalá la app', title: 'Tené Truevento en tu pantalla de inicio', desc: 'Seguí los pasos: deslizá hacia abajo y el celular te muestra dónde tocar. Es un minuto y no hace falta ninguna tienda de apps.', step: 'Paso', of: 'de', ready: '¿Listo? Descargá la app', open: 'Descargar Truevento App', openSub: 'Gratis, desde', guide: 'Tutorial para compartir', guideSub: 'Mandáselo a quien quieras' },
     pt: { tag: 'Instale o app', title: 'Tenha a Truevento na sua tela inicial', desc: 'Siga os passos: role para baixo e o celular mostra onde tocar. Leva um minuto e não precisa de loja de apps.', step: 'Passo', of: 'de', ready: 'Pronto? Baixe o app', open: 'Baixar Truevento App', openSub: 'Grátis, em', guide: 'Tutorial para compartilhar', guideSub: 'Envie para quem quiser' },
@@ -151,6 +154,34 @@ const TT = {
   let iosV = detectedV ?? 'ios26'
   const iosSteps = (t) => t[iosV === 'ios18' ? 'ios18' : iosV === 'ios26' ? 'ios26' : 'iosChrome']
   let active = 0
+  const IS_ANDROID = /android/i.test(UA)
+  const device = IN_APP && (IS_IOS || IS_ANDROID) ? 'inapp' : IS_IOS ? detectedV : IS_ANDROID ? 'android' : 'desktop'
+
+  function renderDevice() {
+    const box = document.querySelector('[data-tm="device"]')
+    if (!box) return
+    const d = DEV[lang()], t = TT[lang()]
+    const mineOs = IS_IOS ? 'ios' : IS_ANDROID ? 'android' : null
+    document.querySelectorAll('#app .os-btn').forEach((b) => {
+      b.classList.toggle('is-mine', b.dataset.tmOs === mineOs)
+      b.querySelector('.os-mine')?.remove()
+      if (b.dataset.tmOs === mineOs) b.insertAdjacentHTML('beforeend', `<span class="os-mine">${esc(d.mine)}</span>`)
+    })
+    const go = `https://${APP}/?instalar=1`
+    let html
+    if (device === 'inapp') {
+      html = `<div class="dev-warn"><b>${esc(d.inAppTitle)}</b><p>${esc(t.pick.inApp)}</p></div>`
+    } else if (device === 'desktop') {
+      html = `<div class="dev-desk"><div class="dev-qr">${QR}</div><div><b>${esc(d.deskTitle)}</b><p>${esc(d.deskText)}</p><a href="https://${APP}" target="_blank" rel="noopener">${APP}</a></div></div>`
+    } else {
+      const and = device === 'android'
+      html = `<p class="dev-seen"><span class="dev-dot"></span>${esc(d.detected)}: <b>${esc(d.names[device])}</b></p>
+        <a class="dev-go" href="${go}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${esc(and ? d.andBtn : d.iosBtn)}</strong><small>${esc(and ? d.andSub : d.iosSub)}</small></span><span class="dev-arrow" aria-hidden="true">→</span></a>
+        <p class="dev-more"><a href="#instalar" data-tm-os="${and ? 'android' : 'ios'}" data-tm-jump>${esc(d.steps)}</a> · ${esc(d.notMine)}</p>`
+    }
+    box.innerHTML = html
+    box.hidden = false
+  }
 
   // ---- phone screens (drawn with the real app on screen)
   const frame = (inner, light) => `<div class="tm-face"${light ? ` style="background:${os === 'android' ? '#f1f3f4' : '#f2f2f7'}"` : ''}><div class="tm-sb ${light ? 'tm-dark' : ''}"><span>9:41</span><span>●●● ▮</span></div>${inner}</div>`
@@ -224,6 +255,7 @@ const TT = {
     root.querySelector('[data-tm="phone"]').innerHTML = `<div class="tm-phone ${os === 'android' ? 'tm-android' : ''}"><div class="tm-screen"><div class="tm-notch"></div>
       ${steps.map((_, i) => `<div class="tm-layer${i === active ? ' on' : ''}" data-i="${i}">${screen(i)}</div>`).join('')}</div></div>`
     renderPicker(root, t)
+    renderDevice()
     const links = root.querySelector('[data-tm="links"]')
     if (links) links.innerHTML = `
       <h3 class="tm-ready">${u.ready}</h3>

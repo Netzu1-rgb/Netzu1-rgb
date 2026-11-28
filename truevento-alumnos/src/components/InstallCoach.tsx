@@ -43,8 +43,10 @@ export default function InstallCoach() {
   useEffect(() => {
     const show = () => setOpen(true)
     window.addEventListener(OPEN_COACH, show)
-    // by itself on a phone's browser, not every time
-    const timer = setTimeout(() => { if (browser !== 'desktop' && !dismissedRecently()) setOpen(true) }, 1500)
+    // by itself on a phone's browser, not every time; right away when the website's
+    // "Install" button brought the person here (?instalar)
+    const asked = new URLSearchParams(location.search).has('instalar')
+    const timer = setTimeout(() => { if (browser !== 'desktop' && (asked || !dismissedRecently())) setOpen(true) }, asked ? 700 : 1500)
     return () => { window.removeEventListener(OPEN_COACH, show); clearTimeout(timer) }
   }, [browser])
 
