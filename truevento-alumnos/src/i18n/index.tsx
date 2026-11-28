@@ -44,10 +44,23 @@ export function t(key: Key, vars?: Record<string, string | number>): string {
 
 /** A message from the database (written in Spanish), in the current language. */
 export function dbMessage(msg: string): string {
-  if (current === 'es') return msg
+  if (current === 'es') return DB_MESSAGES[msg]?.es ?? neutralSpanish(msg)
   const missing = /^Falta el precio por hora de (.+): lo pone/.exec(msg)
   if (missing) return t('err.missingPrice', { name: missing[1] })
   return DB_MESSAGES[msg]?.[current] ?? msg
+}
+
+// the database writes "tenés", "elegí"…: shown as neutral Spanish ("tienes", "elige")
+const NEUTRAL: Record<string, string> = {
+  'tenés': 'tienes', 'podés': 'puedes', 'elegí': 'elige', 'pedí': 'pide', 'esperá': 'espera', 'escribí': 'escribe',
+  'usá': 'usa', 'revisá': 'revisa', 'confirmá': 'confirma', 'ingresá': 'ingresa', 'tocá': 'toca', 'sos': 'eres', 'pedile': 'pídele',
+}
+export function neutralSpanish(msg: string): string {
+  return msg.replace(/(^|[^\p{L}])(\p{L}+)(?=[^\p{L}]|$)/gu, (m, pre: string, w: string) => {
+    const n = NEUTRAL[w.toLowerCase()]
+    if (!n) return m
+    return pre + (w[0] === w[0].toUpperCase() ? n[0].toUpperCase() + n.slice(1) : n)
+  }).replace(/ vos\./g, ' tú.')
 }
 
 /** A skill of the starting learning path, in the current language. */

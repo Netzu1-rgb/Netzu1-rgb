@@ -12,7 +12,7 @@ const real = BASE.startsWith('http://127')
   if (real) { await p.getByLabel('Usuario').fill('ana.silva'); await p.getByLabel('Contraseña').fill('Viento2026'); await p.getByRole('button', { name: 'Entrar', exact: true }).click() }
   else { await p.getByRole('tab', { name: 'Crear cuenta' }).click(); await p.getByLabel('Nombre y apellido').fill('Ana Prueba'); await p.getByLabel('WhatsApp').fill('+55 88 99999-1234')
     await p.getByRole('button', { name: 'Nunca' }).first().click().catch(() => {}); await p.getByText(/Nunca hice|Nunca/).first().click().catch(() => {})
-    await p.getByLabel('Elegí un usuario').fill('ana.prueba'); await p.getByLabel('Elegí una contraseña').fill('Viento2026'); await p.locator('input[type=checkbox]').check(); await p.getByRole('button', { name: 'Crear mi cuenta' }).click() }
+    await p.getByLabel('Elige un usuario').fill('ana.prueba'); await p.getByLabel('Elige una contraseña').fill('Viento2026'); await p.locator('input[type=checkbox]').check(); await p.getByRole('button', { name: 'Crear mi cuenta' }).click() }
   await p.locator('main').waitFor({ timeout: 15000 }); await p.waitForTimeout(1500)
   out.push(['logged in', await p.getByText('¡Hola,').count() > 0])
   // close the app and open it again

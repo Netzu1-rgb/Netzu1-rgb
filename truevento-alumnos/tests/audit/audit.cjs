@@ -8,7 +8,7 @@ const AXE = fs.readFileSync(process.env.AXE_PATH || require.resolve('axe-core/ax
 const ALUM = 'http://127.0.0.1:5174'
 const USERS = { student: ['ana.silva', 'Viento2026'], instructor: ['lucas', 'Instructor1'], admin: [process.env.ADMIN_USER, process.env.ADMIN_PASS] }
 // words that only make sense in Spanish (not in pt/en)
-const ES_ONLY = /\b(clase|clases|Pedir|horario|Cerrar sesión|Ajustes|Mis datos|alumno|alumna|Próxima|próxima|mañana|Hoy\b|Siguiente|Cancelar clase|viento|Viento|Guardar|Elegí|Escribí|tenés|podés|querés|Leer|Leí|normas)\b/
+const ES_ONLY = /\b(clase|clases|Pedir|horario|Cerrar sesión|Ajustes|Mis datos|alumno|alumna|Próxima|próxima|mañana|Hoy\b|Siguiente|Cancelar clase|viento|Viento|Guardar|Elegí|Escribí|tenés|podés|querés|Elige|tienes|puedes|quieres|Leer|Leí|normas)\b/
 const out = []
 async function check(p, ctx, label) {
   await p.waitForTimeout(700)
@@ -31,7 +31,7 @@ async function check(p, ctx, label) {
       }
       return xs
     })
-    const bad = text.filter((x) => /\b(clase|clases|horario|Cerrar sesión|Mis datos|Siguiente|Guardar|Elegí|Escribí|tenés|podés|querés|Leí|normas de la escuela|Próximas)\b/.test(x) || (ctx.includes('-en-') && /\b(Pedir|Ajustes)\b/.test(x)))
+    const bad = text.filter((x) => /\b(clase|clases|horario|Cerrar sesión|Mis datos|Siguiente|Guardar|Elegí|Escribí|tenés|podés|querés|Elige|tienes|puedes|quieres|Leí|normas de la escuela|Próximas)\b/.test(x) || (ctx.includes('-en-') && /\b(Pedir|Ajustes)\b/.test(x)))
     if (bad.length) leak = [...new Set(bad)].slice(0, 6)
   }
   out.push({ ctx, label, overflow, axe, leak, errors: p._errs.splice(0) })

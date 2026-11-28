@@ -65,3 +65,12 @@ describe("the school's day", () => {
     vi.useRealTimers()
   })
 })
+
+describe('neutral Spanish for database messages', () => {
+  it('turns voseo into tú', async () => {
+    const { neutralSpanish } = await import('../i18n')
+    expect(neutralSpanish('Ya tenés muchas solicitudes pendientes. Esperá a que la escuela responda.')).toBe('Ya tienes muchas solicitudes pendientes. Espera a que la escuela responda.')
+    expect(neutralSpanish('Solo podés confirmar clases que vas a dar vos.')).toBe('Solo puedes confirmar clases que vas a dar tú.')
+    expect(neutralSpanish('Elegí otro.')).toBe('Elige otro.')
+  })
+})

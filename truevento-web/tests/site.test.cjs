@@ -234,7 +234,7 @@ async function behaviourChecks(browser, base) {
     }
     await page.reload(); await page.waitForTimeout(500)
     check(await page.evaluate(() => document.documentElement.lang) === 'en', 'el idioma elegido no se recuerda al volver')
-    const untranslated = await page.evaluate(() => [...document.querySelectorAll('[data-i18n]')].filter((e) => /\b(Reservá|Pedí|Tené|Instalá|Ubicación)\b/.test(e.textContent)).map((e) => e.dataset.i18n))
+    const untranslated = await page.evaluate(() => [...document.querySelectorAll('[data-i18n]')].filter((e) => /\b(Reservá|Reserva tu|Pedí|Pide tus|Tené|Instalá|Ubicación)\b/.test(e.textContent)).map((e) => e.dataset.i18n))
     check(!untranslated.length, `en inglés quedan textos en español: ${untranslated.join(', ')}`)
     check(!errors.length, `idiomas: errores: ${errors.join(' | ')}`)
     await ctx.close()
