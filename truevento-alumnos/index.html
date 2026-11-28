@@ -92,6 +92,10 @@
         .sp-arc { stroke-dashoffset: 0; opacity: .6; } .sp-tag, .sp-bar { opacity: 1; } .sp-wind, .sp-comet { display: none; }
       }
     </style>
+    <script>
+      // Chrome can offer the install before the app's code has loaded: keep it for the app.
+      addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); window.__tvInstall = e })
+    </script>
   </head>
   <body>
     <div id="splash" role="status" aria-label="Cargando TRUEVENTO Alumnos">

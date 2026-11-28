@@ -5,7 +5,9 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-let deferred: BeforeInstallPromptEvent | null = null
+// caught by index.html when it came before this code loaded
+let deferred: BeforeInstallPromptEvent | null =
+  typeof window !== 'undefined' ? ((window as Window & { __tvInstall?: BeforeInstallPromptEvent }).__tvInstall ?? null) : null
 const subscribers = new Set<() => void>()
 
 if (typeof window !== 'undefined') {
