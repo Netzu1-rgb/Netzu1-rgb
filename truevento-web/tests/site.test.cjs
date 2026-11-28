@@ -94,7 +94,8 @@ async function openPage(browser, opts, base, init) {
   const page = await ctx.newPage()
   const errors = []
   page.on('pageerror', (e) => errors.push('error: ' + e.message))
-  page.on('console', (m) => { if (m.type() === 'error') errors.push('consola: ' + m.text()) })
+  // the Google Maps frame loads its own tiles: Google may refuse some from a test machine
+  page.on('console', (m) => { if (m.type() === 'error' && !/google\.com\/maps/.test(m.location()?.url ?? '')) errors.push('consola: ' + m.text()) })
   page.on('response', (r) => { if (r.url().startsWith(base) && r.status() >= 400) errors.push(`${r.status()} ${r.url().slice(base.length)}`) })
   await page.goto(base + '/', { waitUntil: 'load' })
   await page.waitForTimeout(600)

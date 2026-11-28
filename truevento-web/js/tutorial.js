@@ -16,10 +16,13 @@ const TT = {
       detected: { ios: 'Detectamos un iPhone. ¿Tenés Android? Tocá “Android”.', android: 'Detectamos un Android. ¿Tenés iPhone? Tocá “iPhone”.', other: 'Elegí tu celular. Hacé estos pasos desde el celular, no desde la computadora.' },
       step: 'Paso', share: 'Compartir', more: 'Más',
       ui: { addHome: 'Agregar a pantalla de inicio', add: 'Agregar', cancel: 'Cancelar', addTitle: 'Agregar a inicio', webApp: 'Abrir como app web', copy: 'Copiar', fav: 'Agregar a favoritos', read: 'Agregar a la lista de lectura',
-        install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nueva pestaña', history: 'Historial', downloads: 'Descargas', shareA: 'Compartir…', addHomeA: 'Agregar a la pantalla principal', bannerA: 'Instalar Truevento' },
-      ios: [
+        install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nueva pestaña', history: 'Historial', downloads: 'Descargas', shareA: 'Compartir…', addHomeA: 'Agregar a la pantalla principal', bannerA: 'Instalar Truevento', find: "Buscar en la página", viewMore: "Ver más", addHome26: "Agregar a inicio" },
+      ios26: [["Abrí el link en Safari","Abrí <b>{url}</b> en <b>Safari</b>, el navegador de la brújula azul. Si te llegó por WhatsApp o Instagram, tocá <b>•••</b> y elegí “Abrir en Safari”."],["Tocá el botón •••","Abajo a la derecha, al lado de la dirección, está el botón <span class=\"tm-kbd\">•••</span>. Tocalo."],["Tocá “Compartir”","Se abre un menú: tocá <span class=\"tm-kbd\">{shareIcon} Compartir</span>, arriba de todo."],["Elegí “Agregar a inicio”","Deslizá la lista hacia arriba y tocá <span class=\"tm-kbd\">{plusIcon} Agregar a inicio</span>.","Si no aparece, tocá <b>Ver más</b> al final de la lista y buscalo ahí."],["Tocá “Agregar”","Dejá activado <b>Abrir como app web</b> y tocá <b>Agregar</b>, arriba a la derecha."],["¡Listo! Abrila desde el ícono","Truevento ya está en tu pantalla de inicio. Abrila siempre desde ahí: ingresás una sola vez y la próxima vez entra directo."]],
+      iosChrome: [["Abrí el link en Chrome","Abrí <b>{url}</b> en <b>Chrome</b>."],["Tocá Compartir","Arriba a la derecha, dentro de la barra de la dirección, tocá <span class=\"tm-kbd\">{shareIcon}</span>: un cuadrado con una flecha.","Si no lo ves, tocá <b>•••</b> abajo a la derecha y después <b>Compartir</b>."],["Elegí “Agregar a inicio”","En la lista tocá <span class=\"tm-kbd\">{plusIcon} Agregar a inicio</span>.","Si no aparece, tocá <b>Ver más</b>. Si tampoco está, abrí el link en Safari y seguí esos pasos."],["Tocá “Agregar”","Arriba a la derecha tocá <b>Agregar</b>."],["¡Listo! Abrila desde el ícono","Truevento ya está en tu pantalla de inicio. Abrila siempre desde ahí: ingresás una sola vez y la próxima vez entra directo."]],
+      pick: {"title":"¿Cómo se ve tu iPhone?","hint":"Si no estás seguro, mirá la parte de abajo de tu Safari y elegí la que se parezca.","ios26":["iOS 26","barra chica con •••"],"ios18":["iOS 18 o anterior","botones abajo"],"chrome":["Chrome","en iPhone"],"detected":"Tu iPhone","inApp":"Estás dentro de Instagram, Facebook o WhatsApp: desde ahí no se puede instalar. Tocá ••• (o el ícono de la brújula) y elegí “Abrir en Safari”."},
+      ios18: [
         ['Abrí el link en Safari', 'Abrí <b>{url}</b> en <b>Safari</b>, el navegador de la brújula azul. Si te llegó por WhatsApp, mantené apretado el link y elegí “Abrir en Safari”.'],
-        ['Tocá el botón Compartir', 'Abajo en el centro está el botón <span class="tm-kbd">{shareIcon} Compartir</span>, un cuadrado con una flecha hacia arriba.', 'Con iOS 26 la barra es más chica: tocá <span class="tm-kbd">•••</span> abajo a la derecha y después <b>Compartir</b>.'],
+        ['Tocá el botón Compartir', 'Abajo en el centro está el botón <span class="tm-kbd">{shareIcon} Compartir</span>, un cuadrado con una flecha hacia arriba.'],
         ['Elegí “Agregar a pantalla de inicio”', 'Deslizá el menú hacia arriba y tocá <span class="tm-kbd">{plusIcon} Agregar a pantalla de inicio</span>.', 'Si no la ves, bajá hasta el final de la lista. En algunos iPhone dice “Agregar a inicio”.'],
         ['Tocá “Agregar”', 'Arriba a la derecha tocá <b>Agregar</b>. Si aparece la opción <b>Abrir como app web</b>, dejala activada.'],
         ['¡Listo! Abrila desde el ícono', 'Truevento ya está en tu pantalla de inicio. Abrila siempre desde ahí: ingresás una sola vez y la próxima vez entra directo.'],
@@ -48,10 +51,13 @@ const TT = {
       detected: { ios: 'Detectamos um iPhone. Tem Android? Toque em “Android”.', android: 'Detectamos um Android. Tem iPhone? Toque em “iPhone”.', other: 'Escolha o seu celular. Faça estes passos no celular, não no computador.' },
       step: 'Passo', share: 'Compartilhar', more: 'Mais',
       ui: { addHome: 'Adicionar à Tela de Início', add: 'Adicionar', cancel: 'Cancelar', addTitle: 'Adicionar à Tela de Início', webApp: 'Abrir como App Web', copy: 'Copiar', fav: 'Adicionar aos Favoritos', read: 'Adicionar à Lista de Leitura',
-        install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nova guia', history: 'Histórico', downloads: 'Downloads', shareA: 'Compartilhar…', addHomeA: 'Adicionar à tela inicial', bannerA: 'Instalar Truevento' },
-      ios: [
+        install: 'Instalar app', installBtn: 'Instalar', installQ: 'Instalar app', newTab: 'Nova guia', history: 'Histórico', downloads: 'Downloads', shareA: 'Compartilhar…', addHomeA: 'Adicionar à tela inicial', bannerA: 'Instalar Truevento', find: "Buscar na Página", viewMore: "Ver Mais", addHome26: "Adicionar à Tela de Início" },
+      ios26: [["Abra o link no Safari","Abra <b>{url}</b> no <b>Safari</b>, o navegador da bússola azul. Se recebeu pelo WhatsApp ou Instagram, toque em <b>•••</b> e escolha “Abrir no Safari”."],["Toque no botão •••","Embaixo à direita, ao lado do endereço, está o botão <span class=\"tm-kbd\">•••</span>. Toque nele."],["Toque em “Compartilhar”","Abre um menu: toque em <span class=\"tm-kbd\">{shareIcon} Compartilhar</span>, lá em cima."],["Escolha “Adicionar à Tela de Início”","Deslize a lista para cima e toque em <span class=\"tm-kbd\">{plusIcon} Adicionar à Tela de Início</span>.","Se não aparecer, toque em <b>Ver Mais</b> no final da lista e procure ali."],["Toque em “Adicionar”","Deixe ativado <b>Abrir como App Web</b> e toque em <b>Adicionar</b>, no canto superior direito."],["Pronto! Abra pelo ícone","A Truevento já está na sua tela inicial. Abra sempre por ali: você entra uma vez só e nas próximas vezes entra direto."]],
+      iosChrome: [["Abra o link no Chrome","Abra <b>{url}</b> no <b>Chrome</b>."],["Toque em Compartilhar","No canto superior direito, dentro da barra do endereço, toque em <span class=\"tm-kbd\">{shareIcon}</span>: um quadrado com uma seta.","Se não aparecer, toque em <b>•••</b> embaixo à direita e depois em <b>Compartilhar</b>."],["Escolha “Adicionar à Tela de Início”","Na lista, toque em <span class=\"tm-kbd\">{plusIcon} Adicionar à Tela de Início</span>.","Se não aparecer, toque em <b>Ver Mais</b>. Se ainda não estiver, abra o link no Safari e siga esses passos."],["Toque em “Adicionar”","No canto superior direito, toque em <b>Adicionar</b>."],["Pronto! Abra pelo ícone","A Truevento já está na sua tela inicial. Abra sempre por ali: você entra uma vez só e nas próximas vezes entra direto."]],
+      pick: {"title":"Como é o seu iPhone?","hint":"Se não tiver certeza, olhe a parte de baixo do seu Safari e escolha a que se parece.","ios26":["iOS 26","barra pequena com •••"],"ios18":["iOS 18 ou anterior","botões embaixo"],"chrome":["Chrome","no iPhone"],"detected":"Seu iPhone","inApp":"Você está dentro do Instagram, Facebook ou WhatsApp: ali não dá para instalar. Toque em ••• (ou no ícone da bússola) e escolha “Abrir no Safari”."},
+      ios18: [
         ['Abra o link no Safari', 'Abra <b>{url}</b> no <b>Safari</b>, o navegador da bússola azul. Se recebeu pelo WhatsApp, segure o link e escolha “Abrir no Safari”.'],
-        ['Toque em Compartilhar', 'Embaixo, no centro, está o botão <span class="tm-kbd">{shareIcon} Compartilhar</span>: um quadrado com uma seta para cima.', 'No iOS 26 a barra é menor: toque em <span class="tm-kbd">•••</span> embaixo à direita e depois em <b>Compartilhar</b>.'],
+        ['Toque em Compartilhar', 'Embaixo, no centro, está o botão <span class="tm-kbd">{shareIcon} Compartilhar</span>: um quadrado com uma seta para cima.'],
         ['Escolha “Adicionar à Tela de Início”', 'Deslize o menu para cima e toque em <span class="tm-kbd">{plusIcon} Adicionar à Tela de Início</span>.', 'Se não aparecer, role até o final da lista.'],
         ['Toque em “Adicionar”', 'No canto superior direito, toque em <b>Adicionar</b>. Se aparecer a opção <b>Abrir como App Web</b>, deixe ativada.'],
         ['Pronto! Abra pelo ícone', 'A Truevento já está na sua tela inicial. Abra sempre por ali: você entra uma vez só e nas próximas vezes entra direto.'],
@@ -80,10 +86,13 @@ const TT = {
       detected: { ios: 'We detected an iPhone. On Android? Tap “Android”.', android: 'We detected an Android phone. On iPhone? Tap “iPhone”.', other: 'Choose your phone. Follow these steps on your phone, not on a computer.' },
       step: 'Step', share: 'Share', more: 'More',
       ui: { addHome: 'Add to Home Screen', add: 'Add', cancel: 'Cancel', addTitle: 'Add to Home Screen', webApp: 'Open as Web App', copy: 'Copy', fav: 'Add to Favourites', read: 'Add to Reading List',
-        install: 'Install app', installBtn: 'Install', installQ: 'Install app', newTab: 'New tab', history: 'History', downloads: 'Downloads', shareA: 'Share…', addHomeA: 'Add to Home screen', bannerA: 'Install Truevento' },
-      ios: [
+        install: 'Install app', installBtn: 'Install', installQ: 'Install app', newTab: 'New tab', history: 'History', downloads: 'Downloads', shareA: 'Share…', addHomeA: 'Add to Home screen', bannerA: 'Install Truevento', find: "Find on Page", viewMore: "View More", addHome26: "Add to Home Screen" },
+      ios26: [["Open the link in Safari","Open <b>{url}</b> in <b>Safari</b>, the browser with the blue compass. If you got it on WhatsApp or Instagram, tap <b>•••</b> and choose “Open in Safari”."],["Tap the ••• button","At the bottom right, next to the address, there is the <span class=\"tm-kbd\">•••</span> button. Tap it."],["Tap “Share”","A menu opens: tap <span class=\"tm-kbd\">{shareIcon} Share</span>, at the top."],["Choose “Add to Home Screen”","Swipe the list up and tap <span class=\"tm-kbd\">{plusIcon} Add to Home Screen</span>.","If you can’t see it, tap <b>View More</b> at the end of the list and look there."],["Tap “Add”","Leave <b>Open as Web App</b> on and tap <b>Add</b> at the top right."],["Done! Open it from the icon","Truevento is now on your home screen. Always open it from there: you sign in once and next time it goes straight in."]],
+      iosChrome: [["Open the link in Chrome","Open <b>{url}</b> in <b>Chrome</b>."],["Tap Share","At the top right, inside the address bar, tap <span class=\"tm-kbd\">{shareIcon}</span>: a square with an arrow.","If you can’t see it, tap <b>•••</b> at the bottom right, then <b>Share</b>."],["Choose “Add to Home Screen”","In the list, tap <span class=\"tm-kbd\">{plusIcon} Add to Home Screen</span>.","If it isn’t there, tap <b>View More</b>. If it still isn’t, open the link in Safari and follow those steps."],["Tap “Add”","At the top right, tap <b>Add</b>."],["Done! Open it from the icon","Truevento is now on your home screen. Always open it from there: you sign in once and next time it goes straight in."]],
+      pick: {"title":"What does your iPhone look like?","hint":"Not sure? Look at the bottom of your Safari and choose the one that looks like it.","ios26":["iOS 26","small bar with •••"],"ios18":["iOS 18 or older","buttons at the bottom"],"chrome":["Chrome","on iPhone"],"detected":"Your iPhone","inApp":"You are inside Instagram, Facebook or WhatsApp: you can’t install from there. Tap ••• (or the compass icon) and choose “Open in Safari”."},
+      ios18: [
         ['Open the link in Safari', 'Open <b>{url}</b> in <b>Safari</b>, the browser with the blue compass. If you got it on WhatsApp, press and hold the link and choose “Open in Safari”.'],
-        ['Tap the Share button', 'At the bottom in the middle there is the <span class="tm-kbd">{shareIcon} Share</span> button: a square with an arrow pointing up.', 'On iOS 26 the bar is smaller: tap <span class="tm-kbd">•••</span> at the bottom right, then <b>Share</b>.'],
+        ['Tap the Share button', 'At the bottom in the middle there is the <span class="tm-kbd">{shareIcon} Share</span> button: a square with an arrow pointing up.'],
         ['Choose “Add to Home Screen”', 'Swipe the menu up and tap <span class="tm-kbd">{plusIcon} Add to Home Screen</span>.', 'If you can’t see it, scroll to the end of the list.'],
         ['Tap “Add”', 'At the top right, tap <b>Add</b>. If you see <b>Open as Web App</b>, leave it on.'],
         ['Done! Open it from the icon', 'Truevento is now on your home screen. Always open it from there: you sign in once and next time it goes straight in.'],
@@ -126,15 +135,54 @@ const TT = {
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
   const lang = () => (UI[window.currentLang] ? window.currentLang : 'es')
   let os = /android/i.test(navigator.userAgent) ? 'android' : 'ios'
+  // iPhone: Safari on iOS 26 (small bar with •••), Safari on iOS 18 or older (buttons at the
+  // bottom) or Chrome. Safari says its version in "Version/26"; Chrome on iPhone says "CriOS".
+  const UA = navigator.userAgent || ''
+  const IS_IOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  const IN_APP = /Instagram|FBAN|FBAV|FB_IAB|Line\//.test(UA)
+  function detectIos() {
+    if (/CriOS/.test(UA)) return 'chrome'
+    const v = Number((UA.match(/Version\/(\d+)/) || [])[1] || 0)
+    const osv = Number((UA.match(/OS (\d+)_/) || [])[1] || 0)
+    if (v >= 26 || osv >= 26) return 'ios26'
+    return v || osv ? 'ios18' : 'ios26'
+  }
+  const detectedV = IS_IOS ? detectIos() : null
+  let iosV = detectedV ?? 'ios26'
+  const iosSteps = (t) => t[iosV === 'ios18' ? 'ios18' : iosV === 'ios26' ? 'ios26' : 'iosChrome']
   let active = 0
 
   // ---- phone screens (drawn with the real app on screen)
   const frame = (inner, light) => `<div class="tm-face"${light ? ` style="background:${os === 'android' ? '#f1f3f4' : '#f2f2f7'}"` : ''}><div class="tm-sb ${light ? 'tm-dark' : ''}"><span>9:41</span><span>●●● ▮</span></div>${inner}</div>`
   const safari = (hl) => `<div class="tm-safari"><div class="tm-url">${ICONS.lock}${APP}</div><div class="tm-tools"><span>${ICONS.back}</span><span>${ICONS.fwd}</span><span class="${hl ? 'tm-tap' : ''}">${ICONS.share}</span><span>${ICONS.book}</span><span>${ICONS.tabs}</span></div></div>`
   const chrome = (hl) => `<div class="tm-chrome"><div class="tm-url">${ICONS.lock}&nbsp;${APP}</div><span class="tm-dots ${hl ? 'tm-tap' : ''}">${ICONS.dots}</span></div>`
+  const safari26 = (hl) => `<div class="tm-s26"><span class="tm-s26b">${ICONS.back}</span><div class="tm-s26u">${ICONS.lock}${APP}</div><span class="tm-s26b tm-s26d ${hl ? 'tm-tap' : ''}">•••</span></div>`
+  const chromeIos = (hl) => `<div class="tm-chrome tm-cios"><div class="tm-url">${ICONS.lock}&nbsp;${APP}<span class="tm-cshare ${hl ? 'tm-tap' : ''}">${ICONS.share}</span></div></div><div class="tm-cbar"><span>${ICONS.back}</span><span>${ICONS.fwd}</span><span>+</span><span>${ICONS.tabs}</span><span>•••</span></div>`
+  const sheet = (L, label) => `<div class="tm-veil"></div><div class="tm-sheet"><div class="tm-grab"></div><div class="tm-site"><img src="${IMG.icon}" alt=""><span><b>Truevento</b>${APP}</span></div>
+        <div class="tm-apps"><i style="background:#5ac8fa"></i><i style="background:#34c759"></i><i style="background:#25d366"></i><i style="background:#ff9500"></i><i style="background:#af52de"></i></div>
+        <div class="tm-rows"><div class="tm-row">${esc(L.copy)}${ICONS.copy}</div><div class="tm-row">${esc(L.read)}${ICONS.book}</div><div class="tm-row">${esc(L.fav)}${ICONS.star}</div><div class="tm-row tm-hl tm-tap">${esc(label)}${ICONS.plus}</div></div></div>`
+  const addDialog = (L) => frame(`<div class="tm-dialog"><div class="tm-dbar"><span class="tm-blue" style="font-weight:400">${esc(L.cancel)}</span><b>${esc(L.addTitle)}</b><span class="tm-blue tm-tap">${esc(L.add)}</span></div>
+        <div class="tm-dcard"><img src="${IMG.icon}" alt=""><div style="flex:1;min-width:0"><div class="tm-name">Truevento</div><div class="tm-addr">https://${APP}/</div></div></div><div class="tm-toggle"><span>${esc(L.webApp)}</span><i></i></div></div>`, true)
   const home = () => `<div class="tm-home"></div><div class="tm-grid">${'<div class="tm-app"><i></i></div>'.repeat(11)}<div class="tm-app tm-tap"><img src="${IMG.icon}" alt=""><span>Truevento</span></div></div><div class="tm-dock"></div>`
   function screen(i) {
     const L = TT[lang()].ui, shot = `<img class="tm-shot ${os === 'android' ? 'tm-low' : ''}" src="${IMG.shot[lang()]}" alt="">`
+    if (os === 'ios' && iosV === 'ios26') {
+      const T = TT[lang()]
+      if (i === 0) return frame(shot + safari26(false))
+      if (i === 1) return frame(shot + safari26(true))
+      if (i === 2) return frame(shot + safari26(false) + `<div class="tm-veil"></div><div class="tm-pop"><div class="tm-pi tm-hl tm-tap">${ICONS.share}${esc(T.share)}</div><div class="tm-pi">${ICONS.star}${esc(L.fav)}</div><div class="tm-pi">${ICONS.book}${esc(L.read)}</div><div class="tm-pi">${ICONS.tab}${esc(L.find)}</div></div>`)
+      if (i === 3) return frame(shot + sheet(L, L.addHome26))
+      if (i === 4) return addDialog(L)
+      return frame(home())
+    }
+    if (os === 'ios' && iosV === 'chrome') {
+      const low = `<img class="tm-shot tm-low" src="${IMG.shot[lang()]}" alt="">`
+      if (i === 0) return frame(chromeIos(false) + low, true)
+      if (i === 1) return frame(chromeIos(true) + low, true)
+      if (i === 2) return frame(chromeIos(false) + low + sheet(L, L.addHome26), true)
+      if (i === 3) return addDialog(L)
+      return frame(home())
+    }
     if (os === 'ios') {
       if (i === 0) return frame(shot + safari(false))
       if (i === 1) return frame(shot + safari(true))
@@ -160,7 +208,7 @@ const TT = {
   function render() {
     const root = document.getElementById('instalar')
     if (!root) return
-    const t = TT[lang()], u = UI[lang()], steps = t[os]
+    const t = TT[lang()], u = UI[lang()], steps = os === 'ios' ? iosSteps(t) : t[os]
     root.querySelector('[data-tm="tag"]').textContent = u.tag
     root.querySelector('[data-tm="title"]').textContent = u.title
     root.querySelector('[data-tm="desc"]').textContent = u.desc
@@ -175,6 +223,7 @@ const TT = {
     // one phone; its 5 screens are stacked inside and fade into each other
     root.querySelector('[data-tm="phone"]').innerHTML = `<div class="tm-phone ${os === 'android' ? 'tm-android' : ''}"><div class="tm-screen"><div class="tm-notch"></div>
       ${steps.map((_, i) => `<div class="tm-layer${i === active ? ' on' : ''}" data-i="${i}">${screen(i)}</div>`).join('')}</div></div>`
+    renderPicker(root, t)
     const links = root.querySelector('[data-tm="links"]')
     if (links) links.innerHTML = `
       <h3 class="tm-ready">${u.ready}</h3>
@@ -183,6 +232,24 @@ const TT = {
     document.querySelectorAll('[data-tm="dots"]').forEach((d) => { d.innerHTML = steps.map((_, i) => `<span class="${i === active ? 'on' : ''}"></span>`).join('') })
     fit()
     pick()
+  }
+
+  /** iPhone only: pick the guide by how the phone looks (the detected one is marked). */
+  const MINI = {
+    ios26: '<span class="tm-mini m26"><i class="u"></i><i class="d">•••</i></span>',
+    ios18: '<span class="tm-mini m18"><i class="u"></i><span class="r"><i></i><i></i><i class="s"></i><i></i><i></i></span></span>',
+    chrome: '<span class="tm-mini mch"><i class="u"><i class="s"></i></i></span>',
+  }
+  function renderPicker(root, t) {
+    const box = root.querySelector('[data-tm="variants"]')
+    if (!box) return
+    if (os !== 'ios') { box.innerHTML = ''; return }
+    const p = t.pick
+    box.innerHTML = `<p class="tm-vt">${esc(p.title)}</p>
+      ${IN_APP ? `<p class="tm-inapp">${esc(p.inApp)}</p>` : ''}
+      <div class="tm-vars" role="radiogroup" aria-label="${esc(p.title)}">${['ios26', 'ios18', 'chrome'].map((v) => `
+        <button type="button" role="radio" aria-checked="${v === iosV}" data-tm-v="${v}" class="tm-var">${MINI[v]}<b>${esc(p[v][0])}</b><small>${esc(p[v][1])}</small>${v === detectedV ? `<em>${esc(p.detected)}</em>` : ''}</button>`).join('')}
+      </div><p class="tm-vh">${esc(p.hint)}</p>`
   }
 
   // the new screen fades in over the old one, which stays until it is covered (no dark flash)
@@ -256,6 +323,8 @@ const TT = {
 
   // buttons: choose the phone (here and in the app section) and scroll to the guide
   document.addEventListener('click', (e) => {
+    const v = e.target.closest('[data-tm-v]')
+    if (v) { iosV = v.dataset.tmV; active = 0; render(); return }
     const b = e.target.closest('[data-tm-os]')
     if (!b) return
     os = b.dataset.tmOs; active = 0; render()

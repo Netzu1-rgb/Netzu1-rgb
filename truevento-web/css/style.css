@@ -359,3 +359,47 @@ body.menu-open #cookieBanner, body.menu-open a[aria-label="Contactar por WhatsAp
 .tm-applink.main small b{font-weight:700;opacity:1}
 .tm-applink-go{margin-left:auto;width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);font-weight:700;font-size:18px}
 @media(max-width:767px){.tm-links{margin-top:0}}
+
+/* iPhone guides: Safari on iOS 26 (small floating bar), Chrome on iPhone, and the picker */
+.tm-s26 { position: absolute; left: 10px; right: 10px; bottom: 14px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 5px; border-radius: 22px;
+  background: rgba(250, 250, 252, .86); backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0, 0, 0, .18), inset 0 0 0 1px rgba(255, 255, 255, .7) }
+.tm-s26b { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #111; font-weight: 800; font-size: 13px; letter-spacing: 1px; position: relative }
+.tm-s26b svg { width: 16px; height: 16px }
+.tm-s26u { flex: 1; min-width: 0; height: 32px; border-radius: 16px; background: rgba(0, 0, 0, .06); display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #111; white-space: nowrap; overflow: hidden }
+.tm-s26u svg { width: 9px; height: 9px }
+.tm-pop { position: absolute; right: 10px; bottom: 58px; z-index: 5; width: 72%; border-radius: 16px; background: rgba(250, 250, 252, .97); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); overflow: hidden; color: #111 }
+.tm-pi { display: flex; align-items: center; gap: 9px; padding: 9px 12px; font-size: 11.5px; border-top: 1px solid #ececf1; position: relative }
+.tm-pi:first-child { border-top: 0 }
+.tm-pi svg { width: 15px; height: 15px; color: #0a84ff }
+.tm-pi.tm-tap::before { left: auto; right: 6px; margin: -20px 0 0 0 }
+.tm-cios { background: #f2f2f7; border-bottom: 1px solid #d8d8de }
+.tm-cios .tm-url { position: relative; justify-content: flex-start; padding-right: 30px }
+.tm-cshare { position: absolute; right: 4px; top: 50%; width: 24px; height: 24px; margin-top: -12px; display: grid; place-items: center; color: #3c4043 }
+.tm-cshare svg { width: 14px; height: 14px }
+.tm-cshare.tm-tap::before { width: 34px; height: 34px; margin: -17px 0 0 -17px }
+.tm-cbar { position: absolute; inset: auto 0 0; z-index: 3; display: flex; justify-content: space-around; align-items: center; padding: 9px 6px 16px; background: #f2f2f7; border-top: 1px solid #d8d8de; color: #3c4043; font-weight: 700 }
+.tm-cbar span { width: 24px; height: 24px; display: grid; place-items: center; font-size: 15px }
+.tm-cbar svg { width: 18px; height: 18px }
+
+.tm-variants:empty { display: none }
+.tm-variants { margin-top: 18px }
+.tm-vt { font: 700 15px 'Outfit', sans-serif; color: #fff; margin: 0 0 10px }
+.tm-vars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.tm-var { position: relative; display: grid; justify-items: center; gap: 4px; padding: 12px 6px 10px; border-radius: 14px; background: #111a2e; border: 1.5px solid rgba(148, 163, 184, .18); color: #cbd5e1; text-align: center; transition: border-color .2s, background .2s }
+.tm-var b { font: 700 14px 'Outfit', sans-serif; color: #fff }
+.tm-var small { font-size: 11.5px; line-height: 1.25; color: #94a3b8 }
+.tm-var em { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font: 700 10px 'Inter', sans-serif; font-style: normal; white-space: nowrap; padding: 2px 8px; border-radius: 99px; background: #22c55e; color: #052e16 }
+.tm-var[aria-checked="true"] { border-color: #38bdf8; background: #0c2a44 }
+.tm-vh { margin: 8px 0 0; font-size: 13px; color: #94a3b8 }
+.tm-inapp { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: rgba(251, 191, 36, .14); border: 1px solid rgba(251, 191, 36, .4); color: #fde68a; font-size: 13.5px }
+/* the small pictures: how the bottom (or top) of each browser looks */
+.tm-mini { position: relative; display: block; width: 74px; height: 44px; border-radius: 9px; background: #e9eaf0; overflow: hidden; margin-bottom: 4px }
+.tm-mini i { display: block; font-style: normal }
+.m26 .u { position: absolute; left: 6px; right: 22px; bottom: 6px; height: 12px; border-radius: 7px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
+.m26 .d { position: absolute; right: 4px; bottom: 5px; width: 15px; height: 14px; border-radius: 50%; background: #fff; color: #111; font-size: 7px; line-height: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
+.m18 .u { position: absolute; left: 8px; right: 8px; bottom: 17px; height: 8px; border-radius: 4px; background: #cfd1d9 }
+.m18 .r { position: absolute; left: 8px; right: 8px; bottom: 5px; display: flex; justify-content: space-between }
+.m18 .r i { width: 6px; height: 6px; border-radius: 2px; background: #0a84ff; opacity: .55 }
+.m18 .r i.s { opacity: 1; transform: scale(1.4) }
+.mch .u { position: absolute; left: 6px; right: 6px; top: 6px; height: 12px; border-radius: 7px; background: #cfd1d9 }
+.mch .u .s { position: absolute; right: 2px; top: 2px; width: 8px; height: 8px; border-radius: 2px; background: #3c4043 }
