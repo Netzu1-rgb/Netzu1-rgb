@@ -145,7 +145,7 @@ const TT = {
   // inside another app's browser (Instagram, WhatsApp, Claude…): no "Safari/" in it, and it can't install
   const IN_APP = /Instagram|FBAN|FBAV|FB_IAB|Line\//.test(UA) || (IS_IOS && !/Safari\//.test(UA) && !/CriOS|FxiOS|EdgiOS/.test(UA))
   function detectIos() {
-    if (/CriOS/.test(UA)) return 'chrome'
+    if (/CriOS|FxiOS|EdgiOS/.test(UA)) return 'chrome' // Chrome, Firefox or Edge: share button in their own bar
     // Safari says its real version ("Version/26"); iOS 26 itself reports a frozen "OS 18_6"
     const v = Number((UA.match(/Version\/(\d+)/) || [])[1] || 0)
     if (v) return v >= 26 ? 'ios26' : 'ios18'
@@ -157,6 +157,9 @@ const TT = {
   const iosSteps = (t) => t[iosV === 'ios18' ? 'ios18' : iosV === 'ios26' ? 'ios26' : 'iosChrome']
   let active = 0
   const IS_ANDROID = /android/i.test(UA)
+  // an iPad says it is a Mac (touch screen tells it apart): name it as an iPad
+  const pad = (s) => (IS_IOS && !/iPhone|iPod/.test(UA) ? s.replace('iPhone', 'iPad') : s)
+  const IOS_BROWSER = /FxiOS/.test(UA) ? 'Firefox' : /EdgiOS/.test(UA) ? 'Edge' : 'Chrome'
   const device = IN_APP && (IS_IOS || IS_ANDROID) ? 'inapp' : IS_IOS ? detectedV : IS_ANDROID ? 'android' : 'desktop'
 
   function renderDevice() {
@@ -177,8 +180,8 @@ const TT = {
       html = `<div class="dev-desk"><div class="dev-qr">${QR}</div><div><b>${esc(d.deskTitle)}</b><p>${esc(d.deskText)}</p><a href="https://${APP}" target="_blank" rel="noopener">${APP}</a></div></div>`
     } else {
       const and = device === 'android'
-      html = `<p class="dev-seen"><span class="dev-dot"></span><span>${esc(d.detected)}: <b>${esc(d.names[device])}</b></span></p>
-        <a class="dev-go" href="${go}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${esc(and ? d.andBtn : d.iosBtn)}</strong><small>${esc(and ? d.andSub : d.iosSub)}</small></span><span class="dev-arrow" aria-hidden="true">→</span></a>
+      html = `<p class="dev-seen"><span class="dev-dot"></span><span>${esc(d.detected)}: <b>${esc(pad(d.names[device].replace('Chrome', IOS_BROWSER)))}</b></span></p>
+        <a class="dev-go" href="${go}" target="_blank" rel="noopener"><img src="${IMG.icon}" alt=""><span><strong>${esc(and ? d.andBtn : pad(d.iosBtn))}</strong><small>${esc(and ? d.andSub : d.iosSub)}</small></span><span class="dev-arrow" aria-hidden="true">→</span></a>
         <p class="dev-more"><a href="#instalar" data-tm-os="${and ? 'android' : 'ios'}" data-tm-jump>${esc(d.steps)}</a></p>`
     }
     box.innerHTML = html

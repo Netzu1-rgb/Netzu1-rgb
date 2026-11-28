@@ -69,7 +69,7 @@ export default function InstallCoach() {
           <img src="/icons/icon-192.png" alt="" className="h-12 w-12 shrink-0 rounded-xl" />
           <div className="min-w-0 flex-1">
             <h2 id="coach-title" className="font-display text-lg font-bold text-heading">{t(oneTap ? 'coach.titleOneTap' : 'coach.title')}</h2>
-            <p className="text-xs text-ink-mute">{t('coach.detected', { device: t(guide.name) })}</p>
+            <p className="text-xs text-ink-mute">{t('coach.detected', { device: t(guide.name).replace('Chrome', /FxiOS/.test(navigator.userAgent) ? 'Firefox' : /EdgiOS/.test(navigator.userAgent) ? 'Edge' : 'Chrome') })}</p>
           </div>
         </div>
         {oneTap ? (

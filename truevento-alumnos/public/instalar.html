@@ -479,7 +479,7 @@ os = isAndroid ? 'android' : 'ios'
 // inside another app's browser (Instagram, WhatsApp, Claude…): no "Safari/" in it, and it can't install
 const IN_APP = /Instagram|FBAN|FBAV|FB_IAB|Line\//.test(ua) || (isIOS && !/Safari\//.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua))
 function detectIos() {
-  if (/CriOS/.test(ua)) return 'chrome'
+  if (/CriOS|FxiOS|EdgiOS/.test(ua)) return 'chrome' // Chrome, Firefox or Edge: share button in their own bar
   // Safari says its real version ("Version/26"); iOS 26 itself reports a frozen "OS 18_6"
   const v = Number((ua.match(/Version\/(\d+)/) || [])[1] || 0)
   if (v) return v >= 26 ? 'ios26' : 'ios18'
