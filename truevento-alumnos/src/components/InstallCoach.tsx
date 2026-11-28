@@ -15,8 +15,8 @@ const DISMISS_DAYS = 7
  * Where to tap, for each phone and browser: the arrow points at the real button, outside the
  * page (the browser's own bar), and the steps below say what comes next.
  */
-const GUIDE: Record<Exclude<Browser, 'desktop'>, { arrow: 'bottom-right' | 'bottom-center' | 'top-right'; steps: Key[]; name: Key }> = {
-  ios26: { arrow: 'bottom-right', steps: ['coach.ios26.1', 'coach.share', 'coach.addHome', 'coach.add'], name: 'coach.name.ios26' },
+const GUIDE: Record<Exclude<Browser, 'desktop'>, { arrow: 'bottom-left' | 'bottom-right' | 'bottom-center' | 'top-right'; steps: Key[]; name: Key }> = {
+  ios26: { arrow: 'bottom-left', steps: ['coach.ios26.1', 'coach.share', 'coach.addHome', 'coach.add'], name: 'coach.name.ios26' },
   ios18: { arrow: 'bottom-center', steps: ['coach.ios18.1', 'coach.addHome', 'coach.add'], name: 'coach.name.ios18' },
   'ios-chrome': { arrow: 'top-right', steps: ['coach.chrome.1', 'coach.addHome', 'coach.add'], name: 'coach.name.chrome' },
   ipad: { arrow: 'top-right', steps: ['coach.ipad.1', 'coach.addHome', 'coach.add'], name: 'coach.name.ipad' },
@@ -60,7 +60,7 @@ export default function InstallCoach() {
       <button type="button" className="absolute inset-0 bg-black/55" aria-label={t('coach.later')} onClick={close} />
       {!oneTap && (
         <span aria-hidden="true" className={`coach-arrow pointer-events-none absolute text-white ${
-          guide.arrow === 'bottom-right' ? 'bottom-2 right-5' : guide.arrow === 'bottom-center' ? 'bottom-2 left-1/2 -translate-x-1/2' : 'right-4 top-2 rotate-180'}`}>
+          guide.arrow === 'bottom-left' ? 'bottom-2 left-[26%] -translate-x-1/2' : guide.arrow === 'bottom-right' ? 'bottom-2 right-5' : guide.arrow === 'bottom-center' ? 'bottom-2 left-1/2 -translate-x-1/2' : 'right-4 top-2 rotate-180'}`}>
           <svg viewBox="0 0 24 24" className="h-14 w-14 drop-shadow-[0_2px_8px_rgba(0,0,0,.6)]" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v16M5 12l7 7 7-7" /></svg>
         </span>
       )}

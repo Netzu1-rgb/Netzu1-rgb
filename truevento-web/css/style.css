@@ -393,8 +393,11 @@ body.menu-open #cookieBanner, body.menu-open a[aria-label="Contactar por WhatsAp
 .tm-s26b { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #111; font-weight: 800; font-size: 13px; letter-spacing: 1px; position: relative }
 .tm-s26b svg { width: 16px; height: 16px }
 .tm-s26u { flex: 1; min-width: 0; height: 32px; border-radius: 16px; background: rgba(0, 0, 0, .06); display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #111; white-space: nowrap; overflow: hidden }
-.tm-s26u svg { width: 9px; height: 9px }
-.tm-pop { position: absolute; right: 10px; bottom: 58px; z-index: 5; width: 72%; border-radius: 16px; background: rgba(250, 250, 252, .97); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); overflow: hidden; color: #111 }
+.tm-s26u { justify-content: space-between; padding: 0 9px; overflow: visible }
+.tm-s26m, .tm-s26r { position: relative; display: grid; place-items: center; width: 16px; height: 16px; flex: none }
+.tm-s26u .tm-s26m svg, .tm-s26u .tm-s26r svg { width: 14px; height: 14px }
+.tm-s26a { overflow: hidden; text-overflow: ellipsis }
+.tm-pop { position: absolute; left: 10px; bottom: 58px; z-index: 5; width: 72%; border-radius: 16px; background: rgba(250, 250, 252, .97); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); overflow: hidden; color: #111 }
 .tm-pi { display: flex; align-items: center; gap: 9px; padding: 9px 12px; font-size: 11.5px; border-top: 1px solid #ececf1; position: relative }
 .tm-pi:first-child { border-top: 0 }
 .tm-pi svg { width: 15px; height: 15px; color: #0a84ff }
@@ -422,8 +425,9 @@ body.menu-open #cookieBanner, body.menu-open a[aria-label="Contactar por WhatsAp
 /* the small pictures: how the bottom (or top) of each browser looks */
 .tm-mini { position: relative; display: block; width: 74px; height: 44px; border-radius: 9px; background: #e9eaf0; overflow: hidden; margin-bottom: 4px }
 .tm-mini i { display: block; font-style: normal }
-.m26 .u { position: absolute; left: 6px; right: 22px; bottom: 6px; height: 12px; border-radius: 7px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
-.m26 .d { position: absolute; right: 4px; bottom: 5px; width: 15px; height: 14px; border-radius: 50%; background: #fff; color: #111; font-size: 7px; line-height: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
+.m26 .u { position: absolute; left: 22px; right: 22px; bottom: 6px; height: 12px; border-radius: 7px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); color: #111; font-size: 9px; line-height: 12px; font-style: normal; font-weight: 800; padding-left: 4px }
+.m26 .b { position: absolute; left: 4px; bottom: 5px; width: 15px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
+.m26 .d { position: absolute; right: 4px; bottom: 5px; width: 15px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2) }
 .m18 .u { position: absolute; left: 8px; right: 8px; bottom: 17px; height: 8px; border-radius: 4px; background: #cfd1d9 }
 .m18 .r { position: absolute; left: 8px; right: 8px; bottom: 5px; display: flex; justify-content: space-between }
 .m18 .r i { width: 6px; height: 6px; border-radius: 2px; background: #0a84ff; opacity: .55 }
