@@ -85,8 +85,12 @@ export function detectBrowser(ua: string = navigator.userAgent, touch = navigato
   const ipad = /iPad/.test(ua) || (platform === 'MacIntel' && touch > 1)
   if (!/iPhone|iPod/.test(ua) && !ipad) return 'desktop'
   if (/CriOS|FxiOS|EdgiOS/.test(ua)) return 'ios-chrome'
+  // inside another app's browser (WhatsApp, Claude…): no "Safari/" in it, and it can't install
+  if (!/Safari\//.test(ua)) return 'in-app'
   if (ipad) return 'ipad'
+  // Safari says its real version ("Version/26"); iOS 26 itself reports a frozen "OS 18_6"
   const v = Number((ua.match(/Version\/(\d+)/) || [])[1] || 0)
-  const os = Number((ua.match(/OS (\d+)_/) || [])[1] || 0)
-  return v >= 26 || os >= 26 ? 'ios26' : 'ios18'
+  if (v) return v >= 26 ? 'ios26' : 'ios18'
+  const [, major, minor] = ua.match(/OS (\d+)_(\d+)/) || []
+  return Number(major) > 18 || (Number(major) === 18 && Number(minor) >= 6) || !major ? 'ios26' : 'ios18'
 }

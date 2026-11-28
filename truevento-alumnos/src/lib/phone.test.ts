@@ -56,3 +56,14 @@ describe('which phone and browser, for the install guide', () => {
     expect(detectBrowser('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36', 0, 'Win32')).toBe('desktop')
   })
 })
+
+describe('detectBrowser on iOS 26 (frozen "OS 18_6") and inside other apps', () => {
+  const ios = (rest: string) => `Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) ${rest}`
+  it('reads Safari\'s own version', () => {
+    expect(detectBrowser(ios('Version/26.1 Mobile/15E148 Safari/604.1'), 5, 'iPhone')).toBe('ios26')
+    expect(detectBrowser(ios('Version/18.6 Mobile/15E148 Safari/604.1'), 5, 'iPhone')).toBe('ios18')
+  })
+  it('an app\'s own browser (no "Safari/") cannot install', () => {
+    expect(detectBrowser(ios('Mobile/15E148'), 5, 'iPhone')).toBe('in-app')
+  })
+})
